@@ -15,3 +15,6 @@ npm-debug.log*
 .vscode/*
 !.vscode/extensions.json
 .idea/
+
+# Self-contained preview (tools/preview.mjs)
+preview/

@@ -11,9 +11,11 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
 4. **Look at it** before showing it: `npm run preview`, then screenshot with Playwright at phone
    sizes (393×852 @2x, and a small phone, 331×716) and desktop (1440×900), in dark and light.
    Zoom into details (alignment, wrapping, edges that clip) and fix what you see.
-5. Commit with a plain message (what changed and why), push, open a PR and merge it, unless Till
+5. Build the self-contained preview (`npm run preview:single`, writes `preview/`) and republish
+   the preview artifact Till is watching (same link every round, never a new one unless asked).
+6. Commit with a plain message (what changed and why), push, open a PR and merge it, unless Till
    says otherwise. A merge to `main` is live on tillfindl.com a minute or two later.
-6. Tell Till what changed in plain terms (sections, look, feel), not in code.
+7. Tell Till what changed in plain terms (sections, look, feel), not in code.
 
 ## Conventions
 
