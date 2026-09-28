@@ -1,0 +1,211 @@
+---
+// One block of the story: a moment in words, a photo, a company, or a short list.
+import { Image } from 'astro:assets';
+import type { Block, Lang } from '../content/profile';
+import { photo } from '../content/images';
+
+interface Props {
+  lang: Lang;
+  block: Block;
+}
+
+const { lang, block: b } = Astro.props;
+const tall = 'tall' in b && b.tall;
+const host = b.kind === 'venture' ? new URL(b.url).host.replace(/^www\./, '') : '';
+---
+
+<article class:list={['block', `span-${b.span}`, b.kind, { tall }]}>
+  {
+    b.kind === 'story' && (
+      <>
+        <p class="eyebrow">{b.eyebrow[lang]}</p>
+        <h2 class="title">{b.title[lang]}</h2>
+        {b.body.map((p) => <p class="body">{p[lang]}</p>)}
+      </>
+    )
+  }
+
+  {
+    b.kind === 'photo' && (
+      <figure>
+        <Image src={photo(b.file)} alt={b.alt[lang]} widths={[480, 720, 960, 1280]} sizes={`(min-width: 60rem) ${Math.round((b.span / 12) * 74)}rem, 100vw`} />
+        {b.caption && <figcaption class="eyebrow">{b.caption[lang]}</figcaption>}
+      </figure>
+    )
+  }
+
+  {
+    b.kind === 'venture' && (
+      <>
+        <p class="eyebrow">{b.eyebrow[lang]}</p>
+        <div class="head">
+          <h2 class="name">{b.name}</h2>
+          <p class="role">{b.role[lang]}</p>
+        </div>
+        {b.line && <p class="line">{b.line[lang]}</p>}
+        <div class="copy">
+          {b.body.map((p) => <p class="body">{p[lang]}</p>)}
+        </div>
+        <a class="pill visit" href={b.url} rel="noopener">
+          {host}
+          <span aria-hidden="true">↗</span>
+        </a>
+      </>
+    )
+  }
+
+  {
+    b.kind === 'list' && (
+      <>
+        <p class="eyebrow">{b.eyebrow[lang]}</p>
+        <h2 class="title">{b.title[lang]}</h2>
+        {b.body.map((p) => <p class="body">{p[lang]}</p>)}
+        <ul>
+          {b.items.map((i) => (
+            <li>
+              {i.href ? (
+                <a href={i.href} rel="noopener">
+                  {i.text[lang]}
+                  <span aria-hidden="true"> ↗</span>
+                </a>
+              ) : (
+                i.text[lang]
+              )}
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+</article>
+
+<style>
+  .story,
+  .venture,
+  .list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.875rem;
+  }
+
+  .title {
+    margin-top: 0.25rem;
+    font-size: var(--text-title);
+  }
+
+  .body {
+    max-width: var(--measure);
+    color: var(--color-body);
+  }
+
+  /* The story blocks let their words sit at the bottom, like a caption to the moment. */
+  .story .eyebrow {
+    margin-bottom: auto;
+    padding-bottom: 2.5rem;
+  }
+
+  /* Photos fill their block edge to edge. */
+  .photo {
+    padding: 0;
+    overflow: hidden;
+    min-height: clamp(16rem, 30vw, 24rem);
+  }
+
+  figure {
+    position: relative;
+    height: 100%;
+    margin: 0;
+  }
+
+  figure :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  figcaption {
+    position: absolute;
+    left: 0.75rem;
+    bottom: 0.75rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 999px;
+    background: rgb(9 9 10 / 0.55);
+    color: var(--color-ink);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* Companies: a name, a role, and the line they stand on. */
+  .venture {
+    background: var(--color-block-raised);
+  }
+
+  .head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .name {
+    font-size: var(--text-display);
+    letter-spacing: -0.04em;
+  }
+
+  .role {
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+  }
+
+  .line {
+    max-width: 20em;
+    margin: 1.25rem 0 0.5rem;
+    font-size: var(--text-display);
+    font-weight: 500;
+    letter-spacing: -0.035em;
+    line-height: 1.1;
+    text-wrap: balance;
+  }
+
+  .copy {
+    display: grid;
+    gap: 0.875rem;
+  }
+
+  .span-12 .copy {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+    gap: 1rem 2.5rem;
+  }
+
+  .visit {
+    align-self: flex-start;
+    margin-top: 1rem;
+  }
+
+  ul {
+    display: grid;
+    gap: 0;
+    margin: 0.75rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-sm);
+  }
+
+  li {
+    padding: 0.6rem 0;
+    border-top: 1px solid var(--color-line);
+  }
+
+  li a {
+    text-decoration: none;
+  }
+
+  li a span {
+    color: var(--color-muted);
+  }
+
+  li a:hover span {
+    color: var(--color-ink);
+  }
+</style>

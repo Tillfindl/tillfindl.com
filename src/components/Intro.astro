@@ -1,0 +1,82 @@
+---
+// The first block: name, one line about Till, where he is, and the portrait.
+import { Image } from 'astro:assets';
+import { person, photos, type Lang } from '../content/profile';
+import { photo } from '../content/images';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+---
+
+<header class="intro block span-12">
+  <div class="text">
+    <h1>{person.name}</h1>
+    <p class="lede">{person.lede[lang]}</p>
+    <p class="eyebrow">{person.place[lang]}</p>
+  </div>
+  <Image
+    class="portrait"
+    src={photo(photos.portrait.file)}
+    alt={photos.portrait.alt[lang]}
+    widths={[480, 720, 960, 1280]}
+    sizes="(min-width: 60rem) 36rem, calc(100vw - 2 * var(--gutter))"
+    loading="eager"
+    fetchpriority="high"
+  />
+</header>
+
+<style>
+  .intro {
+    display: grid;
+    overflow: hidden;
+    padding: 0;
+  }
+
+  .text {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 1.25rem;
+    padding: var(--pad);
+  }
+
+  h1 {
+    font-size: var(--text-hero);
+    letter-spacing: -0.05em;
+    line-height: 0.92;
+  }
+
+  .lede {
+    max-width: 26em;
+    color: var(--color-body);
+    font-size: var(--text-lg);
+    line-height: 1.45;
+  }
+
+  .portrait {
+    order: -1;
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+  }
+
+  @media (min-width: 48rem) {
+    .intro {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      min-height: min(38rem, 80svh);
+    }
+
+    .text {
+      padding: calc(var(--pad) * 1.5);
+    }
+
+    .portrait {
+      order: 0;
+      height: 100%;
+      aspect-ratio: auto;
+    }
+  }
+</style>

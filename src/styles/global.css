@@ -1,35 +1,41 @@
 /*
  * Design tokens and base styles for the whole site.
  * Colours, type and spacing live here as custom properties, so a change to the look is a
- * change to one number.
+ * change to one number. The site is dark only.
  */
 
-@import '@fontsource-variable/inter';
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/geist-mono';
 
+/* Layout: a story told in blocks on a 12-column grid, one column on a phone. */
 :root {
-  /* Colour: a near-black ground with off-white ink. The site is dark only. */
-  --color-bg: #090a0b;
-  --color-ink: #f2f1ed;
-  --color-muted: #8f8e89;
-  --color-faint: #5d5c58;
-  --color-rule: rgb(242 241 237 / 0.12);
-  --color-accent: #f2f1ed;
+  /* Colour: a near-black ground, blocks one step lighter, off-white ink. */
+  --color-bg: #09090a;
+  --color-block: #121214;
+  --color-block-raised: #18181b;
+  --color-line: rgb(255 255 255 / 0.07);
+  --color-ink: #f4f4f1;
+  --color-body: #b4b4af;
+  --color-muted: #7c7c78;
 
-  /* Type: Inter, self-hosted, with the system stack as a fallback. */
-  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
-  --text-xs: 0.8125rem;
-  --text-sm: 0.9375rem;
-  --text-base: 1.0625rem;
-  --text-lg: clamp(1.1875rem, 1.6vw, 1.375rem);
-  --text-xl: clamp(1.5rem, 3vw, 2.25rem);
-  --text-2xl: clamp(2.25rem, 5.5vw, 4rem);
-  --text-hero: clamp(3.25rem, 10vw, 7.5rem);
+  /* Type: Geist for everything, Geist Mono for the small when-and-where lines. */
+  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --text-xs: 0.75rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: clamp(1.125rem, 1.4vw, 1.25rem);
+  --text-title: clamp(1.375rem, 2.1vw, 1.75rem);
+  --text-display: clamp(1.75rem, 3.6vw, 2.75rem);
+  --text-hero: clamp(3rem, 8vw, 6rem);
 
-  /* Space: the side gutter, the widest a line of text may run, and the page width. */
-  --gutter: clamp(1rem, 5vw, 3.5rem);
-  --measure: 38rem;
-  --page: 76rem;
-  --section-gap: clamp(6rem, 14vw, 11rem);
+  /* Space: page gutter and width, block padding, gap between blocks, corner radius. */
+  --gutter: clamp(1rem, 4vw, 2.5rem);
+  --page: 74rem;
+  --pad: clamp(1.375rem, 2.6vw, 2.25rem);
+  --gap: clamp(0.625rem, 1vw, 0.875rem);
+  --radius: 1.25rem;
+  --measure: 36rem;
 
   color-scheme: dark;
 }
@@ -53,7 +59,6 @@ body {
   color: var(--color-ink);
   font-family: var(--font-sans);
   font-size: var(--text-base);
-  font-feature-settings: 'ss01', 'cv11';
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -69,9 +74,9 @@ p {
 h1,
 h2,
 h3 {
-  font-weight: 600;
-  letter-spacing: -0.025em;
-  line-height: 1.05;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
   text-wrap: balance;
 }
 
@@ -92,7 +97,7 @@ img {
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-accent);
+  outline: 2px solid var(--color-ink);
   outline-offset: 3px;
 }
 
@@ -105,13 +110,99 @@ img {
   white-space: nowrap;
 }
 
-/* A small uppercase label that names a section. */
-.label {
+/* The small monospaced line above a block title: when and where. */
+.eyebrow {
   color: var(--color-muted);
+  font-family: var(--font-mono);
   font-size: var(--text-xs);
+  letter-spacing: 0.02em;
+}
+
+/* A pill-shaped link, for the few actions on the page. */
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.55em 1em;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  background: rgb(255 255 255 / 0.04);
+  font-size: var(--text-sm);
   font-weight: 500;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+a.pill:hover {
+  background: rgb(255 255 255 / 0.09);
+  border-color: rgb(255 255 255 / 0.14);
+}
+
+/*
+ * The story grid: twelve columns on a desktop, six on a tablet, one on a phone. Blocks keep the
+ * story's order; a tall photo spans two rows and the next blocks sit beside it.
+ * These rules are single classes on purpose, so a block's own styles can override them.
+ */
+.grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--gap);
+}
+
+.block {
+  min-width: 0;
+  padding: var(--pad);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius);
+  background: var(--color-block);
+}
+
+@media (min-width: 40rem) {
+  .grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+
+  .block {
+    grid-column: span 3;
+  }
+
+  .span-12 {
+    grid-column: 1 / -1;
+  }
+
+  .tall {
+    grid-row: span 2;
+  }
+}
+
+@media (min-width: 60rem) {
+  .grid {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+
+  .span-4 { grid-column: span 4; }
+  .span-5 { grid-column: span 5; }
+  .span-6 { grid-column: span 6; }
+  .span-7 { grid-column: span 7; }
+  .span-8 { grid-column: span 8; }
+}
+
+/* Blocks settle into place as they scroll in, where the browser can tie motion to scroll. */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .block {
+      animation: settle linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 40%;
+    }
+  }
+}
+
+@keyframes settle {
+  from {
+    opacity: 0.35;
+    transform: translateY(1.25rem) scale(0.985);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -122,8 +213,7 @@ img {
   *,
   *::before,
   *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
+    animation: none !important;
     transition-duration: 0.01ms !important;
   }
 }

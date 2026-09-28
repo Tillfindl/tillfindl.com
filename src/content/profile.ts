@@ -4,8 +4,11 @@
  * This is the one source of truth: the page, the JSON-LD for search engines and /llms.txt for
  * AI assistants are all generated from it, so a fact changed here changes everywhere.
  *
- * House rules for the copy: first person, short sentences, no em dashes, nothing private
- * (no phone, address, birth date or personal email), and every Bounceback claim checked
+ * The page is a story told in blocks, read in the order of `story` below. Each block has a
+ * `span` (its width on the 12-column desktop grid; phones stack everything in one column).
+ *
+ * House rules for the copy: first person, short sentences, no em dashes, no race times, nothing
+ * private (no phone, address, birth date or personal email), and every Bounceback claim checked
  * against the product facts before it goes in.
  */
 
@@ -21,6 +24,8 @@ export const links = {
   linkedin: null as string | null,
   bounceback: 'https://bounceback.at/',
   eigen: 'https://www.eigen-running.com',
+  ironmanKalmar: 'https://www.endurance-data.com/de/ergebnis/898/1616-till-findl/',
+  amsterdamMarathon: 'https://sporthive.com/events/s/7250456063290378496/race/7250456063290379008/bib/21040',
 };
 
 export const person = {
@@ -29,8 +34,8 @@ export const person = {
   familyName: 'Findl',
   place: { en: 'Vienna & London', de: 'Wien & London' } satisfies L,
   lede: {
-    en: 'Trained as a doctor at UCL. Now building Bounceback, practice software for physiotherapists.',
-    de: 'Medizin am UCL in London studiert. Jetzt baue ich Bounceback, Praxissoftware für Physiotherapeut:innen.',
+    en: 'I trained as a doctor in London. Now I build software for the people who look after patients.',
+    de: 'Ich habe in London Medizin studiert. Heute baue ich Software für die Menschen, die sich um Patient:innen kümmern.',
   } satisfies L,
   /** One neutral paragraph, used for meta descriptions, JSON-LD and the top of llms.txt. */
   summary: {
@@ -47,35 +52,77 @@ export const person = {
 export const ui = {
   skip: { en: 'Skip to content', de: 'Zum Inhalt' },
   langName: { en: 'English', de: 'Deutsch' },
-  visit: { en: 'Visit', de: 'Zur Website' },
-  contact: {
-    en: 'The best way to reach me is LinkedIn.',
-    de: 'Am besten erreichbar über LinkedIn.',
-  },
   forMachines: {
     en: 'For AI assistants and search engines, a plain summary lives at',
     de: 'Für KI-Assistenten und Suchmaschinen gibt es eine Zusammenfassung unter',
   },
-  photosLabel: { en: 'Photos', de: 'Fotos' },
+  basedIn: { en: 'Based in', de: 'Zuhause in' },
+  languages: { en: 'Languages', de: 'Sprachen' },
 } satisfies Record<string, L>;
 
-export interface Venture {
-  id: 'bounceback' | 'eigen';
-  label: L;
+export const photos = {
+  portrait: {
+    file: 'portrait-harris.jpg',
+    alt: {
+      en: 'Till Findl, portrait outdoors on the Isle of Harris, Scotland',
+      de: 'Till Findl, Porträt im Freien auf der Isle of Harris, Schottland',
+    },
+  },
+};
+
+/** Width of a block on the 12-column desktop grid. */
+export type Span = 4 | 5 | 6 | 7 | 8 | 12;
+
+export interface StoryBlock {
+  kind: 'story';
+  span: Span;
+  /** Small monospaced line above the title: when and where. */
+  eyebrow: L;
+  title: L;
+  body: L[];
+}
+
+export interface PhotoBlock {
+  kind: 'photo';
+  span: Span;
+  file: string;
+  alt: L;
+  caption?: L;
+  /** Spans two rows, beside two stacked text blocks. */
+  tall?: boolean;
+}
+
+export interface VentureBlock {
+  kind: 'venture';
+  span: Span;
+  eyebrow: L;
   name: string;
   legalName: string;
   role: L;
   city: L;
   since: number;
   url: string;
-  /** A display line set larger than the body, or null. */
-  line: L | null;
+  /** Set large, the line the block stands on. */
+  line?: L;
   body: L[];
 }
 
-export const bounceback: Venture = {
-  id: 'bounceback',
-  label: { en: 'Now', de: 'Jetzt' },
+export interface ListBlock {
+  kind: 'list';
+  span: Span;
+  tall?: boolean;
+  eyebrow: L;
+  title: L;
+  body: L[];
+  items: { text: L; href?: string }[];
+}
+
+export type Block = StoryBlock | PhotoBlock | VentureBlock | ListBlock;
+
+export const bounceback: VentureBlock = {
+  kind: 'venture',
+  span: 12,
+  eyebrow: { en: 'Now · Vienna', de: 'Jetzt · Wien' },
   name: 'Bounceback',
   legalName: 'Bounceback GmbH',
   role: { en: 'Cofounder & CEO', de: 'Mitgründer & Geschäftsführer' },
@@ -88,191 +135,236 @@ export const bounceback: Venture = {
   },
   body: [
     {
-      en: 'Physiotherapists are highly trained clinicians, yet much of what surrounds their work has been accepted as good enough for years: clunky software, notes written after hours, a separate card terminal, a PDF of exercises nobody follows up on.',
-      de: 'Physiotherapeut:innen sind hochqualifizierte Kliniker:innen. Trotzdem gilt vieles rund um ihre Arbeit seit Jahren als gut genug: umständliche Software, Dokumentation nach Feierabend, ein eigenes Kartenterminal, ein PDF mit Übungen, bei dem niemand nachfragt.',
+      en: 'Physios are highly trained clinicians, working with tools that were accepted as good enough years ago. We started with the time between appointments, where most of the recovery happens, and kept going: booking, notes that write themselves, payments on the phone, and Echo, which keeps patients on track between visits.',
+      de: 'Physiotherapeut:innen sind hochqualifizierte Kliniker:innen und arbeiten mit Werkzeugen, die vor Jahren als gut genug galten. Wir haben bei der Zeit zwischen den Terminen angefangen, in der der Großteil der Genesung passiert, und weitergemacht: Terminbuchung, Notizen, die sich selbst schreiben, Zahlungen am Handy und Echo, das Patient:innen zwischen den Terminen begleitet.',
     },
     {
-      en: 'We started with the gap after the appointment: patients filming their home exercises, physios giving feedback between visits. Listening to physios pulled us further, into everything around the session. Bounceback is now practice software, done properly: booking, notes that write themselves, payments on the phone, and Echo, which carries care on between visits. From €0.',
-      de: 'Angefangen haben wir bei der Lücke nach dem Termin: Patient:innen filmen ihre Heimübungen, Therapeut:innen geben zwischen den Terminen Feedback. Die Gespräche mit Physios haben uns weitergeführt, zu allem rund um die Behandlung. Heute ist Bounceback Praxissoftware, richtig gemacht: Terminbuchung, Notizen, die sich selbst schreiben, Zahlungen am Handy und Echo, das die Betreuung zwischen den Terminen weiterführt. Ab €0.',
-    },
-    {
-      en: 'I lead a team of four in Vienna, with engineers from MIT and TU Wien.',
-      de: 'Ich leite ein vierköpfiges Team in Wien, mit Engineers vom MIT und der TU Wien.',
+      en: 'Practice software, done properly. From €0. Built by a team of four in Vienna.',
+      de: 'Praxissoftware, richtig gemacht. Ab €0. Gebaut von einem vierköpfigen Team in Wien.',
     },
   ],
 };
 
-export const eigen: Venture = {
-  id: 'eigen',
-  label: { en: 'Also', de: 'Außerdem' },
+export const eigen: VentureBlock = {
+  kind: 'venture',
+  span: 7,
+  eyebrow: { en: 'Also · Zurich', de: 'Außerdem · Zürich' },
   name: 'Eigen Running',
   legalName: 'Eigen Running GmbH',
   role: { en: 'Cofounder & Chief of Product', de: 'Mitgründer & Chief of Product' },
   city: { en: 'Zurich', de: 'Zürich' },
   since: 2025,
   url: links.eigen,
-  line: null,
   body: [
     {
-      en: 'Eigen works out how someone runs from a phone video and a 3D scan of their feet. I built the core biomechanics: turning 2D pose estimation into three-dimensional gait, with perspective correction and detection of ground contact and gait phases. The first product recommends running shoes, grounded in more than 200 peer-reviewed studies, to lower injury risk and get the fit right.',
-      de: 'Eigen erkennt aus einem Handyvideo und einem 3D-Scan der Füße, wie jemand läuft. Ich habe die biomechanischen Kernalgorithmen entwickelt: aus 2D-Posenschätzung dreidimensionale Gangmechanik ableiten, mit Perspektivkorrektur und Erkennung von Bodenkontakt und Gangphasen. Das erste Produkt empfiehlt Laufschuhe, gestützt auf über 200 peer-reviewte Studien, um das Verletzungsrisiko zu senken und die Passform zu treffen.',
+      en: 'How you run, read from a phone video and a 3D scan of your feet. I built the biomechanics that turn flat video into three-dimensional gait. The first product finds running shoes that suit how you actually run, grounded in more than 200 studies.',
+      de: 'Wie du läufst, erkannt aus einem Handyvideo und einem 3D-Scan deiner Füße. Ich habe die Biomechanik gebaut, die aus flachem Video dreidimensionale Gangmuster macht. Das erste Produkt findet Laufschuhe, die zu deinem Laufstil passen, gestützt auf über 200 Studien.',
     },
     {
-      en: 'Built with robotics and software engineers at ETH Zurich, and supported by an ETH Zurich jFund grant of CHF 40,000.',
-      de: 'Entwickelt mit Robotik- und Softwareingenieuren der ETH Zürich, gefördert durch den ETH Zürich jFund mit CHF 40.000.',
+      en: 'Built with engineers at ETH Zurich and backed by an ETH Zurich jFund grant.',
+      de: 'Entwickelt mit Ingenieuren der ETH Zürich und gefördert durch den ETH Zürich jFund.',
     },
   ],
 };
 
-export const medicine = {
-  label: { en: 'Background', de: 'Hintergrund' } satisfies L,
-  title: { en: 'Medicine', de: 'Medizin' } satisfies L,
-  body: [
-    {
-      en: 'I studied medicine at UCL from 2020 to 2026: three years of science, then three years on the wards, with placements at University College Hospital and the Royal Free, and specialist time at Queen Square (neurology), Great Ormond Street (paediatrics) and Moorfields (ophthalmology).',
-      de: 'Von 2020 bis 2026 habe ich am UCL Medizin studiert: drei Jahre Vorklinik, dann drei Jahre auf Station, mit Praktika am University College Hospital und am Royal Free sowie Rotationen am Queen Square (Neurologie), Great Ormond Street (Pädiatrie) und Moorfields (Augenheilkunde).',
-    },
-    {
-      en: 'In my final year I spent a month in a rural GP practice on the Isle of Harris, in the Outer Hebrides, where I also worked on a partly automated way of handling medicine shortages and structured deprescribing.',
-      de: 'Im letzten Studienjahr war ich einen Monat in einer Landarztpraxis auf der Isle of Harris in den Äußeren Hebriden. Dort habe ich auch an einem teilautomatisierten Umgang mit Lieferengpässen bei Medikamenten und strukturiertem Deprescribing gearbeitet.',
-    },
-    {
-      en: 'Along the way: an intercalated BSc in Medical Sciences with Global Health, with a thesis on the economics of diabetic retinopathy screening in the age of AI, supervised at the London School of Hygiene & Tropical Medicine; and tutorials for younger students in cardiology, orthopaedics and neurology.',
-      de: 'Dazwischen: ein Intercalated BSc in Medical Sciences with Global Health, mit einer Abschlussarbeit zur Wirtschaftlichkeit von Screening auf diabetische Retinopathie im Zeitalter von KI, betreut an der London School of Hygiene & Tropical Medicine; und Tutorien für jüngere Studierende in Kardiologie, Orthopädie und Neurologie.',
-    },
-    {
-      en: 'It started before all of that: my civil service as a paramedic with the Austrian Red Cross in Vienna, through the first months of COVID-19.',
-      de: 'Angefangen hat es davor: mit meinem Zivildienst als Rettungssanitäter beim Wiener Roten Kreuz, bis in die ersten Monate von COVID-19.',
-    },
-  ] satisfies L[],
-};
-
-export const principles = {
-  label: { en: 'How I work', de: 'Wie ich arbeite' } satisfies L,
-  items: [
-    {
-      title: { en: 'Question “good enough”', de: '„Gut genug“ hinterfragen' },
-      body: {
-        en: 'Most of what frustrates clinicians was never designed badly. People just stopped asking whether it could be better. That is where I start.',
-        de: 'Das meiste, was Kliniker:innen frustriert, wurde nie schlecht entworfen. Es hat nur irgendwann niemand mehr gefragt, ob es besser geht. Dort fange ich an.',
+/** The page, in reading order. */
+export const story: Block[] = [
+  {
+    kind: 'story',
+    span: 5,
+    eyebrow: { en: '2019 · Vienna', de: '2019 · Wien' },
+    title: { en: 'It started in an ambulance.', de: 'Angefangen hat es im Rettungswagen.' },
+    body: [
+      {
+        en: 'Before university I did my civil service as a paramedic with the Red Cross, through the first months of COVID-19. It showed me early how much good care depends on everything around the clinician.',
+        de: 'Vor dem Studium war ich Zivildiener beim Roten Kreuz, als Rettungssanitäter, bis in die ersten Monate von COVID-19. Da habe ich früh gesehen, wie sehr gute Versorgung von allem rund um die Behandelnden abhängt.',
       },
-    },
-    {
-      title: { en: 'Clinician and builder', de: 'Kliniker und Entwickler' },
-      body: {
-        en: 'I know the problem from the ward and can build the answer myself, from the data pipeline to the screen. Standing in both rooms is where I am most useful.',
-        de: 'Ich kenne das Problem von der Station und kann die Lösung selbst bauen, von der Datenpipeline bis zum Bildschirm. Zwischen beiden Welten bin ich am nützlichsten.',
-      },
-    },
-    {
-      title: { en: 'Design with intent', de: 'Design mit Absicht' },
-      body: {
-        en: 'I care how things look and feel, the way Apple or Porsche do: not decoration, but a reason behind every detail. Healthcare software is allowed to be beautiful, and fast.',
-        de: 'Mir ist wichtig, wie sich Dinge anfühlen, so wie bei Apple oder Porsche: keine Dekoration, sondern ein Grund hinter jedem Detail. Software im Gesundheitswesen darf schön sein, und schnell.',
-      },
-    },
-    {
-      title: { en: 'Build to find out', de: 'Bauen, um es herauszufinden' },
-      body: {
-        en: 'I would rather make a prototype than debate one. I once turned phone face scans into custom 3D-printed CPAP masks and bench-tested them against industry masks. It never became a company. It taught me a lot.',
-        de: 'Ich baue lieber einen Prototyp, als lange darüber zu diskutieren. Einmal habe ich aus Handy-Gesichtsscans maßgefertigte, 3D-gedruckte CPAP-Masken gemacht und sie gegen Industriemasken getestet. Ein Unternehmen ist daraus nie geworden. Gelernt habe ich viel.',
-      },
-    },
-  ] satisfies { title: L; body: L }[],
-};
-
-export const outside = {
-  label: { en: 'Outside work', de: 'Abseits der Arbeit' } satisfies L,
-  facts: [
-    {
-      en: 'Alpine ski racing at FIS level, Viennese youth champion. Qualified ski instructor.',
-      de: 'Alpiner Skirennsport auf FIS-Niveau, Wiener Schüler- und Jugendmeister. Ausgebildeter Skilehrer.',
-    },
-    { en: 'Ironman Kalmar 2023 in 11:11.', de: 'Ironman Kalmar 2023 in 11:11.' },
-    { en: 'Amsterdam Marathon 2024 in 2:59.', de: 'Amsterdam Marathon 2024 in 2:59.' },
-    {
-      en: 'UCL Ice Hockey A team, BUIHA Division 1.',
-      de: 'UCL Ice Hockey A-Team, BUIHA Division 1.',
-    },
-    { en: 'Photography and film.', de: 'Fotografie und Film.' },
-  ] satisfies L[],
-};
-
-/** Photo files live in src/assets/photos; alt text describes the picture, captions name the moment. */
-export const photos = {
-  portrait: {
-    file: 'portrait-harris.jpg',
-    alt: {
-      en: 'Till Findl, portrait outdoors on the Isle of Harris, Scotland',
-      de: 'Till Findl, Porträt im Freien auf der Isle of Harris, Schottland',
-    },
-    caption: { en: 'Isle of Harris', de: 'Isle of Harris' },
+    ],
   },
-  medicine: [
-    {
-      file: 'ucl-medical-school.jpg',
-      alt: {
-        en: 'Till in graduation gown at the entrance of the Royal Free and University College Medical School',
-        de: 'Till im Talar vor dem Eingang der Royal Free and University College Medical School',
+  {
+    kind: 'story',
+    span: 7,
+    eyebrow: { en: '2020–2026 · London', de: '2020–2026 · London' },
+    title: { en: 'Six years of medicine at UCL.', de: 'Sechs Jahre Medizin am UCL.' },
+    body: [
+      {
+        en: 'Three years of science, then three on the wards: University College Hospital and the Royal Free, with time at Queen Square, Great Ormond Street and Moorfields. Along the way I taught younger students in cardiology, orthopaedics and neurology.',
+        de: 'Drei Jahre Vorklinik, dann drei Jahre auf Station: University College Hospital und Royal Free, mit Rotationen am Queen Square, Great Ormond Street und Moorfields. Nebenbei habe ich jüngere Studierende in Kardiologie, Orthopädie und Neurologie unterrichtet.',
       },
-      caption: { en: 'UCL Medical School, 2026', de: 'UCL Medical School, 2026' },
+    ],
+  },
+  {
+    kind: 'photo',
+    span: 4,
+    tall: true,
+    file: 'ucl-medical-school.jpg',
+    alt: {
+      en: 'Till in graduation gown at the entrance of the Royal Free and University College Medical School',
+      de: 'Till im Talar vor dem Eingang der Royal Free and University College Medical School',
     },
-    {
-      file: 'ucl-portico.jpg',
-      alt: {
-        en: 'Till in graduation gown in front of the UCL portico',
-        de: 'Till im Talar vor dem Portikus des UCL',
+    caption: { en: 'UCL Medical School, 2026', de: 'UCL Medical School, 2026' },
+  },
+  {
+    kind: 'story',
+    span: 8,
+    eyebrow: { en: '2022–2023 · London', de: '2022–2023 · London' },
+    title: { en: 'A year on what care is worth.', de: 'Ein Jahr über den Wert von Versorgung.' },
+    body: [
+      {
+        en: 'An intercalated degree in Global Health. My thesis asked what AI screening for diabetic eye disease is really worth, supervised at the London School of Hygiene & Tropical Medicine.',
+        de: 'Ein Zusatzstudium in Global Health. Meine Abschlussarbeit hat gefragt, was KI-gestütztes Screening auf diabetische Augenerkrankungen wirklich wert ist, betreut an der London School of Hygiene & Tropical Medicine.',
       },
-      caption: { en: 'Graduation, 2026', de: 'Abschluss, 2026' },
-    },
-  ],
-  outside: [
-    {
-      file: 'ironman-swim.jpg',
-      alt: { en: 'Till leaving the water at Ironman Kalmar, pulling off his wetsuit', de: 'Till beim Schwimmausstieg beim Ironman Kalmar, zieht den Neoprenanzug aus' },
-      caption: { en: 'Ironman Kalmar, out of the water', de: 'Ironman Kalmar, Schwimmausstieg' },
-    },
-    {
-      file: 'ski-giant-slalom.jpg',
-      alt: { en: 'Till racing giant slalom, just past a red gate', de: 'Till im Riesentorlauf, knapp hinter einem roten Tor' },
-      caption: { en: 'Giant slalom', de: 'Riesentorlauf' },
-    },
-    {
-      file: 'ironman-run.jpg',
-      alt: { en: 'Till running at Ironman Kalmar, black and white', de: 'Till beim Laufen beim Ironman Kalmar, schwarz-weiß' },
-      caption: { en: 'Ironman Kalmar, the run', de: 'Ironman Kalmar, die Laufstrecke' },
-    },
-    {
-      file: 'pond-hockey.jpg',
-      alt: { en: 'Till with an ice hockey stick on a frozen mountain lake', de: 'Till mit Eishockeyschläger auf einem zugefrorenen Bergsee' },
-      caption: { en: 'Pond hockey', de: 'Eishockey am See' },
-    },
-    {
-      file: 'ucl-ice-hockey-team.jpg',
-      alt: { en: 'Team photo of the UCL Yetis ice hockey team on the ice', de: 'Mannschaftsfoto der UCL Yetis auf dem Eis' },
-      caption: { en: 'UCL Yetis', de: 'UCL Yetis' },
-    },
-    {
-      file: 'ice-hockey-sister.jpg',
-      alt: { en: 'Till in a UCL ice hockey jersey with his sister after a game, black and white', de: 'Till im UCL-Eishockeytrikot mit seiner Schwester nach einem Spiel, schwarz-weiß' },
-      caption: { en: 'With my sister, after a game', de: 'Mit meiner Schwester, nach dem Spiel' },
-    },
-    {
-      file: 'pond-hockey-lake.jpg',
-      alt: { en: 'A skater shooting a puck on a frozen lake below snowy mountains', de: 'Ein Eisläufer schießt einen Puck auf einem zugefrorenen See vor verschneiten Bergen' },
-      caption: { en: 'Black ice', de: 'Schwarzeis' },
-    },
-    {
-      file: 'summer-austria.jpg',
-      alt: { en: 'Till and a friend in lederhosen on a village street in the Austrian mountains', de: 'Till und ein Freund in Lederhosen auf einer Dorfstraße in den österreichischen Bergen' },
-      caption: { en: 'Summer at home', de: 'Sommer daheim' },
-    },
-    {
-      file: 'summer-austria-shoulders.jpg',
-      alt: { en: 'Till sitting on a friend’s shoulders, both in lederhosen, laughing', de: 'Till sitzt lachend auf den Schultern eines Freundes, beide in Lederhosen' },
-      caption: { en: 'Same summer', de: 'Derselbe Sommer' },
-    },
-  ],
+    ],
+  },
+  {
+    kind: 'story',
+    span: 8,
+    eyebrow: { en: 'Final year · Isle of Harris', de: 'Letztes Jahr · Isle of Harris' },
+    title: { en: 'The last month, on an island.', de: 'Der letzte Monat, auf einer Insel.' },
+    body: [
+      {
+        en: 'My final placement was a rural GP practice in the Outer Hebrides. Between clinics I worked on a simpler, partly automated way for the practice to handle medicine shortages.',
+        de: 'Mein letztes Praktikum war eine Landarztpraxis auf den Äußeren Hebriden. Zwischen den Sprechstunden habe ich an einem einfacheren, teilautomatisierten Umgang mit Lieferengpässen bei Medikamenten gearbeitet.',
+      },
+    ],
+  },
+  {
+    kind: 'story',
+    span: 12,
+    eyebrow: { en: 'On the side', de: 'Nebenbei' },
+    title: { en: 'I build things to find out.', de: 'Ich baue Dinge, um es herauszufinden.' },
+    body: [
+      {
+        en: 'Once it was custom CPAP masks, shaped from a phone scan of a face, 3D-printed and bench-tested against the ones on the market. It never became a company. It did teach me to build first and argue later.',
+        de: 'Einmal waren es maßgefertigte CPAP-Masken, geformt aus einem Handyscan des Gesichts, 3D-gedruckt und gegen die Masken am Markt getestet. Ein Unternehmen ist daraus nie geworden. Aber ich habe gelernt, zuerst zu bauen und dann zu diskutieren.',
+      },
+    ],
+  },
+  bounceback,
+  eigen,
+  {
+    kind: 'story',
+    span: 5,
+    eyebrow: { en: 'How I work', de: 'Wie ich arbeite' },
+    title: { en: 'Question “good enough”.', de: '„Gut genug“ hinterfragen.' },
+    body: [
+      {
+        en: 'Most of what frustrates clinicians was never designed badly. Nobody went back to ask whether it could be better. That is where I start.',
+        de: 'Das meiste, was Kliniker:innen frustriert, wurde nie schlecht entworfen. Es hat nur niemand mehr gefragt, ob es besser geht. Dort fange ich an.',
+      },
+    ],
+  },
+  {
+    kind: 'story',
+    span: 6,
+    eyebrow: { en: 'How I work', de: 'Wie ich arbeite' },
+    title: { en: 'Both sides of the problem.', de: 'Beide Seiten des Problems.' },
+    body: [
+      {
+        en: 'I know the ward and I can build the software. My best work happens where the two meet.',
+        de: 'Ich kenne die Station und kann die Software bauen. Meine beste Arbeit entsteht dort, wo beides zusammenkommt.',
+      },
+    ],
+  },
+  {
+    kind: 'story',
+    span: 6,
+    eyebrow: { en: 'How I work', de: 'Wie ich arbeite' },
+    title: { en: 'Care in the details.', de: 'Sorgfalt im Detail.' },
+    body: [
+      {
+        en: 'I think about design the way Apple or Porsche do: nothing for decoration, a reason behind every detail. Tools for clinicians deserve that too.',
+        de: 'Ich denke über Design wie Apple oder Porsche: nichts zur Dekoration, ein Grund hinter jedem Detail. Werkzeuge für Kliniker:innen verdienen das auch.',
+      },
+    ],
+  },
+  {
+    kind: 'list',
+    span: 4,
+    tall: true,
+    eyebrow: { en: 'Away from the desk', de: 'Abseits vom Schreibtisch' },
+    title: { en: 'Always training for something.', de: 'Immer im Training für irgendwas.' },
+    body: [
+      {
+        en: 'I grew up ski racing in Austria and have been chasing a start line ever since.',
+        de: 'Ich bin in Österreich mit Skirennen aufgewachsen und stehe seitdem immer wieder an einer Startlinie.',
+      },
+    ],
+    items: [
+      { text: { en: 'Alpine ski racing, FIS level. Viennese youth champion. Ski instructor.', de: 'Alpiner Skirennsport auf FIS-Niveau. Wiener Jugendmeister. Skilehrer.' } },
+      { text: { en: 'Ironman Kalmar, 2023', de: 'Ironman Kalmar, 2023' }, href: links.ironmanKalmar },
+      { text: { en: 'Amsterdam Marathon, 2024', de: 'Amsterdam Marathon, 2024' }, href: links.amsterdamMarathon },
+      { text: { en: 'Ironman Tallinn, 2026', de: 'Ironman Tallinn, 2026' } },
+      { text: { en: 'Ice hockey for UCL', de: 'Eishockey für das UCL' } },
+      { text: { en: 'Photography and film', de: 'Fotografie und Film' } },
+    ],
+  },
+  {
+    kind: 'photo',
+    span: 8,
+    file: 'ski-giant-slalom.jpg',
+    alt: { en: 'Till racing giant slalom, just past a red gate', de: 'Till im Riesentorlauf, knapp hinter einem roten Tor' },
+    caption: { en: 'Giant slalom', de: 'Riesentorlauf' },
+  },
+  {
+    kind: 'photo',
+    span: 4,
+    file: 'ironman-swim.jpg',
+    alt: { en: 'Till leaving the water at Ironman Kalmar, pulling off his wetsuit', de: 'Till beim Schwimmausstieg beim Ironman Kalmar, zieht den Neoprenanzug aus' },
+    caption: { en: 'Ironman Kalmar', de: 'Ironman Kalmar' },
+  },
+  {
+    kind: 'photo',
+    span: 4,
+    file: 'pond-hockey.jpg',
+    alt: { en: 'Till with an ice hockey stick on a frozen mountain lake', de: 'Till mit Eishockeyschläger auf einem zugefrorenen Bergsee' },
+    caption: { en: 'Black ice', de: 'Schwarzeis' },
+  },
+  {
+    kind: 'photo',
+    span: 8,
+    file: 'ucl-ice-hockey-team.jpg',
+    alt: { en: 'Team photo of the UCL Yetis ice hockey team on the ice', de: 'Mannschaftsfoto der UCL Yetis auf dem Eis' },
+    caption: { en: 'UCL Yetis', de: 'UCL Yetis' },
+  },
+  {
+    kind: 'photo',
+    span: 4,
+    file: 'ironman-run.jpg',
+    alt: { en: 'Till running at Ironman Kalmar, black and white', de: 'Till beim Laufen beim Ironman Kalmar, schwarz-weiß' },
+    caption: { en: 'The run', de: 'Die Laufstrecke' },
+  },
+  {
+    kind: 'photo',
+    span: 4,
+    file: 'ice-hockey-sister.jpg',
+    alt: { en: 'Till in a UCL ice hockey jersey with his sister after a game, black and white', de: 'Till im UCL-Eishockeytrikot mit seiner Schwester nach einem Spiel, schwarz-weiß' },
+    caption: { en: 'With my sister, after a game', de: 'Mit meiner Schwester, nach dem Spiel' },
+  },
+  {
+    kind: 'photo',
+    span: 4,
+    file: 'summer-austria.jpg',
+    alt: { en: 'Till and a friend in lederhosen on a village street in the Austrian mountains', de: 'Till und ein Freund in Lederhosen auf einer Dorfstraße in den österreichischen Bergen' },
+    caption: { en: 'Summer at home', de: 'Sommer daheim' },
+  },
+  {
+    kind: 'photo',
+    span: 4,
+    file: 'pond-hockey-lake.jpg',
+    alt: { en: 'A skater shooting a puck on a frozen lake below snowy mountains', de: 'Ein Eisläufer schießt einen Puck auf einem zugefrorenen See vor verschneiten Bergen' },
+    caption: { en: 'Same lake', de: 'Derselbe See' },
+  },
+];
+
+/** The last block: an invitation, not a sales line. */
+export const closing = {
+  title: {
+    en: 'If you are building something in healthcare, or thinking about it, I would like to hear from you.',
+    de: 'Wenn du etwas im Gesundheitswesen baust oder darüber nachdenkst, würde ich gern von dir hören.',
+  } satisfies L,
+  cta: { en: 'Write to me on LinkedIn', de: 'Schreib mir auf LinkedIn' } satisfies L,
+  pending: { en: 'LinkedIn link coming soon', de: 'LinkedIn-Link folgt' } satisfies L,
 };
 
 /** Page titles and descriptions per language. */
@@ -286,22 +378,9 @@ export const meta = {
 
 /** Education, for JSON-LD and llms.txt. */
 export const education = [
-  {
-    name: 'University College London',
-    degree: 'MBBS Medicine',
-    years: '2020–2026',
-  },
-  {
-    name: 'University College London',
-    degree: 'Intercalated BSc Medical Sciences with Global Health',
-    years: '2022–2023',
-  },
-  {
-    name: 'Vienna International School',
-    degree: 'International Baccalaureate',
-    years: '2019',
-  },
+  { name: 'University College London', degree: 'MBBS Medicine', years: '2020–2026' },
+  { name: 'University College London', degree: 'Intercalated BSc Medical Sciences with Global Health', years: '2022–2023' },
+  { name: 'Vienna International School', degree: 'International Baccalaureate', years: '2019' },
 ];
 
-export const otherPath = (lang: Lang) => (lang === 'en' ? '/de/' : '/');
 export const pathFor = (lang: Lang) => (lang === 'en' ? '/' : '/de/');

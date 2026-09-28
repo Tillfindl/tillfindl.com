@@ -1,37 +1,31 @@
 /*
  * /llms.txt: a plain-text summary of Till for AI assistants (the llms.txt convention).
- * Generated from profile.ts so it always says the same as the page.
+ * Generated from profile.ts, in the page's own order, so it always says the same as the page.
  */
 import type { APIRoute } from 'astro';
-import { bounceback, education, eigen, links, medicine, outside, person, principles, SITE_URL, type Lang } from '../content/profile';
+import { closing, education, links, person, SITE_URL, story, type Block, type Lang } from '../content/profile';
 
-const section = (lang: Lang) => {
-  const venture = (v: typeof bounceback) =>
-    [`### ${v.name}: ${v.role[lang]}, ${v.city[lang]}, ${lang === 'en' ? 'since' : 'seit'} ${v.since}`, v.url, '', ...(v.line ? [v.line[lang], ''] : []), v.body.map((p) => p[lang]).join('\n\n')].join('\n');
+function block(b: Block, lang: Lang): string {
+  switch (b.kind) {
+    case 'story':
+      return [`### ${b.title[lang]} (${b.eyebrow[lang]})`, '', ...b.body.map((p) => p[lang])].join('\n');
+    case 'venture': {
+      const since = lang === 'en' ? 'since' : 'seit';
+      const head = `### ${b.name}: ${b.role[lang]}, ${b.city[lang]}, ${since} ${b.since}`;
+      return [head, b.url, '', ...(b.line ? [b.line[lang], ''] : []), b.body.map((p) => p[lang]).join('\n\n')].join('\n');
+    }
+    case 'list':
+      return [`### ${b.title[lang]}`, '', ...b.body.map((p) => p[lang]), '', ...b.items.map((i) => `- ${i.text[lang]}${i.href ? ` (${i.href})` : ''}`)].join('\n');
+    case 'photo':
+      return '';
+  }
+}
 
-  return [
-    `## ${lang === 'en' ? 'Work' : 'Arbeit'}`,
-    '',
-    venture(bounceback),
-    '',
-    venture(eigen),
-    '',
-    `## ${medicine.title[lang]}`,
-    '',
-    medicine.body.map((p) => p[lang]).join('\n\n'),
-    '',
-    `## ${principles.label[lang]}`,
-    '',
-    ...principles.items.map((i) => `- ${i.title[lang]}: ${i.body[lang]}`),
-    '',
-    `## ${outside.label[lang]}`,
-    '',
-    ...outside.facts.map((f) => `- ${f[lang]}`),
-    '',
-    `${lang === 'en' ? 'Based in' : 'Zuhause in'}: ${person.place[lang]}`,
-    `${lang === 'en' ? 'Languages' : 'Sprachen'}: ${person.languages[lang]}`,
-  ].join('\n');
-};
+const storyText = (lang: Lang) =>
+  story
+    .map((b) => block(b, lang))
+    .filter(Boolean)
+    .join('\n\n');
 
 export const GET: APIRoute = () => {
   const text = [
@@ -39,7 +33,7 @@ export const GET: APIRoute = () => {
     '',
     `> ${person.summary.en}`,
     '',
-    `${person.lede.en}`,
+    person.lede.en,
     '',
     '## Links',
     '',
@@ -53,7 +47,14 @@ export const GET: APIRoute = () => {
     '',
     ...education.map((e) => `- ${e.degree}, ${e.name} (${e.years})`),
     '',
-    section('en'),
+    '## Story',
+    '',
+    storyText('en'),
+    '',
+    closing.title.en,
+    '',
+    `Based in: ${person.place.en}`,
+    `Languages: ${person.languages.en}`,
     '',
     '---',
     '',
@@ -61,7 +62,11 @@ export const GET: APIRoute = () => {
     '',
     `> ${person.summary.de}`,
     '',
-    section('de'),
+    person.lede.de,
+    '',
+    storyText('de'),
+    '',
+    closing.title.de,
     '',
   ].join('\n');
 
