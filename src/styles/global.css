@@ -1,0 +1,77 @@
+/*
+ * Design tokens and base styles for the whole site.
+ * Colours, type and spacing live here as custom properties, so a change to the look is a
+ * change to one number.
+ */
+
+:root {
+  /* Colour: a dark ground with off-white ink; the light theme mirrors it. */
+  --color-bg: #0b0c0d;
+  --color-ink: #f2f1ed;
+  --color-muted: #8a8a86;
+  --color-accent: #f2f1ed;
+
+  /* Type: the system stack for now, so the page makes no font requests. */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-xl: clamp(2rem, 6vw, 3.5rem);
+
+  /* Space: the side gutter and the widest a line of text may run. */
+  --gutter: clamp(1rem, 5vw, 3rem);
+  --measure: 36rem;
+
+  color-scheme: dark light;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --color-bg: #f2f1ed;
+    --color-ink: #0b0c0d;
+    --color-muted: #6b6b67;
+    --color-accent: #0b0c0d;
+  }
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  color: inherit;
+  text-underline-offset: 0.2em;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

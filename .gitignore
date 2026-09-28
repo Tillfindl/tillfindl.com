@@ -1,0 +1,17 @@
+# Build output and Astro's generated types
+dist/
+.astro/
+
+# Dependencies
+node_modules/
+
+# Logs and local environment
+npm-debug.log*
+.env
+.env.*
+
+# OS and editor clutter
+.DS_Store
+.vscode/*
+!.vscode/extensions.json
+.idea/
