@@ -4,34 +4,34 @@
  * change to one number.
  */
 
+@import '@fontsource-variable/inter';
+
 :root {
-  /* Colour: a dark ground with off-white ink; the light theme mirrors it. */
-  --color-bg: #0b0c0d;
+  /* Colour: a near-black ground with off-white ink. The site is dark only. */
+  --color-bg: #090a0b;
   --color-ink: #f2f1ed;
-  --color-muted: #8a8a86;
+  --color-muted: #8f8e89;
+  --color-faint: #5d5c58;
+  --color-rule: rgb(242 241 237 / 0.12);
   --color-accent: #f2f1ed;
 
-  /* Type: the system stack for now, so the page makes no font requests. */
-  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-xl: clamp(2rem, 6vw, 3.5rem);
+  /* Type: Inter, self-hosted, with the system stack as a fallback. */
+  --font-sans: 'Inter Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
+  --text-base: 1.0625rem;
+  --text-lg: clamp(1.1875rem, 1.6vw, 1.375rem);
+  --text-xl: clamp(1.5rem, 3vw, 2.25rem);
+  --text-2xl: clamp(2.25rem, 5.5vw, 4rem);
+  --text-hero: clamp(3.25rem, 10vw, 7.5rem);
 
-  /* Space: the side gutter and the widest a line of text may run. */
-  --gutter: clamp(1rem, 5vw, 3rem);
-  --measure: 36rem;
+  /* Space: the side gutter, the widest a line of text may run, and the page width. */
+  --gutter: clamp(1rem, 5vw, 3.5rem);
+  --measure: 38rem;
+  --page: 76rem;
+  --section-gap: clamp(6rem, 14vw, 11rem);
 
-  color-scheme: dark light;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    --color-bg: #f2f1ed;
-    --color-ink: #0b0c0d;
-    --color-muted: #6b6b67;
-    --color-accent: #0b0c0d;
-  }
+  color-scheme: dark;
 }
 
 *,
@@ -43,6 +43,7 @@
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -52,13 +53,42 @@ body {
   color: var(--color-ink);
   font-family: var(--font-sans);
   font-size: var(--text-base);
-  line-height: 1.5;
+  font-feature-settings: 'ss01', 'cv11';
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  text-wrap: balance;
+}
+
+p {
+  text-wrap: pretty;
 }
 
 a {
   color: inherit;
-  text-underline-offset: 0.2em;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
 }
 
 :focus-visible {
@@ -66,7 +96,29 @@ a {
   outline-offset: 3px;
 }
 
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* A small uppercase label that names a section. */
+.label {
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   *,
   *::before,
   *::after {

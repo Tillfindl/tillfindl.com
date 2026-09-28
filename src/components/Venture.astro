@@ -1,0 +1,67 @@
+---
+// A company Till works on: name, role, an optional display line, a few paragraphs and a link.
+import Section from './Section.astro';
+import type { Lang, Venture } from '../content/profile';
+
+interface Props {
+  lang: Lang;
+  venture: Venture;
+  orb: string;
+}
+
+const { lang, venture: v, orb } = Astro.props;
+const since = lang === 'en' ? `Since ${v.since}` : `Seit ${v.since}`;
+const host = new URL(v.url).host.replace(/^www\./, '');
+---
+
+<Section id={v.id} label={v.label[lang]} orb={orb}>
+  <h2 id={`${v.id}-title`}>{v.name}</h2>
+  <p class="meta">{v.role[lang]} · {v.city[lang]} · {since}</p>
+  {v.line && <p class="line">{v.line[lang]}</p>}
+  <div class="body">
+    {v.body.map((p) => <p>{p[lang]}</p>)}
+  </div>
+  <a class="visit" href={v.url} rel="noopener">{host}<span aria-hidden="true"> ↗</span></a>
+</Section>
+
+<style>
+  h2 {
+    font-size: var(--text-2xl);
+  }
+
+  .meta {
+    margin-top: 0.75rem;
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+  }
+
+  .line {
+    max-width: 22em;
+    margin-top: 2rem;
+    font-size: var(--text-xl);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    text-wrap: balance;
+  }
+
+  .body {
+    display: grid;
+    gap: 1em;
+    max-width: var(--measure);
+    margin-top: 1.75rem;
+    color: rgb(242 241 237 / 0.82);
+  }
+
+  .visit {
+    display: inline-block;
+    margin-top: 1.75rem;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    text-decoration-color: var(--color-faint);
+  }
+
+  .visit:hover {
+    text-decoration-color: currentColor;
+  }
+</style>

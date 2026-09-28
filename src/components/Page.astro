@@ -1,0 +1,69 @@
+---
+// The whole one-pager, in one language. /index.astro and /de/index.astro both render this.
+import { getImage } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Nav from './Nav.astro';
+import Hero from './Hero.astro';
+import Venture from './Venture.astro';
+import Medicine from './Medicine.astro';
+import Principles from './Principles.astro';
+import Outside from './Outside.astro';
+import Footer from './Footer.astro';
+import Orb from './Orb.astro';
+import { bounceback, eigen, meta, photos, SITE_URL, type Lang } from '../content/profile';
+import { photo } from '../content/images';
+import { personJsonLd } from '../content/jsonld';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const portrait = await getImage({ src: photo(photos.portrait.file), width: 800, height: 800, fit: 'cover', format: 'jpg' });
+const jsonLd = personJsonLd(lang, new URL(portrait.src, SITE_URL).href);
+---
+
+<Base lang={lang} title={meta.title[lang]} description={meta.description[lang]} jsonLd={jsonLd}>
+  <Nav lang={lang} />
+  <main id="content">
+    <Hero lang={lang} />
+    <div class="story">
+      <div class="chapters">
+        <Venture lang={lang} venture={bounceback} orb="logo" />
+        <Venture lang={lang} venture={eigen} orb="foot" />
+        <Medicine lang={lang} orb="heart" />
+        <Principles lang={lang} orb="solving" />
+      </div>
+      <div class="orb-column">
+        <Orb />
+      </div>
+    </div>
+    <Outside lang={lang} />
+  </main>
+  <Footer lang={lang} />
+</Base>
+
+<style>
+  .story {
+    max-width: var(--page);
+    margin: var(--section-gap) auto 0;
+    padding: 0 var(--gutter);
+  }
+
+  /* On wide screens the orb gets a sticky column beside the chapters. */
+  .orb-column {
+    display: none;
+  }
+
+  @media (min-width: 60rem) {
+    .story {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
+      gap: 4rem;
+    }
+
+    .orb-column {
+      display: block;
+    }
+  }
+</style>

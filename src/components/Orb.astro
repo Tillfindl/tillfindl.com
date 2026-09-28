@@ -1,0 +1,134 @@
+---
+// The dot orb: one canvas that morphs into the shape of the chapter in view (the chapters say
+// which with `data-orb`). On wide screens it sits sticky in its own column; on a phone it moves
+// into the small slot beside the heading of the chapter in view. It is decoration only.
+---
+
+<div class="stage">
+  <canvas data-orb-canvas aria-hidden="true"></canvas>
+</div>
+
+<style>
+  .stage {
+    position: sticky;
+    top: calc(50svh - 11rem);
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 22rem;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+</style>
+
+<script>
+  import { OrbCore, OrbPainter, type OrbData } from '../orbs/bounceback-orbs';
+  import data from '../orbs/tillfindl.json';
+
+  /** The orb's diameter as a share of its box. */
+  const FILL = 0.84;
+  /** A chapter counts as in view once its top passes this share of the window height. */
+  const ACTIVE_LINE = 0.6;
+  /** Shown above the first chapter, before any chapter is in view. */
+  const REST_STATE = 'orb';
+  const INK: [number, number, number] = [242, 241, 237];
+
+  const canvas = document.querySelector<HTMLCanvasElement>('[data-orb-canvas]');
+  if (canvas) {
+    const home = canvas.parentElement!;
+    const ctx = canvas.getContext('2d')!;
+    const core = new OrbCore(data as OrbData, REST_STATE);
+    const painter = new OrbPainter(core);
+    const chapters = [...document.querySelectorAll<HTMLElement>('[data-orb]')];
+    const wide = matchMedia('(min-width: 60rem)');
+    const still = matchMedia('(prefers-reduced-motion: reduce)');
+
+    // One clock drives everything drawn, so holding it freezes the orb and stepping it replays exactly.
+    const clock = {
+      held: false,
+      t: 0,
+      origin: performance.now(),
+      now() {
+        return this.held ? this.t : (performance.now() - this.origin) / 1000;
+      },
+      hold() {
+        this.t = this.now();
+        this.held = true;
+      },
+      release() {
+        this.origin = performance.now() - this.t * 1000;
+        this.held = false;
+      },
+      step(dt: number) {
+        this.t += dt;
+        draw();
+      },
+    };
+    (window as unknown as { tillfindl: object }).tillfindl = { clock, core };
+    if (still.matches) clock.hold();
+
+    function activeChapter(): HTMLElement | null {
+      let active: HTMLElement | null = null;
+      for (const c of chapters) if (c.getBoundingClientRect().top < innerHeight * ACTIVE_LINE) active = c;
+      return active;
+    }
+
+    function place(chapter: HTMLElement | null) {
+      // A phone has no orb column: the canvas lives in the chapter's heading slot instead.
+      const slot = wide.matches ? home : (chapter?.querySelector<HTMLElement>('[data-orb-slot]') ?? home);
+      if (canvas!.parentElement !== slot) slot.append(canvas!);
+    }
+
+    function update() {
+      const chapter = activeChapter();
+      place(chapter);
+      const state = chapter?.dataset.orb ?? REST_STATE;
+      if (state !== core.state) {
+        if (still.matches) core.set(state);
+        else core.to(state, clock.now());
+      }
+      draw();
+    }
+
+    function draw() {
+      const w = canvas!.clientWidth,
+        h = canvas!.clientHeight;
+      if (!w || !h) return;
+      const dpr = Math.min(3, devicePixelRatio || 1);
+      if (canvas!.width !== Math.round(w * dpr)) canvas!.width = Math.round(w * dpr);
+      if (canvas!.height !== Math.round(h * dpr)) canvas!.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, w, h);
+      painter.draw(ctx, clock.now(), { size: FILL * Math.min(w, h), cx: w / 2, cy: h / 2, ink: INK });
+    }
+
+    // Only animate while the orb is on screen and the tab is visible. Checked every frame rather
+    // than with an IntersectionObserver, which misses the canvas moving between heading slots.
+    function onScreen() {
+      const r = canvas!.getBoundingClientRect();
+      return r.width > 0 && r.bottom > 0 && r.top < innerHeight;
+    }
+    function frame() {
+      requestAnimationFrame(frame);
+      if (!document.hidden && !clock.held && onScreen()) draw();
+    }
+    requestAnimationFrame(frame);
+
+    let queued = false;
+    const onScroll = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(() => {
+        queued = false;
+        update();
+      });
+    };
+    addEventListener('scroll', onScroll, { passive: true });
+    addEventListener('resize', onScroll);
+    wide.addEventListener('change', onScroll);
+    update();
+  }
+</script>

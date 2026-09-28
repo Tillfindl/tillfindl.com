@@ -19,8 +19,16 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
 
 - Static only: no server, no client framework unless a feature truly needs one. Prefer plain
   `.astro` components with scoped `<style>`; add a small `<script>` only where interaction needs it.
-- One page lives in `src/pages/index.astro`, built from sections in `src/components/`. A new
+- All copy lives in `src/content/profile.ts`, in English and German together; never hard-code
+  text in a component. The page, `/de/`, the JSON-LD and `/llms.txt` are generated from it.
+- The page is `src/components/Page.astro`, built from sections in `src/components/`. A new
   section is a new component, not more markup in the page.
+- Copy rules: first person, short sentences, no em dashes, no grades or tool lists. Anything about
+  Bounceback is checked against its product facts (the `the-why` skill); never claim insurance
+  billing. Nothing private: no phone, address, birth date, personal email, or third parties named
+  without their OK.
+- The orb (`src/components/Orb.astro`) runs off one clock (`window.tillfindl.clock` for captures:
+  `hold()`, then `step(dt)`); keep it that way, no free-running timers.
 - Colours, type sizes and spacing are tokens in `src/styles/global.css`. Use the tokens; a change
   to the look should be a one-number change there.
 - The site works on a phone first: 16px side gutter at least, no horizontal scroll, readable

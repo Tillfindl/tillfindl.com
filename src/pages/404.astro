@@ -2,10 +2,10 @@
 import Base from '../layouts/Base.astro';
 ---
 
-<Base title="Not found · Till Findl">
+<Base lang="en" title="Not found · Till Findl" description="This page does not exist." alternates={false}>
   <main>
     <h1>Nothing here.</h1>
-    <p><a href="/">Back to the start</a></p>
+    <p><a href="/">Back to the start</a> · <a href="/de/">Zur Startseite</a></p>
   </main>
 </Base>
 
@@ -20,14 +20,10 @@ import Base from '../layouts/Base.astro';
   }
 
   h1 {
-    margin: 0;
-    font-size: var(--text-xl);
-    font-weight: 600;
-    letter-spacing: -0.03em;
+    font-size: var(--text-2xl);
   }
 
   p {
-    margin: 0;
     color: var(--color-muted);
   }
 </style>

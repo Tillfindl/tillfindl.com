@@ -1,2 +1,5 @@
+# Everyone is welcome, AI crawlers included: the site exists to describe Till accurately.
 User-agent: *
 Allow: /
+
+Sitemap: https://tillfindl.com/sitemap-index.xml

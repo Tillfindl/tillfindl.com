@@ -1,0 +1,56 @@
+---
+// How Till works: four short principles.
+import Section from './Section.astro';
+import { principles, type Lang } from '../content/profile';
+
+interface Props {
+  lang: Lang;
+  orb: string;
+}
+
+const { lang, orb } = Astro.props;
+---
+
+<Section id="how-i-work" label={principles.label[lang]} orb={orb}>
+  <h2 id="how-i-work-title" class="visually-hidden">{principles.label[lang]}</h2>
+  <ol>
+    {
+      principles.items.map((item) => (
+        <li>
+          <h3>{item.title[lang]}</h3>
+          <p>{item.body[lang]}</p>
+        </li>
+      ))
+    }
+  </ol>
+</Section>
+
+<style>
+  ol {
+    display: grid;
+    gap: 2.5rem 3rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 40rem) {
+    ol {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.25;
+  }
+
+  p {
+    margin-top: 0.625rem;
+    color: rgb(242 241 237 / 0.78);
+    font-size: var(--text-sm);
+    line-height: 1.6;
+  }
+</style>

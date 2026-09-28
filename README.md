@@ -4,7 +4,9 @@ The personal website of Till Findl: a small one-page site built with [Astro](htt
 hosted on GitHub Pages at [tillfindl.com](https://tillfindl.com). The domain is registered on
 Cloudflare.
 
-Right now it shows a "coming soon" page while the real site is designed.
+A single scrolling page in English (`/`) and German (`/de/`): who Till is, Bounceback, Eigen Running,
+medicine, how he works, and life outside work. A calm dot orb beside the text morphs into the shape
+of each chapter. The page is built to be read by people, search engines and AI assistants alike.
 
 ## Working on it
 
@@ -21,23 +23,35 @@ npm run preview   # serve the built dist/ locally
 ## How it is laid out
 
 ```
-public/                 Copied as-is to the site root
-  CNAME                 The custom domain GitHub Pages serves (tillfindl.com)
-  favicon.svg
-  robots.txt
 src/
-  pages/                One file per URL: index.astro is "/", 404.astro is the not-found page
-  layouts/Base.astro    The shared HTML shell: <head>, meta tags, global styles
-  components/           Pieces of the page (sections, cards, the coming-soon holder)
+  content/profile.ts    Every fact and every sentence, in English and German: the one place to edit copy
+  content/jsonld.ts     Structured data (schema.org Person) built from the profile
+  content/images.ts     Looks up photos in src/assets/photos by file name
+  pages/index.astro     "/" (English); pages/de/index.astro is "/de/" (German); both render Page
+  pages/llms.txt.ts     "/llms.txt": a plain summary for AI assistants, built from the profile
+  pages/404.astro       The not-found page
+  components/           Page (the whole one-pager) and its parts: Nav, Hero, Venture, Medicine,
+                        Principles, Outside (photo strip), Footer, Section, Orb
+  layouts/Base.astro    The HTML shell: <head>, language alternates, social card, JSON-LD
   styles/global.css     Design tokens (colour, type, spacing) and base styles
-astro.config.mjs        Astro settings, including the site URL
-.github/workflows/
-  deploy.yml            Builds and publishes to GitHub Pages on every push to main
-  check.yml             Type-checks and builds every pull request
+  assets/photos/        Photos; the build resizes them and strips their metadata
+  orbs/                 The dot orb's runtime and shapes (see src/orbs/README.md)
+public/                 Copied as-is: CNAME (the custom domain), favicon, robots.txt
+astro.config.mjs        Site URL, languages, sitemap
+.github/workflows/      deploy.yml publishes main to GitHub Pages; check.yml checks pull requests
 ```
 
-Images that need optimising go in `src/assets/` and are imported from components; files that must
-keep their exact name and URL (a CV PDF, say) go in `public/`.
+### Changing things
+
+- **Words:** edit `src/content/profile.ts`. The page, the German page, the structured data and
+  `/llms.txt` all follow.
+- **Photos:** drop the file into `src/assets/photos/` and add it to `photos` in the profile, with
+  alt text in both languages.
+- **The look:** tokens at the top of `src/styles/global.css`.
+- **Orb shapes:** built in `bounceback-morph-bench` (`npm run orbs:tillfindl`), then copied into
+  `src/orbs/`.
+
+Keep private details out of the repo: no phone number, home address, birth date or personal email.
 
 ## Deploying
 

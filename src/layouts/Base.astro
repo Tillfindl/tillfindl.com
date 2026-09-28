@@ -1,37 +1,63 @@
 ---
-// The HTML shell every page shares: document head, meta tags and global styles.
+// The HTML shell every page shares: document head, language alternates, social cards,
+// structured data and global styles.
+import { getImage } from 'astro:assets';
 import '../styles/global.css';
+import { photos, SITE_URL, type Lang } from '../content/profile';
+import { photo } from '../content/images';
 
 interface Props {
-  title?: string;
-  description?: string;
+  lang: Lang;
+  title: string;
+  description: string;
+  /** Structured data for search engines and AI assistants, serialised into the head. */
+  jsonLd?: object;
+  /** Whether this page has an English and a German version to point at each other. */
+  alternates?: boolean;
 }
 
-const {
-  title = 'Till Findl',
-  description = 'The personal website of Till Findl.',
-} = Astro.props;
+const { lang, title, description, jsonLd, alternates = true } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = await getImage({ src: photo(photos.portrait.file), width: 1200, height: 630, fit: 'cover', format: 'jpg' });
+const ogImageUrl = new URL(ogImage.src, SITE_URL);
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang={lang}>
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="author" content="Till Findl" />
     <link rel="canonical" href={canonical} />
+    {
+      alternates && (
+        <>
+          <link rel="alternate" hreflang="en" href={`${SITE_URL}/`} />
+          <link rel="alternate" hreflang="de" href={`${SITE_URL}/de/`} />
+          <link rel="alternate" hreflang="x-default" href={`${SITE_URL}/`} />
+        </>
+      )
+    }
+    <link rel="alternate" type="text/plain" title="Summary for AI assistants" href="/llms.txt" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <meta name="theme-color" content="#0b0c0d" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#f2f1ed" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#090a0b" />
 
-    <meta property="og:type" content="website" />
+    <meta property="og:type" content="profile" />
     <meta property="og:url" content={canonical} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content={lang === 'en' ? 'en_GB' : 'de_AT'} />
+    <meta property="profile:first_name" content="Till" />
+    <meta property="profile:last_name" content="Findl" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
   </head>
   <body>
     <slot />

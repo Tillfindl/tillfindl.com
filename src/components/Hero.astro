@@ -1,0 +1,79 @@
+---
+// The first screen: name, one line about Till, where he is, and the portrait.
+import { Image } from 'astro:assets';
+import { person, photos, type Lang } from '../content/profile';
+import { photo } from '../content/images';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+---
+
+<header class="hero">
+  <div class="text">
+    <h1>{person.name}</h1>
+    <p class="lede">{person.lede[lang]}</p>
+    <p class="place">{person.place[lang]}</p>
+  </div>
+  <figure class="portrait">
+    <Image
+      src={photo(photos.portrait.file)}
+      alt={photos.portrait.alt[lang]}
+      widths={[480, 720, 960, 1280]}
+      sizes="(min-width: 60rem) 34rem, calc(100vw - 2 * var(--gutter))"
+      loading="eager"
+      fetchpriority="high"
+    />
+  </figure>
+</header>
+
+<style>
+  .hero {
+    display: grid;
+    gap: 2rem;
+    max-width: var(--page);
+    margin: 0 auto;
+    padding: clamp(1.5rem, 6vw, 5rem) var(--gutter) 0;
+  }
+
+  @media (min-width: 60rem) {
+    .hero {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 34rem);
+      align-items: end;
+      gap: 4rem;
+    }
+  }
+
+  h1 {
+    font-size: var(--text-hero);
+    letter-spacing: -0.045em;
+    line-height: 0.95;
+  }
+
+  .lede {
+    max-width: 24em;
+    margin-top: 1.5rem;
+    font-size: var(--text-lg);
+    line-height: 1.4;
+    color: rgb(242 241 237 / 0.86);
+  }
+
+  .place {
+    margin-top: 1rem;
+    color: var(--color-muted);
+    font-size: var(--text-sm);
+  }
+
+  .portrait {
+    margin: 0;
+  }
+
+  .portrait img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 4px;
+  }
+</style>

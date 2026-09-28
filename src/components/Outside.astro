@@ -1,0 +1,98 @@
+---
+// Life outside work: a few facts and a strip of photos that scrolls sideways.
+import { Image } from 'astro:assets';
+import { outside, photos, ui, type Lang } from '../content/profile';
+import { photo } from '../content/images';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+---
+
+<section class="outside" id="outside" aria-labelledby="outside-title">
+  <div class="inner">
+    <p class="label rule">{outside.label[lang]}</p>
+    <h2 id="outside-title" class="visually-hidden">{outside.label[lang]}</h2>
+    <ul class="facts">
+      {outside.facts.map((f) => <li>{f[lang]}</li>)}
+    </ul>
+  </div>
+  <ul class="strip" aria-label={ui.photosLabel[lang]} tabindex="0">
+    {
+      photos.outside.map((p) => (
+        <li>
+          <figure>
+            <Image src={photo(p.file)} alt={p.alt[lang]} widths={[360, 540, 720, 1080]} sizes="(min-width: 60rem) 32rem, 80vw" />
+            <figcaption>{p.caption[lang]}</figcaption>
+          </figure>
+        </li>
+      ))
+    }
+  </ul>
+</section>
+
+<style>
+  .outside {
+    margin-top: var(--section-gap);
+  }
+
+  .inner {
+    max-width: var(--page);
+    margin: 0 auto;
+    padding: 0 var(--gutter);
+  }
+
+  .rule {
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-rule);
+  }
+
+  .facts {
+    display: grid;
+    gap: 0.5rem;
+    max-width: var(--measure);
+    margin: 1.25rem 0 0;
+    padding: 0;
+    list-style: none;
+    font-size: var(--text-lg);
+    line-height: 1.4;
+  }
+
+  /* The strip scrolls on its own, so the page itself never scrolls sideways. */
+  .strip {
+    --strip-h: clamp(17rem, 42vw, 30rem);
+    display: flex;
+    gap: 0.75rem;
+    margin: 3rem 0 0;
+    padding: 0 max(var(--gutter), calc((100vw - var(--page)) / 2 + var(--gutter))) 1rem;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: max(var(--gutter), calc((100vw - var(--page)) / 2 + var(--gutter)));
+    list-style: none;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-faint) transparent;
+  }
+
+  .strip li {
+    flex: none;
+    scroll-snap-align: start;
+  }
+
+  figure {
+    margin: 0;
+  }
+
+  img {
+    width: auto;
+    height: var(--strip-h);
+    border-radius: 3px;
+  }
+
+  figcaption {
+    margin-top: 0.5rem;
+    color: var(--color-muted);
+    font-size: var(--text-xs);
+  }
+</style>
