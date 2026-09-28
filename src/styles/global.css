@@ -6,24 +6,34 @@
 
 @import '@fontsource-variable/archivo';
 
-/* Layout: one narrow column of plain lists, with plenty of air between them. */
+/* Layout: a centred page with an intro beside the portrait, then sections of cards. */
 :root {
-  /* Colour: a near-black ground, off-white ink, one muted grey and a faint hairline. */
+  /* Colour: a near-black ground with a faint cool glow, cards one shade lighter, off-white ink. */
   --bg: #090a0b;
-  --ink: #eaeaea;
-  --muted: #86888b;
-  --rule: rgb(234 234 234 / 0.1);
+  --glow: rgb(118 138 168 / 0.12);
+  --card: rgb(255 255 255 / 0.035);
+  --card-hover: rgb(255 255 255 / 0.06);
+  --border: rgb(255 255 255 / 0.08);
+  --border-hover: rgb(255 255 255 / 0.16);
+  --ink: #ededeb;
+  --body: #b3b4b6;
+  --muted: #808286;
 
-  /* Type: Archivo throughout, small and regular. */
+  /* Type: Archivo throughout. */
   --font-sans: 'Archivo Variable', 'Helvetica Neue', Arial, sans-serif;
-  --text-sm: 0.8125rem;
-  --text-base: 0.9375rem;
-  --text-name: 1.125rem;
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.125rem;
+  --text-card: 1.1875rem;
+  --text-name: clamp(2.5rem, 5.5vw, 4rem);
 
-  /* Space: the column width, the side margin on small screens, and the gap between sections. */
-  --column: 38rem;
-  --side: 1.25rem;
-  --section-gap: clamp(3.5rem, 9vh, 5.5rem);
+  /* Space: page width and gutter, gap between sections and between cards, card padding and corners. */
+  --page: 60rem;
+  --side: clamp(1.25rem, 4vw, 2.5rem);
+  --section-gap: clamp(4.5rem, 10vh, 6.5rem);
+  --gap: 0.75rem;
+  --pad: 1.375rem;
+  --radius: 1rem;
 
   color-scheme: dark;
 }
@@ -41,11 +51,14 @@ html {
 
 body {
   margin: 0;
-  background: var(--bg);
+  background:
+    radial-gradient(70rem 45rem at 15% -15%, var(--glow), transparent 70%),
+    var(--bg);
+  background-repeat: no-repeat;
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: var(--text-base);
-  line-height: 1.5;
+  line-height: 1.55;
   font-variant-numeric: tabular-nums;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -53,9 +66,9 @@ body {
 
 h1,
 h2,
+h3,
 p {
   margin: 0;
-  font-weight: 400;
 }
 
 a {
@@ -81,4 +94,48 @@ img {
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+/* Buttons: a solid pill for the first action, outlined pills for the rest. */
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  padding: 0.7em 1.2em;
+  border: 1px solid var(--border-hover);
+  border-radius: 999px;
+  font-size: var(--text-sm);
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+}
+
+.button:hover {
+  background: var(--card-hover);
+  border-color: rgb(255 255 255 / 0.3);
+}
+
+.button.primary {
+  border-color: var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.button.primary:hover {
+  opacity: 0.88;
+}
+
+/* The card every section uses. */
+.card {
+  min-width: 0;
+  padding: var(--pad);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--card);
+  transition: background 0.2s, border-color 0.2s;
+}
+
+a.card:hover {
+  border-color: var(--border-hover);
+  background: var(--card-hover);
 }

@@ -1,0 +1,71 @@
+---
+// One card: a title with its date, a detail line, an optional sentence, and a link if it has one.
+import { text, type Card, type Lang } from '../content/profile';
+
+interface Props {
+  lang: Lang;
+  card: Card;
+}
+
+const { lang, card: c } = Astro.props;
+const Tag = c.url ? 'a' : 'div';
+---
+
+<Tag class="card info" href={c.url} rel={c.url ? 'noopener' : undefined}>
+  <div class="top">
+    <h3>
+      {text(c.title, lang)}
+      {c.url && <span class="arrow" aria-hidden="true">↗</span>}
+    </h3>
+    {c.date && <span class="date">{c.date}</span>}
+  </div>
+  <p class="detail">{c.detail[lang]}</p>
+  {c.about && <p class="about">{c.about[lang]}</p>}
+</Tag>
+
+<style>
+  .info {
+    display: grid;
+    align-content: start;
+    gap: 0.3rem;
+  }
+
+  .top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+  }
+
+  h3 {
+    font-size: var(--text-card);
+    font-weight: 600;
+    letter-spacing: -0.015em;
+  }
+
+  .arrow {
+    margin-left: 0.3em;
+    color: var(--muted);
+    font-weight: 400;
+    transition: color 0.2s;
+  }
+
+  a:hover .arrow {
+    color: var(--ink);
+  }
+
+  .date,
+  .detail {
+    color: var(--muted);
+    font-size: var(--text-sm);
+  }
+
+  .date {
+    white-space: nowrap;
+  }
+
+  .about {
+    margin-top: 0.75rem;
+    color: var(--body);
+  }
+</style>

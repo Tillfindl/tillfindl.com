@@ -31,81 +31,105 @@ export const person = {
   familyName: 'Findl',
 };
 
-export interface Row {
+export interface Card {
   /** A name that stays the same in both languages, or one per language. */
   title: string | L;
   detail: L;
   date: string;
+  /** One plain line under the title, if the card needs it. */
+  about?: L;
   url?: string;
 }
 
-/** What the page says: a name, a portrait and a few plain lists. Nothing else. */
+/** What the page shows: a portrait and a short intro, then cards. */
 export const page = {
-  /** A close crop of the Harris portrait, for the small round photo by the name. */
   portrait: {
-    file: 'portrait-face.jpg',
-    alt: { en: 'Till Findl', de: 'Till Findl' },
+    file: 'portrait-harris.jpg',
+    alt: { en: 'Till Findl on the Isle of Harris, Scotland', de: 'Till Findl auf der Isle of Harris, Schottland' },
   },
+  intro: {
+    en: 'I run Bounceback, practice software for physiotherapists, and work on Eigen, which helps runners choose shoes. I studied medicine at UCL in London.',
+    de: 'Ich leite Bounceback, Praxissoftware für Physiotherapeut:innen, und arbeite an Eigen, das Läufer:innen hilft, den richtigen Schuh zu finden. Studiert habe ich Medizin am UCL in London.',
+  },
+  place: { en: 'Vienna & London', de: 'Wien & London' },
   sections: {
     work: { en: 'Work', de: 'Arbeit' },
     education: { en: 'Education', de: 'Ausbildung' },
     experience: { en: 'Experience', de: 'Erfahrung' },
     sport: { en: 'Sport', de: 'Sport' },
   },
+  visit: { en: 'Visit', de: 'Ansehen' },
+  results: { en: 'Results', de: 'Ergebnisse' },
   work: [
     {
       title: 'Bounceback',
       detail: { en: 'Cofounder & CEO · Vienna', de: 'Mitgründer & Geschäftsführer · Wien' },
-      date: '2024–',
+      date: '2024 – now',
+      about: {
+        en: 'Practice software for physiotherapists: booking, notes, payments and a patient app.',
+        de: 'Praxissoftware für Physiotherapeut:innen: Termine, Dokumentation, Zahlungen und eine Patienten-App.',
+      },
       url: links.bounceback,
     },
     {
       title: 'Eigen Running',
       detail: { en: 'Cofounder & Chief of Product · Zurich', de: 'Mitgründer & Chief of Product · Zürich' },
-      date: '2025–',
+      date: '2025 – now',
+      about: {
+        en: 'Running shoe recommendations from a 3D foot scan and gait analysis on the iPhone.',
+        de: 'Laufschuh-Empfehlungen aus einem 3D-Fußscan und einer Laufanalyse am iPhone.',
+      },
       url: links.eigen,
     },
-  ] satisfies Row[],
+  ] satisfies Card[],
   education: [
-    {
-      title: 'University College London',
-      detail: { en: 'MBBS Medicine', de: 'MBBS Medizin' },
-      date: '2020–2026',
-    },
+    { title: 'University College London', detail: { en: 'MBBS Medicine', de: 'MBBS Medizin' }, date: '2020 – 2026' },
     {
       title: 'University College London',
       detail: { en: 'BSc Medical Sciences with Global Health', de: 'BSc Medical Sciences with Global Health' },
-      date: '2022–2023',
+      date: '2022 – 2023',
     },
-    {
-      title: 'Vienna International School',
-      detail: { en: 'International Baccalaureate', de: 'International Baccalaureate' },
-      date: '2019',
-    },
-  ] satisfies Row[],
+    { title: 'Vienna International School', detail: { en: 'International Baccalaureate', de: 'International Baccalaureate' }, date: '2019' },
+  ] satisfies Card[],
   experience: [
     {
-      title: 'Austrian Red Cross',
+      title: { en: 'Austrian Red Cross', de: 'Österreichisches Rotes Kreuz' },
       detail: { en: 'Paramedic, civil service · Vienna', de: 'Rettungssanitäter, Zivildienst · Wien' },
-      date: '2019–2020',
+      date: '2019 – 2020',
     },
-  ] satisfies Row[],
-  sport: [
-    { title: 'Ironman Tallinn', detail: { en: '', de: '' }, date: '2026' },
-    { title: 'Amsterdam Marathon', detail: { en: '', de: '' }, date: '2024', url: links.amsterdamMarathon },
-    { title: 'Ironman Kalmar', detail: { en: '', de: '' }, date: '2023', url: links.ironmanKalmar },
-    { title: { en: 'Ice hockey', de: 'Eishockey' }, detail: { en: 'UCL', de: 'UCL' }, date: '' },
-    { title: { en: 'Alpine ski racing', de: 'Alpiner Skirennsport' }, detail: { en: 'FIS', de: 'FIS' }, date: '' },
-  ] satisfies Row[],
-  photos: [
-    { file: 'ski-giant-slalom.jpg', alt: { en: 'Giant slalom race', de: 'Riesentorlauf' } },
-    { file: 'ironman-run.jpg', alt: { en: 'Running at Ironman Kalmar', de: 'Laufen beim Ironman Kalmar' } },
-    { file: 'pond-hockey.jpg', alt: { en: 'Ice hockey on a frozen lake', de: 'Eishockey auf einem zugefrorenen See' } },
+  ] satisfies Card[],
+  /** Sport with a photo each, then the races without one. */
+  sportPhotos: [
+    {
+      file: 'ski-giant-slalom.jpg',
+      alt: { en: 'Giant slalom race', de: 'Riesentorlauf' },
+      title: { en: 'Alpine ski racing', de: 'Alpiner Skirennsport' },
+      detail: { en: 'FIS', de: 'FIS' },
+    },
+    {
+      file: 'ironman-run.jpg',
+      alt: { en: 'Running at Ironman Kalmar', de: 'Laufen beim Ironman Kalmar' },
+      title: { en: 'Ironman Kalmar', de: 'Ironman Kalmar' },
+      detail: { en: '2023', de: '2023' },
+      url: links.ironmanKalmar,
+    },
+    {
+      file: 'pond-hockey.jpg',
+      alt: { en: 'Ice hockey on a frozen lake', de: 'Eishockey auf einem zugefrorenen See' },
+      title: { en: 'Ice hockey', de: 'Eishockey' },
+      detail: { en: 'UCL', de: 'UCL' },
+    },
   ],
+  races: [
+    { title: 'Ironman Tallinn', detail: { en: 'Triathlon', de: 'Triathlon' }, date: '2026' },
+    { title: 'Amsterdam Marathon', detail: { en: 'Marathon', de: 'Marathon' }, date: '2024', url: links.amsterdamMarathon },
+  ] satisfies Card[],
   footer: {
     forMachines: { en: 'Summary for AI assistants', de: 'Zusammenfassung für KI-Assistenten' },
   },
 };
+
+export const text = (t: string | L, lang: Lang) => (typeof t === 'string' ? t : t[lang]);
 
 /** The fuller record, for search engines (JSON-LD) and AI assistants (/llms.txt) only. */
 export const facts = {

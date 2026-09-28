@@ -27,8 +27,9 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
   Bounceback is checked against its product facts (the `the-why` skill); never claim insurance
   billing. Nothing private: no phone, address, birth date, personal email, or third parties named
   without their OK.
-- Plain is the design. Name, small portrait, then labelled lists of title, detail and date.
-  No taglines, no subtitle, no sentences about Till, no slogans or calls to network. Words Till
+- A normal personal website: intro (name, place, one factual paragraph, buttons) beside a
+  medium portrait (never full-bleed), then sections of cards. Plain, factual wording: no
+  taglines, no slogans, no statements about beliefs, no calls to network. Words Till
   has ruled out: founder (as a label), doctor, "building". Detail belongs in `facts`.
 - No race times on the site; race names link to their result pages.
 - Colours, type sizes and spacing are tokens in `src/styles/global.css`. Use the tokens; a change
