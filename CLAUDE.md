@@ -27,10 +27,9 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
   Bounceback is checked against its product facts (the `the-why` skill); never claim insurance
   billing. Nothing private: no phone, address, birth date, personal email, or third parties named
   without their OK.
-- Less is the design. One idea per screen, a big line and at most one small line under it, lots
-  of air. Detail belongs in `facts` (for machines), not on the page. Look at the Eigen website
-  for the reference: Archivo, one italic serif phrase at a time, dark and light grounds in turn,
-  full-bleed photos with the words bottom left.
+- Plain is the design. Name, small portrait, then labelled lists of title, detail and date.
+  No taglines, no subtitle, no sentences about Till, no slogans or calls to network. Words Till
+  has ruled out: founder (as a label), doctor, "building". Detail belongs in `facts`.
 - No race times on the site; race names link to their result pages.
 - Colours, type sizes and spacing are tokens in `src/styles/global.css`. Use the tokens; a change
   to the look should be a one-number change there.

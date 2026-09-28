@@ -4,8 +4,8 @@ The personal website of Till Findl: a small one-page site built with [Astro](htt
 hosted on GitHub Pages at [tillfindl.com](https://tillfindl.com). The domain is registered on
 Cloudflare.
 
-A single scrolling page in English (`/`) and German (`/de/`): six screens, one idea each, in the
-design language of the Eigen website. The page says little on purpose; the fuller facts go to search
+A short, plain page in English (`/`) and German (`/de/`): Till's name and a small portrait, then
+work, education, experience and sport as simple lists. No taglines. The fuller facts go to search
 engines (JSON-LD) and AI assistants (`/llms.txt`), generated from the same file.
 
 ## Working on it
@@ -24,14 +24,14 @@ npm run preview   # serve the built dist/ locally
 
 ```
 src/
-  content/profile.ts    `page`: the few words the page says, screen by screen, in English and German.
+  content/profile.ts    `page`: the lists the page shows (work, education, experience, sport), EN and DE.
                         `facts`: the fuller record, read only by search engines and AI assistants
   content/jsonld.ts     Structured data (schema.org Person) built from the profile
   content/images.ts     Looks up photos in src/assets/photos by file name
   pages/index.astro     "/" (English); pages/de/index.astro is "/de/" (German); both render Page
   pages/llms.txt.ts     "/llms.txt": a plain summary for AI assistants, built from the profile
   pages/404.astro       The not-found page
-  components/           Page (all six screens), Nav, Footer
+  components/           Page (the whole column), Rows (one labelled list), Footer
   layouts/Base.astro    The HTML shell: <head>, language alternates, social card, JSON-LD
   styles/global.css     Design tokens (colour, type, spacing) and base styles
   assets/photos/        Photos; the build resizes them and strips their metadata

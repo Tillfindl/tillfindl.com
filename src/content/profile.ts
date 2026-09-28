@@ -1,13 +1,12 @@
 /*
  * Everything the site says about Till, in English and German.
  *
- * Two parts: `page` is the little the page itself says (one idea per screen, and elegance is in
- * what it leaves out), and `facts` is the fuller record that only machines read: the JSON-LD for
- * search engines and /llms.txt for AI assistants. Keep the page short; put detail in facts.
+ * Two parts: `page` is what the page shows, a name and a few plain lists, and `facts` is the
+ * fuller record that only machines read: the JSON-LD for search engines and /llms.txt for AI
+ * assistants. The page stays plain: no taglines, no slogans, no sentences about Till.
  *
- * Copy rules: first person, short sentences, no em dashes, no race times, nothing private (no
- * phone, address, birth date or personal email). Words between *asterisks* are set in the italic
- * serif, at most one phrase per screen.
+ * Rules: no em dashes, no race times, nothing private (no phone, address, birth date or personal
+ * email).
  */
 
 export type Lang = 'en' | 'de';
@@ -18,7 +17,7 @@ export type L = Record<Lang, string>;
 export const SITE_URL = 'https://tillfindl.com';
 
 export const links = {
-  /** Till will send the URL; until then the LinkedIn buttons say it is coming. */
+  /** Till will send the URL; until then LinkedIn is left out. */
   linkedin: null as string | null,
   bounceback: 'https://bounceback.at/',
   eigen: 'https://www.eigen-running.com',
@@ -32,99 +31,81 @@ export const person = {
   familyName: 'Findl',
 };
 
-/** What the page says, screen by screen. */
+export interface Row {
+  /** A name that stays the same in both languages, or one per language. */
+  title: string | L;
+  detail: L;
+  date: string;
+  url?: string;
+}
+
+/** What the page says: a name, a portrait and a few plain lists. Nothing else. */
 export const page = {
-  nav: {
-    hello: { en: 'Say hello', de: 'Hallo sagen' },
+  /** A close crop of the Harris portrait, for the small round photo by the name. */
+  portrait: {
+    file: 'portrait-face.jpg',
+    alt: { en: 'Till Findl', de: 'Till Findl' },
   },
-  hero: {
-    photo: 'portrait-harris.jpg',
-    alt: {
-      en: 'Till Findl on the Isle of Harris, Scotland',
-      de: 'Till Findl auf der Isle of Harris, Schottland',
+  sections: {
+    work: { en: 'Work', de: 'Arbeit' },
+    education: { en: 'Education', de: 'Ausbildung' },
+    experience: { en: 'Experience', de: 'Erfahrung' },
+    sport: { en: 'Sport', de: 'Sport' },
+  },
+  work: [
+    {
+      title: 'Bounceback',
+      detail: { en: 'Cofounder & CEO · Vienna', de: 'Mitgründer & Geschäftsführer · Wien' },
+      date: '2024–',
+      url: links.bounceback,
     },
-    title: { en: 'Till Findl.', de: 'Till Findl.' },
-    line: { en: 'Doctor turned founder. Vienna and London.', de: 'Mediziner, jetzt Gründer. Wien und London.' },
-  },
-  belief: {
-    lead: {
-      en: 'Clinicians are some of the most highly trained people there are.',
-      de: 'Kliniker:innen gehören zu den bestausgebildeten Menschen überhaupt.',
+    {
+      title: 'Eigen Running',
+      detail: { en: 'Cofounder & Chief of Product · Zurich', de: 'Mitgründer & Chief of Product · Zürich' },
+      date: '2025–',
+      url: links.eigen,
     },
-    turn: {
-      en: 'Most of their tools were only ever *good enough.*',
-      de: 'Ihre Werkzeuge waren meist nur *gut genug.*',
+  ] satisfies Row[],
+  education: [
+    {
+      title: 'University College London',
+      detail: { en: 'MBBS Medicine', de: 'MBBS Medizin' },
+      date: '2020–2026',
     },
-  },
-  building: {
-    title: { en: 'What I’m building.', de: 'Woran ich baue.' },
-    items: [
-      {
-        name: 'Bounceback',
-        url: links.bounceback,
-        line: {
-          en: 'Practice software for physiotherapists. Done properly, from €0.',
-          de: 'Praxissoftware für Physiotherapeut:innen. Richtig gemacht, ab €0.',
-        },
-        role: { en: 'Cofounder & CEO · Vienna', de: 'Mitgründer & Geschäftsführer · Wien' },
-      },
-      {
-        name: 'Eigen',
-        url: links.eigen,
-        line: { en: 'A better way to choose running shoes.', de: 'Ein besserer Weg, Laufschuhe zu wählen.' },
-        role: { en: 'Cofounder & Chief of Product · Zurich', de: 'Mitgründer & Chief of Product · Zürich' },
-      },
-    ],
-  },
-  care: {
-    title: { en: 'Care is a design problem.', de: 'Versorgung ist eine Designfrage.' },
-    line: {
-      en: 'Six years of medicine at UCL. Before that, a paramedic in Vienna. I build from what I saw.',
-      de: 'Sechs Jahre Medizin am UCL. Davor Rettungssanitäter in Wien. Ich baue aus dem, was ich gesehen habe.',
+    {
+      title: 'University College London',
+      detail: { en: 'BSc Medical Sciences with Global Health', de: 'BSc Medical Sciences with Global Health' },
+      date: '2022–2023',
     },
-  },
-  offClock: {
-    title: { en: 'Off the clock.', de: 'Nach Feierabend.' },
-    line: {
-      en: 'Ski racing, triathlon, ice hockey. Always training for something.',
-      de: 'Skirennen, Triathlon, Eishockey. Immer im Training für irgendwas.',
+    {
+      title: 'Vienna International School',
+      detail: { en: 'International Baccalaureate', de: 'International Baccalaureate' },
+      date: '2019',
     },
-    photos: [
-      {
-        file: 'ski-giant-slalom.jpg',
-        alt: { en: 'Till racing giant slalom, just past a red gate', de: 'Till im Riesentorlauf, knapp hinter einem roten Tor' },
-      },
-      {
-        file: 'ironman-run.jpg',
-        alt: { en: 'Till running at Ironman Kalmar, black and white', de: 'Till beim Laufen beim Ironman Kalmar, schwarz-weiß' },
-      },
-      {
-        file: 'pond-hockey.jpg',
-        alt: { en: 'Till with an ice hockey stick on a frozen mountain lake', de: 'Till mit Eishockeyschläger auf einem zugefrorenen Bergsee' },
-      },
-    ],
-    races: [
-      { name: { en: 'Ironman Kalmar', de: 'Ironman Kalmar' }, year: 2023, url: links.ironmanKalmar },
-      { name: { en: 'Amsterdam Marathon', de: 'Amsterdam Marathon' }, year: 2024, url: links.amsterdamMarathon },
-      { name: { en: 'Ironman Tallinn', de: 'Ironman Tallinn' }, year: 2026, url: null },
-    ],
-  },
-  closing: {
-    photo: 'pond-hockey-lake.jpg',
-    alt: {
-      en: 'A skater on a frozen lake below snowy mountains',
-      de: 'Ein Eisläufer auf einem zugefrorenen See vor verschneiten Bergen',
+  ] satisfies Row[],
+  experience: [
+    {
+      title: 'Austrian Red Cross',
+      detail: { en: 'Paramedic, civil service · Vienna', de: 'Rettungssanitäter, Zivildienst · Wien' },
+      date: '2019–2020',
     },
-    title: { en: 'Building something in healthcare?', de: 'Du baust etwas im Gesundheitswesen?' },
-    line: { en: 'I’d like to hear about it.', de: 'Ich würde gern davon hören.' },
-    cta: { en: 'Write to me on LinkedIn', de: 'Schreib mir auf LinkedIn' },
-    pending: { en: 'LinkedIn link coming soon', de: 'LinkedIn-Link folgt' },
-  },
+  ] satisfies Row[],
+  sport: [
+    { title: 'Ironman Tallinn', detail: { en: '', de: '' }, date: '2026' },
+    { title: 'Amsterdam Marathon', detail: { en: '', de: '' }, date: '2024', url: links.amsterdamMarathon },
+    { title: 'Ironman Kalmar', detail: { en: '', de: '' }, date: '2023', url: links.ironmanKalmar },
+    { title: { en: 'Ice hockey', de: 'Eishockey' }, detail: { en: 'UCL', de: 'UCL' }, date: '' },
+    { title: { en: 'Alpine ski racing', de: 'Alpiner Skirennsport' }, detail: { en: 'FIS', de: 'FIS' }, date: '' },
+  ] satisfies Row[],
+  photos: [
+    { file: 'ski-giant-slalom.jpg', alt: { en: 'Giant slalom race', de: 'Riesentorlauf' } },
+    { file: 'ironman-run.jpg', alt: { en: 'Running at Ironman Kalmar', de: 'Laufen beim Ironman Kalmar' } },
+    { file: 'pond-hockey.jpg', alt: { en: 'Ice hockey on a frozen lake', de: 'Eishockey auf einem zugefrorenen See' } },
+  ],
   footer: {
     forMachines: { en: 'Summary for AI assistants', de: 'Zusammenfassung für KI-Assistenten' },
   },
-  skip: { en: 'Skip to content', de: 'Zum Inhalt' },
-} as const;
+};
 
 /** The fuller record, for search engines (JSON-LD) and AI assistants (/llms.txt) only. */
 export const facts = {
@@ -192,8 +173,3 @@ export const meta = {
 };
 
 export const pathFor = (lang: Lang) => (lang === 'en' ? '/' : '/de/');
-
-/** Splits text on *asterisks* into plain and italic runs. */
-export function runs(text: string): { text: string; em: boolean }[] {
-  return text.split('*').map((t, i) => ({ text: t, em: i % 2 === 1 })).filter((r) => r.text);
-}

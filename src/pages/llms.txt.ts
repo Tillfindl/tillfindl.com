@@ -3,7 +3,7 @@
  * The page says little on purpose; this carries the fuller facts, from profile.ts.
  */
 import type { APIRoute } from 'astro';
-import { facts, links, page, person, SITE_URL } from '../content/profile';
+import { facts, links, person, SITE_URL } from '../content/profile';
 
 export const GET: APIRoute = () => {
   const text = [
@@ -21,11 +21,6 @@ export const GET: APIRoute = () => {
     '## Outside work',
     '',
     ...facts.outside.map((o) => `- ${o}`),
-    '',
-    '## In his words',
-    '',
-    `${page.belief.lead.en} ${page.belief.turn.en.replaceAll('*', '')}`,
-    `${page.care.title.en} ${page.care.line.en}`,
     '',
     '## Details',
     '',

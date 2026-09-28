@@ -1,0 +1,101 @@
+---
+// A section of the page: a small label, then rows of title, detail and date under hairlines.
+import type { Lang, Row } from '../content/profile';
+
+interface Props {
+  lang: Lang;
+  label: string;
+  rows: Row[];
+}
+
+const { lang, label, rows } = Astro.props;
+const id = label.toLowerCase().replace(/\W+/g, '-');
+const title = (r: Row) => (typeof r.title === 'string' ? r.title : r.title[lang]);
+---
+
+<section aria-labelledby={id}>
+  <h2 id={id}>{label}</h2>
+  <ul>
+    {
+      rows.map((r) => (
+        <li>
+          {r.url ? (
+            <a class="title" href={r.url} rel="noopener">
+              {title(r)}
+              <span aria-hidden="true"> ↗</span>
+            </a>
+          ) : (
+            <span class="title">{title(r)}</span>
+          )}
+          <span class="detail">{r.detail[lang]}</span>
+          <span class="date">{r.date}</span>
+        </li>
+      ))
+    }
+  </ul>
+  <slot />
+</section>
+
+<style>
+  h2 {
+    margin-bottom: 0.75rem;
+    color: var(--muted);
+    font-size: var(--text-sm);
+  }
+
+  ul {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* Title and date on one line, the detail under the title; on wider screens all three in a row. */
+  li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: 1.5rem;
+    padding: 0.8rem 0;
+    border-top: 1px solid var(--rule);
+  }
+
+  .detail {
+    grid-column: 1;
+    grid-row: 2;
+    color: var(--muted);
+  }
+
+  .detail:empty {
+    display: none;
+  }
+
+  .date {
+    grid-column: 2;
+    grid-row: 1;
+    color: var(--muted);
+    text-align: right;
+  }
+
+  @media (min-width: 40rem) {
+    li {
+      grid-template-columns: 13rem minmax(0, 1fr) auto;
+    }
+
+    .detail {
+      grid-column: 2;
+      grid-row: 1;
+    }
+
+    .date {
+      grid-column: 3;
+    }
+  }
+
+  a.title span {
+    color: var(--muted);
+    transition: color 0.2s;
+  }
+
+  a.title:hover span {
+    color: var(--ink);
+  }
+</style>
