@@ -1,41 +1,37 @@
 /*
  * Design tokens and base styles for the whole site.
  * Colours, type and spacing live here as custom properties, so a change to the look is a
- * change to one number. The site is dark only.
+ * change to one number.
  */
 
-@import '@fontsource-variable/geist';
-@import '@fontsource-variable/geist-mono';
+@import '@fontsource-variable/archivo';
+@import '@fontsource/instrument-serif/400-italic.css';
 
-/* Layout: a story told in blocks on a 12-column grid, one column on a phone. */
+/* Layout: one idea per screen, lots of air, dark and light grounds taking turns. */
 :root {
-  /* Colour: a near-black ground, blocks one step lighter, off-white ink. */
-  --color-bg: #09090a;
-  --color-block: #121214;
-  --color-block-raised: #18181b;
-  --color-line: rgb(255 255 255 / 0.07);
-  --color-ink: #f4f4f1;
-  --color-body: #b4b4af;
-  --color-muted: #7c7c78;
+  /* Colour: a near-black ground and a cool light grey, each with its own ink and a softer grey. */
+  --dark: #090a0b;
+  --dark-ink: #eaeaea;
+  --dark-soft: #8b8d90;
+  --light: #e6e8ea;
+  --light-ink: #0b0c0d;
+  --light-soft: #6c7075;
+  --rule-dark: rgb(234 234 234 / 0.16);
+  --rule-light: rgb(11 12 13 / 0.14);
 
-  /* Type: Geist for everything, Geist Mono for the small when-and-where lines. */
-  --font-sans: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Helvetica, Arial, sans-serif;
-  --font-mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
-  --text-xs: 0.75rem;
+  /* Type: Archivo for everything, Instrument Serif italic for one phrase at a time. */
+  --font-sans: 'Archivo Variable', 'Helvetica Neue', Arial, sans-serif;
+  --font-serif: 'Instrument Serif', Georgia, serif;
   --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: clamp(1.125rem, 1.4vw, 1.25rem);
-  --text-title: clamp(1.375rem, 2.1vw, 1.75rem);
-  --text-display: clamp(1.75rem, 3.6vw, 2.75rem);
-  --text-hero: clamp(3rem, 8vw, 6rem);
+  --text-base: clamp(1.0625rem, 1.2vw, 1.2rem);
+  --text-h2: clamp(2.25rem, 4.6vw, 3.75rem);
+  --text-h1: clamp(2.75rem, 6.4vw, 5.25rem);
+  --text-statement: clamp(2rem, 4.2vw, 3.5rem);
 
-  /* Space: page gutter and width, block padding, gap between blocks, corner radius. */
-  --gutter: clamp(1rem, 4vw, 2.5rem);
-  --page: 74rem;
-  --pad: clamp(1.375rem, 2.6vw, 2.25rem);
-  --gap: clamp(0.625rem, 1vw, 0.875rem);
-  --radius: 1.25rem;
-  --measure: 36rem;
+  /* Space: the side margin, the width content keeps to, and the air above and below a screen. */
+  --side: clamp(1.25rem, 3.4vw, 3rem);
+  --width: 75rem;
+  --air: clamp(7rem, 18vh, 12rem);
 
   color-scheme: dark;
 }
@@ -54,29 +50,24 @@ html {
 
 body {
   margin: 0;
-  min-height: 100svh;
-  background: var(--color-bg);
-  color: var(--color-ink);
+  background: var(--dark);
+  color: var(--dark-ink);
   font-family: var(--font-sans);
   font-size: var(--text-base);
-  line-height: 1.6;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 h1,
 h2,
-h3,
 p {
   margin: 0;
 }
 
 h1,
-h2,
-h3 {
+h2 {
   font-weight: 500;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
   text-wrap: balance;
 }
 
@@ -84,20 +75,24 @@ p {
   text-wrap: pretty;
 }
 
+em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
 a {
   color: inherit;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 0.25em;
 }
 
 img {
   display: block;
   max-width: 100%;
-  height: auto;
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-ink);
+  outline: 2px solid currentColor;
   outline-offset: 3px;
 }
 
@@ -110,99 +105,23 @@ img {
   white-space: nowrap;
 }
 
-/* The small monospaced line above a block title: when and where. */
-.eyebrow {
-  color: var(--color-muted);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  letter-spacing: 0.02em;
-}
-
-/* A pill-shaped link, for the few actions on the page. */
+/* The one kind of button on the site: a pill. Solid on photos and dark ground, outlined in the bar. */
 .pill {
   display: inline-flex;
   align-items: center;
-  gap: 0.4em;
-  padding: 0.55em 1em;
-  border: 1px solid var(--color-line);
+  padding: 0.8em 1.35em;
   border-radius: 999px;
-  background: rgb(255 255 255 / 0.04);
+  background: var(--dark-ink);
+  color: var(--light-ink);
   font-size: var(--text-sm);
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
-  transition: background 0.2s, border-color 0.2s;
+  white-space: nowrap;
+  transition: opacity 0.2s;
 }
 
 a.pill:hover {
-  background: rgb(255 255 255 / 0.09);
-  border-color: rgb(255 255 255 / 0.14);
-}
-
-/*
- * The story grid: twelve columns on a desktop, six on a tablet, one on a phone. Blocks keep the
- * story's order; a tall photo spans two rows and the next blocks sit beside it.
- * These rules are single classes on purpose, so a block's own styles can override them.
- */
-.grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: var(--gap);
-}
-
-.block {
-  min-width: 0;
-  padding: var(--pad);
-  border: 1px solid var(--color-line);
-  border-radius: var(--radius);
-  background: var(--color-block);
-}
-
-@media (min-width: 40rem) {
-  .grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-  }
-
-  .block {
-    grid-column: span 3;
-  }
-
-  .span-12 {
-    grid-column: 1 / -1;
-  }
-
-  .tall {
-    grid-row: span 2;
-  }
-}
-
-@media (min-width: 60rem) {
-  .grid {
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-  }
-
-  .span-4 { grid-column: span 4; }
-  .span-5 { grid-column: span 5; }
-  .span-6 { grid-column: span 6; }
-  .span-7 { grid-column: span 7; }
-  .span-8 { grid-column: span 8; }
-}
-
-/* Blocks settle into place as they scroll in, where the browser can tie motion to scroll. */
-@supports (animation-timeline: view()) {
-  @media (prefers-reduced-motion: no-preference) {
-    .block {
-      animation: settle linear both;
-      animation-timeline: view();
-      animation-range: entry 0% entry 40%;
-    }
-  }
-}
-
-@keyframes settle {
-  from {
-    opacity: 0.35;
-    transform: translateY(1.25rem) scale(0.985);
-  }
+  opacity: 0.85;
 }
 
 @media (prefers-reduced-motion: reduce) {

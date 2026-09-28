@@ -4,9 +4,9 @@ The personal website of Till Findl: a small one-page site built with [Astro](htt
 hosted on GitHub Pages at [tillfindl.com](https://tillfindl.com). The domain is registered on
 Cloudflare.
 
-A single scrolling page in English (`/`) and German (`/de/`), told as a story in blocks: from the
-ambulance in Vienna through medicine in London to Bounceback and Eigen Running, how Till works, and
-life outside work. It is built to be read by people, search engines and AI assistants alike.
+A single scrolling page in English (`/`) and German (`/de/`): six screens, one idea each, in the
+design language of the Eigen website. The page says little on purpose; the fuller facts go to search
+engines (JSON-LD) and AI assistants (`/llms.txt`), generated from the same file.
 
 ## Working on it
 
@@ -24,17 +24,16 @@ npm run preview   # serve the built dist/ locally
 
 ```
 src/
-  content/profile.ts    Every fact and every sentence, in English and German, and the story's blocks in
-                        reading order with their widths: the one place to edit copy and order
+  content/profile.ts    `page`: the few words the page says, screen by screen, in English and German.
+                        `facts`: the fuller record, read only by search engines and AI assistants
   content/jsonld.ts     Structured data (schema.org Person) built from the profile
   content/images.ts     Looks up photos in src/assets/photos by file name
   pages/index.astro     "/" (English); pages/de/index.astro is "/de/" (German); both render Page
   pages/llms.txt.ts     "/llms.txt": a plain summary for AI assistants, built from the profile
   pages/404.astro       The not-found page
-  components/           Page (the whole one-pager) and its parts: Nav, Intro, Block (every kind of
-                        story block), Closing, Footer
+  components/           Page (all six screens), Nav, Footer
   layouts/Base.astro    The HTML shell: <head>, language alternates, social card, JSON-LD
-  styles/global.css     Design tokens (colour, type, spacing), base styles and the story grid
+  styles/global.css     Design tokens (colour, type, spacing) and base styles
   assets/photos/        Photos; the build resizes them and strips their metadata
 public/                 Copied as-is: CNAME (the custom domain), favicon, robots.txt
 astro.config.mjs        Site URL, languages, sitemap
@@ -44,12 +43,10 @@ astro.config.mjs        Site URL, languages, sitemap
 ### Changing things
 
 - **Words:** edit `src/content/profile.ts`. The page, the German page, the structured data and
-  `/llms.txt` all follow.
+  `/llms.txt` all follow. Before adding a sentence to the page, ask whether it could go in `facts`.
 - **Photos:** drop the file into `src/assets/photos/` and add it to `photos` in the profile, with
   alt text in both languages.
 - **The look:** tokens at the top of `src/styles/global.css`.
-- **Order and layout:** blocks appear in the order of `story` in the profile; `span` sets a
-  block's width on the 12-column desktop grid, `tall` lets a photo span two rows.
 
 Keep private details out of the repo: no phone number, home address, birth date or personal email.
 

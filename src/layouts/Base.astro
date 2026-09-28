@@ -3,7 +3,7 @@
 // structured data and global styles.
 import { getImage } from 'astro:assets';
 import '../styles/global.css';
-import { photos, SITE_URL, type Lang } from '../content/profile';
+import { page, SITE_URL, type Lang } from '../content/profile';
 import { photo } from '../content/images';
 
 interface Props {
@@ -19,7 +19,7 @@ interface Props {
 const { lang, title, description, jsonLd, alternates = true } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
-const ogImage = await getImage({ src: photo(photos.portrait.file), width: 1200, height: 630, fit: 'cover', format: 'jpg' });
+const ogImage = await getImage({ src: photo(page.hero.photo), width: 1200, height: 630, fit: 'cover', format: 'jpg' });
 const ogImageUrl = new URL(ogImage.src, SITE_URL);
 ---
 

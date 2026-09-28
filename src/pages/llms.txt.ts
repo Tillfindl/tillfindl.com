@@ -1,72 +1,42 @@
 /*
  * /llms.txt: a plain-text summary of Till for AI assistants (the llms.txt convention).
- * Generated from profile.ts, in the page's own order, so it always says the same as the page.
+ * The page says little on purpose; this carries the fuller facts, from profile.ts.
  */
 import type { APIRoute } from 'astro';
-import { closing, education, links, person, SITE_URL, story, type Block, type Lang } from '../content/profile';
-
-function block(b: Block, lang: Lang): string {
-  switch (b.kind) {
-    case 'story':
-      return [`### ${b.title[lang]} (${b.eyebrow[lang]})`, '', ...b.body.map((p) => p[lang])].join('\n');
-    case 'venture': {
-      const since = lang === 'en' ? 'since' : 'seit';
-      const head = `### ${b.name}: ${b.role[lang]}, ${b.city[lang]}, ${since} ${b.since}`;
-      return [head, b.url, '', ...(b.line ? [b.line[lang], ''] : []), b.body.map((p) => p[lang]).join('\n\n')].join('\n');
-    }
-    case 'list':
-      return [`### ${b.title[lang]}`, '', ...b.body.map((p) => p[lang]), '', ...b.items.map((i) => `- ${i.text[lang]}${i.href ? ` (${i.href})` : ''}`)].join('\n');
-    case 'photo':
-      return '';
-  }
-}
-
-const storyText = (lang: Lang) =>
-  story
-    .map((b) => block(b, lang))
-    .filter(Boolean)
-    .join('\n\n');
+import { facts, links, page, person, SITE_URL } from '../content/profile';
 
 export const GET: APIRoute = () => {
   const text = [
     `# ${person.name}`,
     '',
-    `> ${person.summary.en}`,
+    `> ${facts.summary.en}`,
     '',
-    person.lede.en,
+    '## Work',
     '',
-    '## Links',
+    ...facts.ventures.flatMap((v) => [`### ${v.name}: ${v.role.en}, ${v.city}, since ${v.since}`, v.url, '', v.about, '']),
+    '## Background',
     '',
-    `- Website (English): ${SITE_URL}/`,
-    `- Website (Deutsch): ${SITE_URL}/de/`,
-    `- Bounceback: ${links.bounceback}`,
-    `- Eigen Running: ${links.eigen}`,
+    ...facts.background.map((b) => `- ${b}`),
+    '',
+    '## Outside work',
+    '',
+    ...facts.outside.map((o) => `- ${o}`),
+    '',
+    '## In his words',
+    '',
+    `${page.belief.lead.en} ${page.belief.turn.en.replaceAll('*', '')}`,
+    `${page.care.title.en} ${page.care.line.en}`,
+    '',
+    '## Details',
+    '',
+    `- Based in: ${facts.place.en}`,
+    `- Languages: ${facts.languages.en}`,
+    `- Website: ${SITE_URL}/ (Deutsch: ${SITE_URL}/de/)`,
     ...(links.linkedin ? [`- LinkedIn: ${links.linkedin}`] : []),
     '',
-    '## Education',
+    '## Deutsch',
     '',
-    ...education.map((e) => `- ${e.degree}, ${e.name} (${e.years})`),
-    '',
-    '## Story',
-    '',
-    storyText('en'),
-    '',
-    closing.title.en,
-    '',
-    `Based in: ${person.place.en}`,
-    `Languages: ${person.languages.en}`,
-    '',
-    '---',
-    '',
-    '# Deutsch',
-    '',
-    `> ${person.summary.de}`,
-    '',
-    person.lede.de,
-    '',
-    storyText('de'),
-    '',
-    closing.title.de,
+    `> ${facts.summary.de}`,
     '',
   ].join('\n');
 

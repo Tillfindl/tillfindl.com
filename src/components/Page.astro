@@ -1,14 +1,11 @@
 ---
-// The whole one-pager, in one language: a story in blocks. /index.astro and /de/index.astro
-// both render this.
-import { getImage } from 'astro:assets';
+// The whole one-pager, in one language: six screens, one idea each.
+// /index.astro and /de/index.astro both render this.
+import { getImage, Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Nav from './Nav.astro';
-import Intro from './Intro.astro';
-import Block from './Block.astro';
-import Closing from './Closing.astro';
 import Footer from './Footer.astro';
-import { meta, photos, SITE_URL, story, type Lang } from '../content/profile';
+import { links, meta, page, runs, SITE_URL, type Lang } from '../content/profile';
 import { photo } from '../content/images';
 import { personJsonLd } from '../content/jsonld';
 
@@ -17,24 +14,393 @@ interface Props {
 }
 
 const { lang } = Astro.props;
-const portrait = await getImage({ src: photo(photos.portrait.file), width: 800, height: 800, fit: 'cover', format: 'jpg' });
+const { hero, belief, building, care, offClock, closing } = page;
+const portrait = await getImage({ src: photo(hero.photo), width: 800, height: 800, fit: 'cover', format: 'jpg' });
 const jsonLd = personJsonLd(lang, new URL(portrait.src, SITE_URL).href);
+const host = (url: string) => new URL(url).host.replace(/^www\./, '');
 ---
 
 <Base lang={lang} title={meta.title[lang]} description={meta.description[lang]} jsonLd={jsonLd}>
   <Nav lang={lang} />
-  <main id="content" class="grid">
-    <Intro lang={lang} />
-    {story.map((block) => <Block lang={lang} block={block} />)}
-    <Closing lang={lang} />
+  <main id="content">
+    <section class="hero photo-screen" aria-labelledby="hero-title">
+      <Image class="bg" src={photo(hero.photo)} alt={hero.alt[lang]} widths={[640, 960, 1440, 2000]} sizes="100vw" loading="eager" fetchpriority="high" />
+      <div class="over">
+        <h1 id="hero-title">{hero.title[lang]}</h1>
+        <p>{hero.line[lang]}</p>
+      </div>
+    </section>
+
+    <section class="belief light" aria-label={lang === 'en' ? 'What I believe' : 'Worauf ich baue'}>
+      <p class="statement">
+        <span>{belief.lead[lang]}</span>
+        <span class="soft">{runs(belief.turn[lang]).map((r) => (r.em ? <em>{r.text}</em> : r.text))}</span>
+      </p>
+    </section>
+
+    <section class="building" aria-labelledby="building-title">
+      <div class="wrap">
+        <h2 id="building-title" class="reveal">{building.title[lang]}</h2>
+        <ul class="columns">
+          {
+            building.items.map((b) => (
+              <li>
+                <a href={b.url} rel="noopener">
+                  <span class="name">
+                    {b.name} <span aria-hidden="true">↗</span>
+                  </span>
+                  <span class="line">{b.line[lang]}</span>
+                  <span class="meta">{b.role[lang]}</span>
+                  <span class="visually-hidden">({host(b.url)})</span>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    <section class="care light" aria-labelledby="care-title">
+      <h2 id="care-title" class="reveal">{care.title[lang]}</h2>
+      <p class="soft">{care.line[lang]}</p>
+    </section>
+
+    <section class="off" aria-labelledby="off-title">
+      <div class="wrap">
+        <div class="off-head">
+          <h2 id="off-title" class="reveal">{offClock.title[lang]}</h2>
+          <p class="soft">{offClock.line[lang]}</p>
+        </div>
+        <ul class="photos" tabindex="0" aria-label={lang === 'en' ? 'Photos' : 'Fotos'}>
+          {
+            offClock.photos.map((p) => (
+              <li>
+                <Image src={photo(p.file)} alt={p.alt[lang]} widths={[400, 640, 960]} sizes="(min-width: 48rem) 24rem, 75vw" />
+              </li>
+            ))
+          }
+        </ul>
+        <ul class="columns races">
+          {
+            offClock.races.map((r) => (
+              <li>
+                {r.url ? (
+                  <a href={r.url} rel="noopener">
+                    <span class="name">
+                      {r.name[lang]} <span aria-hidden="true">↗</span>
+                    </span>
+                    <span class="meta">{r.year}</span>
+                  </a>
+                ) : (
+                  <span class="plain">
+                    <span class="name">{r.name[lang]}</span>
+                    <span class="meta">{r.year}</span>
+                  </span>
+                )}
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+
+    <section class="closing photo-screen" id="hello" aria-labelledby="closing-title">
+      <Image class="bg" src={photo(closing.photo)} alt={closing.alt[lang]} widths={[640, 960, 1440, 2000]} sizes="100vw" />
+      <div class="over">
+        <h2 id="closing-title">{closing.title[lang]}</h2>
+        <p>{closing.line[lang]}</p>
+        {
+          links.linkedin ? (
+            <a class="pill" href={links.linkedin} rel="me noopener">
+              {closing.cta[lang]}
+            </a>
+          ) : (
+            <span class="pill pending">{closing.pending[lang]}</span>
+          )
+        }
+      </div>
+    </section>
   </main>
   <Footer lang={lang} />
 </Base>
 
 <style>
-  .grid {
-    max-width: var(--page);
+  section {
+    padding: var(--air) var(--side);
+  }
+
+  .wrap {
+    max-width: var(--width);
     margin: 0 auto;
-    padding: 0 var(--gutter);
+  }
+
+  .light {
+    background: var(--light);
+    color: var(--light-ink);
+  }
+
+  .soft {
+    color: var(--dark-soft);
+  }
+
+  .light .soft {
+    color: var(--light-soft);
+  }
+
+  h2 {
+    font-size: var(--text-h2);
+    letter-spacing: -0.035em;
+    line-height: 1;
+  }
+
+  /* Full-bleed photo screens: the picture fills the screen, the words sit bottom left. */
+  .photo-screen {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    min-height: 100svh;
+    overflow: hidden;
+    padding-bottom: clamp(3rem, 10vh, 6rem);
+  }
+
+  .photo-screen :global(.bg) {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* A soft shade from the bottom left keeps the words legible on any part of the photo. */
+  .photo-screen::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(to top, rgb(9 10 11 / 0.55), transparent 55%),
+      linear-gradient(to right, rgb(9 10 11 / 0.35), transparent 60%);
+  }
+
+  .over {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    justify-items: start;
+    gap: 1.25rem;
+    width: 100%;
+    max-width: var(--width);
+    margin: 0 auto;
+    color: #fff;
+  }
+
+  .over h1,
+  .over h2 {
+    max-width: 9em;
+    font-size: var(--text-h1);
+    letter-spacing: -0.04em;
+    line-height: 0.95;
+  }
+
+  .over p {
+    opacity: 0.9;
+  }
+
+  .hero :global(.bg) {
+    object-position: 50% 30%;
+  }
+
+  .over .pill {
+    margin-top: 0.75rem;
+    background: #fff;
+    color: var(--light-ink);
+  }
+
+  .pending {
+    opacity: 0.75;
+  }
+
+  /* One statement, centred, with nothing else on the screen. */
+  .belief {
+    display: grid;
+    place-items: center;
+    min-height: 80svh;
+    text-align: center;
+  }
+
+  .statement {
+    display: grid;
+    max-width: 18em;
+    font-size: var(--text-statement);
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    text-wrap: balance;
+  }
+
+  .statement em {
+    color: var(--light-ink);
+  }
+
+  /* Links set in columns under a thin rule, like the contents of a book. */
+  .columns {
+    display: grid;
+    margin: clamp(3rem, 9vh, 5.5rem) 0 0;
+    padding: 0;
+    list-style: none;
+    border-top: 1px solid var(--rule-dark);
+  }
+
+  .columns li + li {
+    border-top: 1px solid var(--rule-dark);
+  }
+
+  .columns a,
+  .columns .plain {
+    display: grid;
+    gap: 0.5rem;
+    padding: 1.75rem 0;
+    text-decoration: none;
+  }
+
+  @media (min-width: 48rem) {
+    .columns {
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(0, 1fr);
+    }
+
+    .columns li + li {
+      border-top: 0;
+      border-left: 1px solid var(--rule-dark);
+    }
+
+    .columns a,
+    .columns .plain {
+      padding: 1.75rem 2rem 0.5rem;
+    }
+
+    .columns li:first-child a,
+    .columns li:first-child .plain {
+      padding-left: 0;
+    }
+  }
+
+  .name {
+    font-size: clamp(1.375rem, 2vw, 1.75rem);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+
+  .name span {
+    color: var(--dark-soft);
+    font-size: 0.8em;
+    transition: color 0.2s;
+  }
+
+  .columns a:hover .name span {
+    color: var(--dark-ink);
+  }
+
+  .line {
+    max-width: 22em;
+    color: var(--dark-soft);
+  }
+
+  .meta {
+    color: var(--dark-soft);
+    font-size: var(--text-sm);
+  }
+
+  .building .meta {
+    margin-top: 0.75rem;
+  }
+
+  /* The second statement: big, centred, and one line under it. */
+  .care {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 1.5rem;
+    min-height: 80svh;
+    text-align: center;
+  }
+
+  .care h2 {
+    font-size: var(--text-h1);
+    letter-spacing: -0.045em;
+    line-height: 0.95;
+  }
+
+  .care p {
+    max-width: 30em;
+    text-wrap: balance;
+  }
+
+  .off-head {
+    display: grid;
+    gap: 1rem;
+  }
+
+  /* Three photos in a row; on a phone they slide sideways instead of stacking into a long column. */
+  .photos {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 75%;
+    gap: 0.75rem;
+    margin: clamp(3rem, 8vh, 5rem) calc(-1 * var(--side)) 0;
+    padding: 0 var(--side);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--side);
+    scrollbar-width: none;
+    list-style: none;
+  }
+
+  .photos li {
+    scroll-snap-align: start;
+  }
+
+  .photos :global(img) {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 4 / 5;
+    object-fit: cover;
+    border-radius: 0.5rem;
+  }
+
+  @media (min-width: 48rem) {
+    .photos {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-inline: 0;
+      padding: 0;
+      overflow: visible;
+    }
+  }
+
+  .races {
+    margin-top: 2rem;
+  }
+
+  .races .name {
+    font-size: var(--text-base);
+  }
+
+  /* Headlines settle in as they scroll into view, where the browser ties motion to scroll. */
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .reveal,
+      .statement {
+        animation: rise linear both;
+        animation-timeline: view();
+        animation-range: entry 10% entry 70%;
+      }
+    }
+  }
+
+  @keyframes rise {
+    from {
+      opacity: 0.15;
+      transform: translateY(1.5rem);
+    }
   }
 </style>

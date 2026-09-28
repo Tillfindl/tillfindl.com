@@ -1,6 +1,6 @@
 ---
-// The end of the page: where Till is, his languages, and the pointer for AI assistants.
-import { person, ui, type Lang } from '../content/profile';
+// A quiet last line.
+import { page, person, type Lang } from '../content/profile';
 
 interface Props {
   lang: Lang;
@@ -10,44 +10,28 @@ const { lang } = Astro.props;
 ---
 
 <footer class="footer">
-  <dl>
-    <div>
-      <dt class="eyebrow">{ui.basedIn[lang]}</dt>
-      <dd>{person.place[lang]}</dd>
-    </div>
-    <div>
-      <dt class="eyebrow">{ui.languages[lang]}</dt>
-      <dd>{person.languages[lang]}</dd>
-    </div>
-  </dl>
-  <p class="eyebrow">
-    {ui.forMachines[lang]} <a href="/llms.txt">tillfindl.com/llms.txt</a>. © {new Date().getFullYear()} {person.name}
-  </p>
+  <span>© {new Date().getFullYear()} {person.name}</span>
+  <a href="/llms.txt">{page.footer.forMachines[lang]}</a>
 </footer>
 
 <style>
   .footer {
-    display: grid;
-    gap: 2rem;
-    max-width: var(--page);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.75rem 2rem;
+    max-width: calc(var(--width) + 2 * var(--side));
     margin: 0 auto;
-    padding: 3rem var(--gutter) 3rem;
-  }
-
-  dl {
-    display: grid;
-    gap: 1.25rem 3rem;
-    margin: 0;
-  }
-
-  @media (min-width: 40rem) {
-    dl {
-      grid-template-columns: repeat(2, max-content);
-    }
-  }
-
-  dd {
-    margin: 0.35rem 0 0;
+    padding: 2rem var(--side) calc(2rem + env(safe-area-inset-bottom, 0px));
+    color: var(--dark-soft);
     font-size: var(--text-sm);
+  }
+
+  a {
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: var(--dark-ink);
   }
 </style>
