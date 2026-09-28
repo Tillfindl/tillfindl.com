@@ -39,6 +39,8 @@ export interface Card {
   /** One plain line under the title, if the card needs it. */
   about?: L;
   url?: string;
+  /** Takes two columns in a three-column grid. */
+  wide?: boolean;
 }
 
 /** What the page shows: a portrait and a short intro, then cards. */
@@ -47,16 +49,16 @@ export const page = {
     file: 'portrait-harris.jpg',
     alt: { en: 'Till Findl on the Isle of Harris, Scotland', de: 'Till Findl auf der Isle of Harris, Schottland' },
   },
+  /** About Till as a person, not his job; the buttons below it cover the work. */
   intro: {
-    en: 'I run Bounceback, practice software for physiotherapists, and work on Eigen, which helps runners choose shoes. I studied medicine at UCL in London.',
-    de: 'Ich leite Bounceback, Praxissoftware für Physiotherapeut:innen, und arbeite an Eigen, das Läufer:innen hilft, den richtigen Schuh zu finden. Studiert habe ich Medizin am UCL in London.',
+    en: 'I grew up in Vienna, mostly on skis, and studied medicine in London. I like making things, whether that is software, a photo or a short film, and I play a bit of guitar. Most of my free time I spend outside.',
+    de: 'Ich bin in Wien aufgewachsen, meistens auf Skiern, und habe in London Medizin studiert. Ich mache gern Dinge, ob Software, ein Foto oder einen kurzen Film, und spiele ein bisschen Gitarre. Meine freie Zeit verbringe ich am liebsten draußen.',
   },
   place: { en: 'Vienna & London', de: 'Wien & London' },
   sections: {
     work: { en: 'Work', de: 'Arbeit' },
-    education: { en: 'Education', de: 'Ausbildung' },
-    experience: { en: 'Experience', de: 'Erfahrung' },
-    sport: { en: 'Sport', de: 'Sport' },
+    background: { en: 'Education & experience', de: 'Ausbildung & Erfahrung' },
+    hobbies: { en: 'Sports & hobbies', de: 'Sport & Hobbys' },
   },
   visit: { en: 'Visit', de: 'Ansehen' },
   results: { en: 'Results', de: 'Ergebnisse' },
@@ -82,7 +84,7 @@ export const page = {
       url: links.eigen,
     },
   ] satisfies Card[],
-  education: [
+  background: [
     { title: 'University College London', detail: { en: 'MBBS Medicine', de: 'MBBS Medizin' }, date: '2020 – 2026' },
     {
       title: 'University College London',
@@ -90,21 +92,19 @@ export const page = {
       date: '2022 – 2023',
     },
     { title: 'Vienna International School', detail: { en: 'International Baccalaureate', de: 'International Baccalaureate' }, date: '2019' },
-  ] satisfies Card[],
-  experience: [
     {
       title: { en: 'Austrian Red Cross', de: 'Österreichisches Rotes Kreuz' },
       detail: { en: 'Paramedic, civil service · Vienna', de: 'Rettungssanitäter, Zivildienst · Wien' },
       date: '2019 – 2020',
     },
   ] satisfies Card[],
-  /** Sport with a photo each, then the races without one. */
+  /** Hobbies with a photo each, then the rest as cards. */
   sportPhotos: [
     {
       file: 'ski-giant-slalom.jpg',
       alt: { en: 'Giant slalom race', de: 'Riesentorlauf' },
-      title: { en: 'Alpine ski racing', de: 'Alpiner Skirennsport' },
-      detail: { en: 'FIS', de: 'FIS' },
+      title: { en: 'Ski racing', de: 'Skirennen' },
+      detail: { en: 'FIS, Viennese youth champion', de: 'FIS, Wiener Jugendmeister' },
     },
     {
       file: 'ironman-run.jpg',
@@ -120,7 +120,15 @@ export const page = {
       detail: { en: 'UCL', de: 'UCL' },
     },
   ],
-  races: [
+  hobbies: [
+    {
+      title: { en: 'Photography & film', de: 'Fotografie & Film' },
+      detail: { en: 'Photos and short films, edited in Photoshop and Premiere', de: 'Fotos und kurze Filme, geschnitten in Photoshop und Premiere' },
+      date: '',
+      wide: true,
+    },
+    { title: { en: 'Guitar', de: 'Gitarre' }, detail: { en: 'For fun', de: 'Zum Spaß' }, date: '' },
+    { title: { en: 'Ski instructor', de: 'Skilehrer' }, detail: { en: 'Qualified, Austria', de: 'Ausgebildet, Österreich' }, date: '' },
     { title: 'Ironman Tallinn', detail: { en: 'Triathlon', de: 'Triathlon' }, date: '2026' },
     { title: 'Amsterdam Marathon', detail: { en: 'Marathon', de: 'Marathon' }, date: '2024', url: links.amsterdamMarathon },
   ] satisfies Card[],
@@ -179,7 +187,8 @@ export const facts = {
     'Alpine ski racing at FIS level; Viennese youth champion; qualified ski instructor.',
     `Ironman Kalmar 2023 (${links.ironmanKalmar}), Ironman Tallinn 2026, Amsterdam Marathon 2024 (${links.amsterdamMarathon}).`,
     'Ice hockey for UCL (BUIHA Division 1).',
-    'Photography and film.',
+    'Photography and film (Photoshop, Premiere Pro).',
+    'Guitar.',
   ],
   education: [
     { name: 'University College London', degree: 'MBBS Medicine' },

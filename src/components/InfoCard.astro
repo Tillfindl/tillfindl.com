@@ -9,15 +9,17 @@ interface Props {
 
 const { lang, card: c } = Astro.props;
 const Tag = c.url ? 'a' : 'div';
+// Dates are written in English ("2024 – now"); only the open end needs translating.
+const date = lang === 'de' ? c.date.replace('now', 'heute') : c.date;
 ---
 
-<Tag class="card info" href={c.url} rel={c.url ? 'noopener' : undefined}>
+<Tag class:list={['card', 'info', { wide: c.wide }]} href={c.url} rel={c.url ? 'noopener' : undefined}>
   <div class="top">
     <h3>
       {text(c.title, lang)}
       {c.url && <span class="arrow" aria-hidden="true">↗</span>}
     </h3>
-    {c.date && <span class="date">{c.date}</span>}
+    {date && <span class="date">{date}</span>}
   </div>
   <p class="detail">{c.detail[lang]}</p>
   {c.about && <p class="about">{c.about[lang]}</p>}

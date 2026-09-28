@@ -62,22 +62,15 @@ const langs: Lang[] = ['en', 'de'];
         </div>
       </section>
 
-      <section aria-labelledby="education">
-        <h2 id="education">{sections.education[lang]}</h2>
+      <section aria-labelledby="background">
+        <h2 id="background">{sections.background[lang]}</h2>
         <div class="grid">
-          {page.education.map((c) => <InfoCard lang={lang} card={c} />)}
+          {page.background.map((c) => <InfoCard lang={lang} card={c} />)}
         </div>
       </section>
 
-      <section aria-labelledby="experience">
-        <h2 id="experience">{sections.experience[lang]}</h2>
-        <div class="grid">
-          {page.experience.map((c) => <InfoCard lang={lang} card={c} />)}
-        </div>
-      </section>
-
-      <section aria-labelledby="sport">
-        <h2 id="sport">{sections.sport[lang]}</h2>
+      <section aria-labelledby="hobbies">
+        <h2 id="hobbies">{sections.hobbies[lang]}</h2>
         <div class="grid three">
           {
             page.sportPhotos.map((s) => {
@@ -97,8 +90,8 @@ const langs: Lang[] = ['en', 'de'];
             })
           }
         </div>
-        <div class="grid two races">
-          {page.races.map((c) => <InfoCard lang={lang} card={c} />)}
+        <div class="grid three-flat more">
+          {page.hobbies.map((c) => <InfoCard lang={lang} card={c} />)}
         </div>
       </section>
     </main>
@@ -216,11 +209,27 @@ const langs: Lang[] = ['en', 'de'];
     }
   }
 
-  .races {
+  .more {
     margin-top: var(--gap);
   }
 
-  /* On a phone the sport photos slide sideways instead of stacking into a long column. */
+  @media (min-width: 40rem) {
+    .three-flat {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (min-width: 48rem) {
+    .three-flat {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .three-flat > :global(.wide) {
+      grid-column: span 2;
+    }
+  }
+
+  /* On a phone the hobby photos slide sideways instead of stacking into a long column. */
   @media (max-width: 47.99rem) {
     .three {
       grid-auto-flow: column;
@@ -253,10 +262,8 @@ const langs: Lang[] = ['en', 'de'];
   }
 
   .caption {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 1rem;
+    display: grid;
+    gap: 0.15rem;
     padding: 0 0.6rem;
   }
 

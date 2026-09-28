@@ -5,7 +5,7 @@ hosted on GitHub Pages at [tillfindl.com](https://tillfindl.com). The domain is 
 Cloudflare.
 
 A personal page in English (`/`) and German (`/de/`): an intro with Till's portrait and two buttons,
-then work, education, experience and sport as cards. Plain wording, no taglines. The fuller facts go to search
+then work, education and experience, and sports and hobbies as cards. Plain wording, no taglines. The fuller facts go to search
 engines (JSON-LD) and AI assistants (`/llms.txt`), generated from the same file.
 
 ## Working on it
