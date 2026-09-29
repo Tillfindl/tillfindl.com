@@ -21,7 +21,7 @@ const langs: Lang[] = ['en', 'de'];
 ---
 
 <Base lang={lang} title={meta.title[lang]} description={meta.description[lang]} jsonLd={jsonLd}>
-  <div class="lights" aria-hidden="true"><span></span><span></span><span></span></div>
+  <div class="lights" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
 
   <div class="page">
     <nav class="top" aria-label={lang === 'en' ? 'Language' : 'Sprache'}>
@@ -76,9 +76,10 @@ const langs: Lang[] = ['en', 'de'];
               <span class="muted small">{medicine.date}</span>
             </div>
             <p class="muted small">{medicine.detail[lang]}</p>
+            <p class="med-about">{medicine.about[lang]}</p>
             <div class="bsc">
               <div class="med-top">
-                <h4>{medicine.bsc.title[lang]}</h4>
+                <p class="muted small">{medicine.bsc.title[lang]}</p>
                 <span class="muted small">{medicine.bsc.date}</span>
               </div>
               <p>{medicine.bsc.thesis[lang]}</p>
@@ -118,7 +119,7 @@ const langs: Lang[] = ['en', 'de'];
             ))
           }
         </div>
-        <div class="grid two after">
+        <div class="grid three after">
           {page.hobbies.map((c) => <InfoCard lang={lang} card={c} />)}
         </div>
       </section>
@@ -145,7 +146,7 @@ const langs: Lang[] = ['en', 'de'];
 </Base>
 
 <style>
-  /* Faint spots of light drifting slowly behind everything. */
+  /* Soft spots of light that wander across the whole screen behind everything. */
   .lights {
     position: fixed;
     inset: 0;
@@ -156,45 +157,61 @@ const langs: Lang[] = ['en', 'de'];
 
   .lights span {
     position: absolute;
-    width: 46rem;
-    height: 46rem;
+    width: 42vmax;
+    height: 42vmax;
+    margin: -21vmax 0 0 -21vmax;
     border-radius: 50%;
-    filter: blur(80px);
-    opacity: 0.5;
-    animation: drift 60s ease-in-out infinite alternate;
+    filter: blur(60px);
+    animation: wander 34s ease-in-out infinite alternate;
   }
 
   .lights span:nth-child(1) {
-    top: -18rem;
-    left: -12rem;
-    background: radial-gradient(circle, var(--light-a), transparent 65%);
+    top: 10%;
+    left: 15%;
+    background: radial-gradient(circle, var(--light-a), transparent 68%);
   }
 
   .lights span:nth-child(2) {
-    top: 30%;
-    right: -20rem;
-    background: radial-gradient(circle, var(--light-b), transparent 65%);
-    animation-duration: 75s;
-    animation-delay: -20s;
+    top: 45%;
+    left: 85%;
+    background: radial-gradient(circle, var(--light-b), transparent 68%);
+    animation-duration: 41s;
+    animation-delay: -12s;
+    animation-direction: alternate-reverse;
   }
 
   .lights span:nth-child(3) {
-    bottom: -22rem;
-    left: 20%;
-    background: radial-gradient(circle, var(--light-c), transparent 65%);
-    animation-duration: 90s;
-    animation-delay: -40s;
+    top: 85%;
+    left: 35%;
+    background: radial-gradient(circle, var(--light-c), transparent 68%);
+    animation-duration: 47s;
+    animation-delay: -25s;
   }
 
-  @keyframes drift {
+  .lights span:nth-child(4) {
+    top: 25%;
+    left: 60%;
+    width: 30vmax;
+    height: 30vmax;
+    margin: -15vmax 0 0 -15vmax;
+    background: radial-gradient(circle, var(--light-d), transparent 68%);
+    animation-duration: 29s;
+    animation-delay: -7s;
+    animation-direction: alternate-reverse;
+  }
+
+  @keyframes wander {
     0% {
       transform: translate(0, 0) scale(1);
     }
-    50% {
-      transform: translate(8rem, 5rem) scale(1.15);
+    33% {
+      transform: translate(28vw, 18vh) scale(1.2);
+    }
+    66% {
+      transform: translate(-18vw, 32vh) scale(0.9);
     }
     100% {
-      transform: translate(-6rem, 9rem) scale(0.95);
+      transform: translate(12vw, -22vh) scale(1.1);
     }
   }
 
@@ -318,6 +335,12 @@ const langs: Lang[] = ['en', 'de'];
     }
   }
 
+  @media (min-width: 48rem) {
+    .three {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
   /* Medical school: two photos beside the details. */
   .medicine {
     display: grid;
@@ -384,14 +407,13 @@ const langs: Lang[] = ['en', 'de'];
     margin-top: 2rem;
   }
 
-  h4 {
-    margin: 0;
-    font-size: var(--text-base);
-    font-weight: 600;
+  .med-about,
+  .bsc p:not(.muted) {
+    color: var(--body);
   }
 
-  .bsc p {
-    color: var(--body);
+  .med-about {
+    margin-top: 0.75rem;
   }
 
   .lede {

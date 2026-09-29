@@ -10,11 +10,11 @@
 :root {
   /* Colour: a near-black ground with a faint cool glow, cards one shade lighter, off-white ink. */
   --bg: #090a0b;
-  --glow: rgb(118 138 168 / 0.12);
-  /* The drifting lights behind the page: faint cool blue, faint warm, faint teal. */
-  --light-a: rgb(96 128 196 / 0.22);
-  --light-b: rgb(196 140 110 / 0.14);
-  --light-c: rgb(90 170 160 / 0.14);
+  /* The wandering lights behind the page: blue, violet, teal and a warm one. */
+  --light-a: rgb(70 110 220 / 0.42);
+  --light-b: rgb(140 90 210 / 0.34);
+  --light-c: rgb(40 170 160 / 0.32);
+  --light-d: rgb(220 140 90 / 0.24);
   --card: rgb(255 255 255 / 0.035);
   --card-hover: rgb(255 255 255 / 0.06);
   --border: rgb(255 255 255 / 0.08);

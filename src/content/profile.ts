@@ -58,8 +58,8 @@ export const page = {
   place: { en: 'Vienna & London', de: 'Wien & London' },
   /** One warm, plain line under the name: what matters to Till, and how he works. */
   intro: {
-    en: 'The people around me matter most to me. In my work, I care about doing things properly and getting the details right.',
-    de: 'Am wichtigsten sind mir die Menschen um mich herum. In meiner Arbeit ist mir wichtig, Dinge ordentlich zu machen und auf die Details zu achten.',
+    en: 'The people around me matter most to me. I like to understand how something works before I try to change it, I keep things simple, and I care about the details, at work and outside it.',
+    de: 'Am wichtigsten sind mir die Menschen um mich herum. Ich will verstehen, wie etwas funktioniert, bevor ich es verändere, halte Dinge einfach und achte auf die Details, in der Arbeit und auch sonst.',
   },
   sections: {
     work: { en: 'Work', de: 'Arbeit' },
@@ -73,8 +73,8 @@ export const page = {
       detail: { en: 'Cofounder & CEO · Vienna', de: 'Mitgründer & Geschäftsführer · Wien' },
       date: '2024 – now',
       about: {
-        en: 'Everything a physiotherapy practice runs on, from booking and notes to payments, and Echo, an app that keeps patients on track between visits.',
-        de: 'Alles, womit eine Physiotherapiepraxis arbeitet, von Terminen und Dokumentation bis zu Zahlungen, dazu Echo, eine App, die Patient:innen zwischen den Terminen begleitet.',
+        en: 'AI-powered software for physiotherapy practices in Germany, Austria and Switzerland: notes that write themselves from the session, booking, payments, and Echo, an app that keeps patients on track between visits.',
+        de: 'KI-gestützte Software für Physiotherapiepraxen in Deutschland, Österreich und der Schweiz: Dokumentation, die sich aus der Behandlung selbst schreibt, Terminbuchung, Zahlungen und Echo, eine App, die Patient:innen zwischen den Terminen begleitet.',
       },
       url: links.bounceback,
     },
@@ -83,8 +83,8 @@ export const page = {
       detail: { en: 'Cofounder & Chief of Product · Zurich', de: 'Mitgründer & Chief of Product · Zürich' },
       date: '2025 – now',
       about: {
-        en: 'Running shoe recommendations from a 3D foot scan and gait analysis on the iPhone.',
-        de: 'Laufschuh-Empfehlungen aus einem 3D-Fußscan und einer Laufanalyse am iPhone.',
+        en: 'Lab-level running biomechanics on an iPhone. A 3D scan of your feet and a video of you running become the shoes that suit how you actually run. I lead product and built the algorithms that turn 2D video into 3D gait.',
+        de: 'Laufbiomechanik auf Laborniveau, am iPhone. Aus einem 3D-Scan der Füße und einem Laufvideo werden die Schuhe, die zu deinem Laufstil passen. Ich leite das Produkt und habe die Algorithmen entwickelt, die aus 2D-Video 3D-Gangbilder machen.',
       },
       url: links.eigen,
     },
@@ -94,6 +94,10 @@ export const page = {
     title: 'University College London',
     detail: { en: 'MBBS Medicine', de: 'MBBS Medizin' },
     date: '2020 – 2026',
+    about: {
+      en: 'Clinical years at University College Hospital and the Royal Free, with specialist placements at Queen Square (neurology), Great Ormond Street (paediatrics) and Moorfields Eye Hospital, and a final placement in rural general practice on the Isle of Harris.',
+      de: 'Klinische Jahre am University College Hospital und am Royal Free, mit Rotationen am Queen Square (Neurologie), Great Ormond Street (Pädiatrie) und Moorfields Eye Hospital, und einem letzten Praktikum in einer Landarztpraxis auf der Isle of Harris.',
+    },
     photos: [
       {
         file: 'ucl-medical-school.jpg',
@@ -164,6 +168,12 @@ export const page = {
   ] as { file: string; alt: L; title: L; lines: Part[]; position?: string }[],
   hobbies: [
     { title: { en: 'Photography & film', de: 'Fotografie & Film' }, detail: { en: '', de: '' }, date: '' },
+    { title: { en: 'Philosophy', de: 'Philosophie' }, detail: { en: 'Reading', de: 'Lesen' }, date: '' },
+    {
+      title: { en: 'DIY engineering', de: 'DIY-Technik' },
+      detail: { en: 'FPV drones, 3D printing', de: 'FPV-Drohnen, 3D-Druck' },
+      date: '',
+    },
   ] satisfies Card[],
   contact: {
     text: {
@@ -182,8 +192,8 @@ export const text = (t: string | L, lang: Lang) => (typeof t === 'string' ? t : 
 /** The fuller record, for search engines (JSON-LD) and AI assistants (/llms.txt) only. */
 export const facts = {
   summary: {
-    en: 'Till Findl is the cofounder and CEO of Bounceback, practice software for physiotherapists, based in Vienna. He studied medicine at University College London (MBBS, 2020 to 2026) and is also cofounder and Chief of Product of Eigen Running in Zurich, which recommends running shoes from a smartphone scan of the feet and running biomechanics.',
-    de: 'Till Findl ist Mitgründer und Geschäftsführer von Bounceback, Praxissoftware für Physiotherapeut:innen mit Sitz in Wien. Er hat am University College London Medizin studiert (MBBS, 2020 bis 2026) und ist außerdem Mitgründer und Chief of Product von Eigen Running in Zürich, das Laufschuhe anhand eines Smartphone-Scans der Füße und der Laufbiomechanik empfiehlt.',
+    en: 'Till Findl is the cofounder and CEO of Bounceback, AI-powered practice software for physiotherapists in Germany, Austria and Switzerland, based in Vienna. He studied medicine at University College London (MBBS, 2020 to 2026) and is also cofounder and Chief of Product of Eigen Running in Zurich, which recommends running shoes from a smartphone scan of the feet and running biomechanics.',
+    de: 'Till Findl ist Mitgründer und Geschäftsführer von Bounceback, KI-gestützter Praxissoftware für Physiotherapeut:innen in Deutschland, Österreich und der Schweiz, mit Sitz in Wien. Er hat am University College London Medizin studiert (MBBS, 2020 bis 2026) und ist außerdem Mitgründer und Chief of Product von Eigen Running in Zürich, das Laufschuhe anhand eines Smartphone-Scans der Füße und der Laufbiomechanik empfiehlt.',
   } satisfies L,
   place: { en: 'Vienna & London', de: 'Wien & London' } satisfies L,
   languages: {
@@ -200,7 +210,7 @@ export const facts = {
       country: 'AT',
       since: 2024,
       about:
-        'Software for physiotherapy practices in Austria: booking, notes that write themselves, payments on the phone, and Echo, the patient app that keeps patients on track between visits. Free to start (from €0). Team of four in Vienna, with engineers from MIT and TU Wien.',
+        'AI-powered software for physiotherapy practices in the DACH region (Germany, Austria, Switzerland): booking, notes that write themselves, payments on the phone, and Echo, the patient app that keeps patients on track between visits. Free to start (from €0). Team of four in Vienna, with engineers from MIT and TU Wien.',
     },
     {
       name: 'Eigen Running',
@@ -228,6 +238,8 @@ export const facts = {
     `Triathlon: Ironman Kalmar (${links.ironmanKalmar}), Ironman Tallinn. Several marathons, among them Amsterdam (${links.amsterdamMarathon}).`,
     'Ice hockey for the UCL Yetis (BUIHA Division 1).',
     'Photography and film.',
+    'Reading philosophy.',
+    'DIY engineering: building FPV drones, 3D printing.',
     'Guitar.',
   ],
   education: [
