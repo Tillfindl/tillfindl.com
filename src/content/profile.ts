@@ -58,8 +58,8 @@ export const page = {
   place: { en: 'Vienna & London', de: 'Wien & London' },
   /** One warm, plain line under the name: what matters to Till, and how he works. */
   intro: {
-    en: 'People first, always. Beyond that: curious about why things are done the way they are, careful with the details, and happiest when something simple works properly.',
-    de: 'Menschen zuerst, immer. Darüber hinaus: neugierig, warum Dinge so gemacht werden, wie sie gemacht werden, genau im Detail und am zufriedensten, wenn etwas Einfaches richtig funktioniert.',
+    en: 'I’ve always been curious about why things are done the way they are. That question took me from medicine to building tools for clinicians, and it shapes how I work: carefully, precisely, and without rushing the details. The best part is doing it alongside good people.',
+    de: 'Ich wollte schon immer wissen, warum Dinge so gemacht werden, wie sie gemacht werden. Diese Frage hat mich von der Medizin dazu gebracht, Werkzeuge für Kliniker:innen zu bauen, und sie prägt, wie ich arbeite: sorgfältig, genau und ohne bei den Details zu hetzen. Am schönsten ist es, das gemeinsam mit guten Menschen zu tun.',
   },
   sections: {
     work: { en: 'Work', de: 'Arbeit' },
@@ -73,8 +73,8 @@ export const page = {
       detail: { en: 'Cofounder & CEO · Vienna', de: 'Mitgründer & Geschäftsführer · Wien' },
       date: '2024 – now',
       about: {
-        en: 'AI-powered software for physiotherapy practices in Germany, Austria and Switzerland: notes that write themselves from the session, booking, payments, and Echo, an app that keeps patients on track between visits.',
-        de: 'KI-gestützte Software für Physiotherapiepraxen in Deutschland, Österreich und der Schweiz: Dokumentation, die sich aus der Behandlung selbst schreibt, Terminbuchung, Zahlungen und Echo, eine App, die Patient:innen zwischen den Terminen begleitet.',
+        en: 'AI-powered software for physiotherapy practices, built around one problem: most patients stop doing their home exercises between visits. Echo keeps them on track, with notes, booking and payments running alongside it.',
+        de: 'KI-gestützte Software für Physiotherapiepraxen, gebaut um ein Problem: Die meisten Patient:innen hören zwischen den Terminen mit ihren Heimübungen auf. Echo hält sie dran, Dokumentation, Terminbuchung und Zahlungen laufen daneben mit.',
       },
       url: links.bounceback,
     },
@@ -83,8 +83,8 @@ export const page = {
       detail: { en: 'Cofounder & Chief of Product · Zurich', de: 'Mitgründer & Chief of Product · Zürich' },
       date: '2025 – now',
       about: {
-        en: 'Lab-level running biomechanics on an iPhone. A 3D scan of your feet and a video of you running become the shoes that suit how you actually run. I lead product and built the biomechanics behind it.',
-        de: 'Laufbiomechanik auf Laborniveau, am iPhone. Aus einem 3D-Scan der Füße und einem Laufvideo werden die Schuhe, die zu deinem Laufstil passen. Ich leite das Produkt und habe die Biomechanik dahinter entwickelt.',
+        en: 'Lab-level running biomechanics on an iPhone. A 3D foot scan and a short running video become shoe recommendations that match how someone actually runs. I lead product and built the biomechanics behind it.',
+        de: 'Laufbiomechanik auf Laborniveau, am iPhone. Aus einem 3D-Fußscan und einem kurzen Laufvideo werden Schuhempfehlungen, die zum tatsächlichen Laufstil passen. Ich leite das Produkt und habe die Biomechanik dahinter entwickelt.',
       },
       url: links.eigen,
     },
@@ -95,8 +95,8 @@ export const page = {
     detail: { en: 'MBBS Medicine', de: 'MBBS Medizin' },
     date: '2020 – 2026',
     about: {
-      en: 'Clinical years at University College Hospital and the Royal Free, with specialist placements at Queen Square (neurology), Great Ormond Street (paediatrics) and Moorfields Eye Hospital.',
-      de: 'Klinische Jahre am University College Hospital und am Royal Free, mit Rotationen am Queen Square (Neurologie), Great Ormond Street (Pädiatrie) und Moorfields Eye Hospital.',
+      en: 'Clinical years at University College Hospital and the Royal Free, with specialist placements at Queen Square, Great Ormond Street and Moorfields Eye Hospital.',
+      de: 'Klinische Jahre am University College Hospital und am Royal Free, mit Rotationen am Queen Square, Great Ormond Street und Moorfields Eye Hospital.',
     },
     photos: [
       {
@@ -170,10 +170,10 @@ export const page = {
     { title: { en: 'Photography & film', de: 'Fotografie & Film' }, detail: { en: '', de: '' }, date: '' },
     { title: { en: 'Philosophy', de: 'Philosophie' }, detail: { en: '', de: '' }, date: '' },
     {
-      title: { en: 'DIY engineering', de: 'DIY-Technik' },
+      title: { en: 'DIY engineering projects', de: 'DIY-Technikprojekte' },
       detail: {
-        en: 'FPV drones, 3D printing, and projects like custom CPAP masks shaped from 3D face scans',
-        de: 'FPV-Drohnen, 3D-Druck und Projekte wie maßgefertigte CPAP-Masken aus 3D-Gesichtsscans',
+        en: 'FPV drones, 3D printing, and a pipeline that turns a smartphone face scan into a custom-fitted, 3D-printed CPAP mask, bench-tested for seal against commercial masks',
+        de: 'FPV-Drohnen, 3D-Druck und eine Pipeline, die aus einem Smartphone-Gesichtsscan eine passgenaue, 3D-gedruckte CPAP-Maske macht, im Labor auf Dichtheit gegen handelsübliche Masken getestet',
       },
       date: '',
     },
