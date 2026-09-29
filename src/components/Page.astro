@@ -38,6 +38,7 @@ const langs: Lang[] = ['en', 'de'];
       <div class="text">
         <h1>{person.name}</h1>
         <p class="place">{page.place[lang]}</p>
+        <p class="lede">{page.intro[lang]}</p>
         <div class="buttons">
           <a class="button primary" href={links.bounceback} rel="noopener">Bounceback <span aria-hidden="true">↗</span></a>
           <a class="button" href={links.eigen} rel="noopener">Eigen <span aria-hidden="true">↗</span></a>
@@ -75,16 +76,13 @@ const langs: Lang[] = ['en', 'de'];
               <span class="muted small">{medicine.date}</span>
             </div>
             <p class="muted small">{medicine.detail[lang]}</p>
-            <dl>
-              {
-                medicine.facts.map((f) => (
-                  <div>
-                    <dt>{f.label[lang]}</dt>
-                    <dd>{f.text[lang]}</dd>
-                  </div>
-                ))
-              }
-            </dl>
+            <div class="bsc">
+              <div class="med-top">
+                <h4>{medicine.bsc.title[lang]}</h4>
+                <span class="muted small">{medicine.bsc.date}</span>
+              </div>
+              <p>{medicine.bsc.thesis[lang]}</p>
+            </div>
           </div>
         </article>
         <div class="grid two after">
@@ -98,7 +96,7 @@ const langs: Lang[] = ['en', 'de'];
           {
             page.sports.map((s) => (
               <article class="card sport">
-                <Image src={photo(s.file)} alt={s.alt[lang]} widths={[320, 480, 720]} sizes="(min-width: 60rem) 14rem, (min-width: 40rem) 45vw, 70vw" />
+                <Image src={photo(s.file)} alt={s.alt[lang]} style={s.position ? `object-position: ${s.position}` : undefined} widths={[320, 480, 720]} sizes="(min-width: 60rem) 14rem, (min-width: 40rem) 45vw, 70vw" />
                 <div class="caption">
                   <h3>{s.title[lang]}</h3>
                   <p>
@@ -368,25 +366,40 @@ const langs: Lang[] = ['en', 'de'];
     margin-top: 0.3rem;
   }
 
-  dl {
-    display: grid;
-    gap: 0;
-    margin: 1.25rem 0 0;
+  .med-text {
+    display: flex;
+    flex-direction: column;
   }
 
-  dl div {
-    padding: 0.8rem 0;
+  /* The BSc sits at the foot of the medicine card, under a hairline. */
+  .bsc {
+    display: grid;
+    gap: 0.4rem;
+    margin-top: auto;
+    padding-top: 1.25rem;
     border-top: 1px solid var(--border);
   }
 
-  dt {
-    color: var(--muted);
-    font-size: var(--text-sm);
+  .med-text > p + .bsc {
+    margin-top: 2rem;
   }
 
-  dd {
-    margin: 0.2rem 0 0;
+  h4 {
+    margin: 0;
+    font-size: var(--text-base);
+    font-weight: 600;
+  }
+
+  .bsc p {
     color: var(--body);
+  }
+
+  .lede {
+    max-width: 30em;
+    margin-top: 1.5rem;
+    color: var(--body);
+    font-size: var(--text-lg);
+    line-height: 1.55;
   }
 
   /* Sports: a photo of Till doing each one, with the details underneath. */

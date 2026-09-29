@@ -56,6 +56,11 @@ export const page = {
     alt: { en: 'Till Findl on the Isle of Harris, Scotland', de: 'Till Findl auf der Isle of Harris, Schottland' },
   },
   place: { en: 'Vienna & London', de: 'Wien & London' },
+  /** One warm, plain line under the name: what matters to Till, and how he works. */
+  intro: {
+    en: 'The people around me matter most to me. In my work, I care about doing things properly and getting the details right.',
+    de: 'Am wichtigsten sind mir die Menschen um mich herum. In meiner Arbeit ist mir wichtig, Dinge ordentlich zu machen und auf die Details zu achten.',
+  },
   sections: {
     work: { en: 'Work', de: 'Arbeit' },
     background: { en: 'Education & experience', de: 'Ausbildung & Erfahrung' },
@@ -102,34 +107,15 @@ export const page = {
         alt: { en: 'Till in graduation gown in front of the UCL portico', de: 'Till im Talar vor dem Portikus des UCL' },
       },
     ],
-    facts: [
-      {
-        label: { en: 'Hospitals', de: 'Kliniken' },
-        text: { en: 'University College Hospital, Royal Free Hospital', de: 'University College Hospital, Royal Free Hospital' },
+    /** The intercalated degree, shown as part of the medicine card. */
+    bsc: {
+      title: { en: 'Intercalated BSc Medical Sciences with Global Health', de: 'Intercalated BSc Medical Sciences with Global Health' },
+      date: '2022 – 2023',
+      thesis: {
+        en: 'Thesis: Economic evaluations of diabetic retinopathy screening models in the era of digital medicine and AI, a scoping review',
+        de: 'Abschlussarbeit: Economic evaluations of diabetic retinopathy screening models in the era of digital medicine and AI, a scoping review',
       },
-      {
-        label: { en: 'Specialist placements', de: 'Spezialrotationen' },
-        text: {
-          en: 'Queen Square (neurology), Great Ormond Street (paediatrics), Moorfields (ophthalmology)',
-          de: 'Queen Square (Neurologie), Great Ormond Street (Pädiatrie), Moorfields (Augenheilkunde)',
-        },
-      },
-      {
-        label: { en: 'General practice', de: 'Allgemeinmedizin' },
-        text: { en: 'Rural GP placement, Isle of Harris', de: 'Landarztpraxis, Isle of Harris' },
-      },
-      {
-        label: { en: 'Intercalated BSc', de: 'Intercalated BSc' },
-        text: {
-          en: 'Medical Sciences with Global Health, 2022 – 2023. Thesis on the economics of AI screening for diabetic retinopathy, London School of Hygiene & Tropical Medicine',
-          de: 'Medical Sciences with Global Health, 2022 – 2023. Abschlussarbeit zur Wirtschaftlichkeit von KI-Screening auf diabetische Retinopathie, London School of Hygiene & Tropical Medicine',
-        },
-      },
-      {
-        label: { en: 'Teaching', de: 'Lehre' },
-        text: { en: 'Peer tutorials in cardiology, orthopaedics and neurology', de: 'Tutorien in Kardiologie, Orthopädie und Neurologie' },
-      },
-    ],
+    },
   },
   background: [
     { title: 'Vienna International School', detail: { en: 'International Baccalaureate', de: 'International Baccalaureate' }, date: '2019' },
@@ -142,8 +128,9 @@ export const page = {
   /** Each sport with a photo of Till doing it, and the details underneath. */
   sports: [
     {
-      file: 'ski-giant-slalom.jpg',
-      alt: { en: 'Till racing giant slalom', de: 'Till im Riesentorlauf' },
+      file: 'ski-gate.jpg',
+      alt: { en: 'Till racing giant slalom, just past a gate', de: 'Till im Riesentorlauf, knapp hinter einem Tor' },
+      position: '75% 50%',
       title: { en: 'Ski racing', de: 'Skirennen' },
       lines: [
         { text: { en: 'FIS races', de: 'FIS-Rennen' } },
@@ -165,23 +152,18 @@ export const page = {
       alt: { en: 'Till running, black and white', de: 'Till beim Laufen, schwarz-weiß' },
       title: { en: 'Running', de: 'Laufen' },
       lines: [
-        { text: { en: 'Marathons, among them Amsterdam', de: 'Marathons, darunter Amsterdam' }, url: links.amsterdamMarathon },
+        { text: { en: 'Marathons', de: 'Marathons' }, url: links.amsterdamMarathon },
       ],
     },
     {
-      file: 'pond-hockey.jpg',
-      alt: { en: 'Till playing ice hockey on a frozen lake', de: 'Till beim Eishockey auf einem zugefrorenen See' },
+      file: 'ice-hockey-sister.jpg',
+      alt: { en: 'Till in his UCL ice hockey jersey with his sister after a game', de: 'Till im UCL-Eishockeytrikot mit seiner Schwester nach einem Spiel' },
       title: { en: 'Ice hockey', de: 'Eishockey' },
       lines: [{ text: { en: 'UCL Yetis, BUIHA Division 1', de: 'UCL Yetis, BUIHA Division 1' } }],
     },
-  ] as { file: string; alt: L; title: L; lines: Part[] }[],
+  ] as { file: string; alt: L; title: L; lines: Part[]; position?: string }[],
   hobbies: [
-    {
-      title: { en: 'Photography & film', de: 'Fotografie & Film' },
-      detail: { en: 'Photoshop, Premiere Pro', de: 'Photoshop, Premiere Pro' },
-      date: '',
-    },
-    { title: { en: 'Guitar', de: 'Gitarre' }, detail: { en: '', de: '' }, date: '' },
+    { title: { en: 'Photography & film', de: 'Fotografie & Film' }, detail: { en: '', de: '' }, date: '' },
   ] satisfies Card[],
   contact: {
     text: {
@@ -245,7 +227,7 @@ export const facts = {
     'Alpine ski racing at FIS level; Viennese youth champion; ski instructor (Landesskilehrer, level 3).',
     `Triathlon: Ironman Kalmar (${links.ironmanKalmar}), Ironman Tallinn. Several marathons, among them Amsterdam (${links.amsterdamMarathon}).`,
     'Ice hockey for the UCL Yetis (BUIHA Division 1).',
-    'Photography and film (Photoshop, Premiere Pro).',
+    'Photography and film.',
     'Guitar.',
   ],
   education: [

@@ -21,7 +21,7 @@ const date = lang === 'de' ? c.date.replace('now', 'heute') : c.date;
     </h3>
     {date && <span class="date">{date}</span>}
   </div>
-  <p class="detail">{c.detail[lang]}</p>
+  {c.detail[lang] && <p class="detail">{c.detail[lang]}</p>}
   {c.about && <p class="about">{c.about[lang]}</p>}
 </Tag>
 

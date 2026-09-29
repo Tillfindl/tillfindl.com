@@ -28,7 +28,9 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
   billing. Nothing private: no phone, address, birth date, personal email, or third parties named
   without their OK.
 - A normal personal website: name, place and buttons beside a medium portrait (never
-  full-bleed), then sections of cards. Facts only: no intro paragraph, no storytelling lines
+  full-bleed), then sections of cards. It is a personal website, not a CV: leave out hospitals,
+  tools, placements and dates wherever they are not needed. One warm, plain line under the name
+  (what matters to Till and how he works) and otherwise facts only: no no storytelling lines
   ("grew up on skis", "I like making things"), no taglines, slogans or calls to network. If a
   line describes Till's personality rather than stating a fact, cut it.
 - Sports show a photo of Till doing each sport, with the details underneath; races are grouped
