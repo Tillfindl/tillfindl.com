@@ -58,8 +58,8 @@ export const page = {
   place: { en: 'Vienna & London', de: 'Wien & London' },
   /** One warm, plain line under the name: what matters to Till, and how he works. */
   intro: {
-    en: 'The people around me matter most to me. I like to understand how something works before I try to change it, I keep things simple, and I care about the details, at work and outside it.',
-    de: 'Am wichtigsten sind mir die Menschen um mich herum. Ich will verstehen, wie etwas funktioniert, bevor ich es verändere, halte Dinge einfach und achte auf die Details, in der Arbeit und auch sonst.',
+    en: 'People first, always. Beyond that: curious about why things are done the way they are, careful with the details, and happiest when something simple works properly.',
+    de: 'Menschen zuerst, immer. Darüber hinaus: neugierig, warum Dinge so gemacht werden, wie sie gemacht werden, genau im Detail und am zufriedensten, wenn etwas Einfaches richtig funktioniert.',
   },
   sections: {
     work: { en: 'Work', de: 'Arbeit' },
@@ -83,8 +83,8 @@ export const page = {
       detail: { en: 'Cofounder & Chief of Product · Zurich', de: 'Mitgründer & Chief of Product · Zürich' },
       date: '2025 – now',
       about: {
-        en: 'Lab-level running biomechanics on an iPhone. A 3D scan of your feet and a video of you running become the shoes that suit how you actually run. I lead product and built the algorithms that turn 2D video into 3D gait.',
-        de: 'Laufbiomechanik auf Laborniveau, am iPhone. Aus einem 3D-Scan der Füße und einem Laufvideo werden die Schuhe, die zu deinem Laufstil passen. Ich leite das Produkt und habe die Algorithmen entwickelt, die aus 2D-Video 3D-Gangbilder machen.',
+        en: 'Lab-level running biomechanics on an iPhone. A 3D scan of your feet and a video of you running become the shoes that suit how you actually run. I lead product and built the biomechanics behind it.',
+        de: 'Laufbiomechanik auf Laborniveau, am iPhone. Aus einem 3D-Scan der Füße und einem Laufvideo werden die Schuhe, die zu deinem Laufstil passen. Ich leite das Produkt und habe die Biomechanik dahinter entwickelt.',
       },
       url: links.eigen,
     },
@@ -95,8 +95,8 @@ export const page = {
     detail: { en: 'MBBS Medicine', de: 'MBBS Medizin' },
     date: '2020 – 2026',
     about: {
-      en: 'Clinical years at University College Hospital and the Royal Free, with specialist placements at Queen Square (neurology), Great Ormond Street (paediatrics) and Moorfields Eye Hospital, and a final placement in rural general practice on the Isle of Harris.',
-      de: 'Klinische Jahre am University College Hospital und am Royal Free, mit Rotationen am Queen Square (Neurologie), Great Ormond Street (Pädiatrie) und Moorfields Eye Hospital, und einem letzten Praktikum in einer Landarztpraxis auf der Isle of Harris.',
+      en: 'Clinical years at University College Hospital and the Royal Free, with specialist placements at Queen Square (neurology), Great Ormond Street (paediatrics) and Moorfields Eye Hospital.',
+      de: 'Klinische Jahre am University College Hospital und am Royal Free, mit Rotationen am Queen Square (Neurologie), Great Ormond Street (Pädiatrie) und Moorfields Eye Hospital.',
     },
     photos: [
       {
@@ -132,6 +132,15 @@ export const page = {
   /** Each sport with a photo of Till doing it, and the details underneath. */
   sports: [
     {
+      file: 'ironman-swim.jpg',
+      alt: { en: 'Till leaving the water at Ironman Kalmar', de: 'Till beim Schwimmausstieg beim Ironman Kalmar' },
+      title: { en: 'Triathlon', de: 'Triathlon' },
+      lines: [
+        { text: { en: 'Ironman Kalmar', de: 'Ironman Kalmar' }, url: links.ironmanKalmar },
+        { text: { en: 'Ironman Tallinn', de: 'Ironman Tallinn' } },
+      ],
+    },
+    {
       file: 'ski-gate.jpg',
       alt: { en: 'Till racing giant slalom, just past a gate', de: 'Till im Riesentorlauf, knapp hinter einem Tor' },
       position: '75% 50%',
@@ -143,13 +152,10 @@ export const page = {
       ],
     },
     {
-      file: 'ironman-swim.jpg',
-      alt: { en: 'Till leaving the water at Ironman Kalmar', de: 'Till beim Schwimmausstieg beim Ironman Kalmar' },
-      title: { en: 'Triathlon', de: 'Triathlon' },
-      lines: [
-        { text: { en: 'Ironman Kalmar', de: 'Ironman Kalmar' }, url: links.ironmanKalmar },
-        { text: { en: 'Ironman Tallinn', de: 'Ironman Tallinn' } },
-      ],
+      file: 'ice-hockey-sister.jpg',
+      alt: { en: 'Till in his UCL ice hockey jersey with his sister after a game', de: 'Till im UCL-Eishockeytrikot mit seiner Schwester nach einem Spiel' },
+      title: { en: 'Ice hockey', de: 'Eishockey' },
+      lines: [{ text: { en: 'UCL Yetis, BUIHA Division 1', de: 'UCL Yetis, BUIHA Division 1' } }],
     },
     {
       file: 'ironman-run.jpg',
@@ -159,19 +165,16 @@ export const page = {
         { text: { en: 'Marathons', de: 'Marathons' }, url: links.amsterdamMarathon },
       ],
     },
-    {
-      file: 'ice-hockey-sister.jpg',
-      alt: { en: 'Till in his UCL ice hockey jersey with his sister after a game', de: 'Till im UCL-Eishockeytrikot mit seiner Schwester nach einem Spiel' },
-      title: { en: 'Ice hockey', de: 'Eishockey' },
-      lines: [{ text: { en: 'UCL Yetis, BUIHA Division 1', de: 'UCL Yetis, BUIHA Division 1' } }],
-    },
   ] as { file: string; alt: L; title: L; lines: Part[]; position?: string }[],
   hobbies: [
     { title: { en: 'Photography & film', de: 'Fotografie & Film' }, detail: { en: '', de: '' }, date: '' },
-    { title: { en: 'Philosophy', de: 'Philosophie' }, detail: { en: 'Reading', de: 'Lesen' }, date: '' },
+    { title: { en: 'Philosophy', de: 'Philosophie' }, detail: { en: '', de: '' }, date: '' },
     {
       title: { en: 'DIY engineering', de: 'DIY-Technik' },
-      detail: { en: 'FPV drones, 3D printing', de: 'FPV-Drohnen, 3D-Druck' },
+      detail: {
+        en: 'FPV drones, 3D printing, and projects like custom CPAP masks shaped from 3D face scans',
+        de: 'FPV-Drohnen, 3D-Druck und Projekte wie maßgefertigte CPAP-Masken aus 3D-Gesichtsscans',
+      },
       date: '',
     },
   ] satisfies Card[],
