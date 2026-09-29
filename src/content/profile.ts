@@ -43,33 +43,33 @@ export interface Card {
   wide?: boolean;
 }
 
-/** What the page shows: a portrait and a short intro, then cards. */
+/** A line of text, optionally a link. Lines under a title are joined with " · ". */
+export interface Part {
+  text: L;
+  url?: string;
+}
+
+/** What the page shows: name and portrait, then cards. Plain facts only, no storytelling. */
 export const page = {
   portrait: {
     file: 'portrait-harris.jpg',
     alt: { en: 'Till Findl on the Isle of Harris, Scotland', de: 'Till Findl auf der Isle of Harris, Schottland' },
-  },
-  /** About Till as a person, not his job; the buttons below it cover the work. */
-  intro: {
-    en: 'I grew up in Vienna, mostly on skis, and studied medicine in London. I like making things, whether that is software, a photo or a short film, and I play a bit of guitar. Most of my free time I spend outside.',
-    de: 'Ich bin in Wien aufgewachsen, meistens auf Skiern, und habe in London Medizin studiert. Ich mache gern Dinge, ob Software, ein Foto oder einen kurzen Film, und spiele ein bisschen Gitarre. Meine freie Zeit verbringe ich am liebsten draußen.',
   },
   place: { en: 'Vienna & London', de: 'Wien & London' },
   sections: {
     work: { en: 'Work', de: 'Arbeit' },
     background: { en: 'Education & experience', de: 'Ausbildung & Erfahrung' },
     hobbies: { en: 'Sports & hobbies', de: 'Sport & Hobbys' },
+    contact: { en: 'Contact', de: 'Kontakt' },
   },
-  visit: { en: 'Visit', de: 'Ansehen' },
-  results: { en: 'Results', de: 'Ergebnisse' },
   work: [
     {
       title: 'Bounceback',
       detail: { en: 'Cofounder & CEO · Vienna', de: 'Mitgründer & Geschäftsführer · Wien' },
       date: '2024 – now',
       about: {
-        en: 'Practice software for physiotherapists: booking, notes, payments and a patient app.',
-        de: 'Praxissoftware für Physiotherapeut:innen: Termine, Dokumentation, Zahlungen und eine Patienten-App.',
+        en: 'Everything a physiotherapy practice runs on, from booking and notes to payments, and Echo, an app that keeps patients on track between visits.',
+        de: 'Alles, womit eine Physiotherapiepraxis arbeitet, von Terminen und Dokumentation bis zu Zahlungen, dazu Echo, eine App, die Patient:innen zwischen den Terminen begleitet.',
       },
       url: links.bounceback,
     },
@@ -84,13 +84,54 @@ export const page = {
       url: links.eigen,
     },
   ] satisfies Card[],
+  /** Medical school gets its own card with photos and the details that matter. */
+  medicine: {
+    title: 'University College London',
+    detail: { en: 'MBBS Medicine', de: 'MBBS Medizin' },
+    date: '2020 – 2026',
+    photos: [
+      {
+        file: 'ucl-medical-school.jpg',
+        alt: {
+          en: 'Till in graduation gown at the entrance of the Royal Free and University College Medical School',
+          de: 'Till im Talar vor dem Eingang der Royal Free and University College Medical School',
+        },
+      },
+      {
+        file: 'ucl-portico.jpg',
+        alt: { en: 'Till in graduation gown in front of the UCL portico', de: 'Till im Talar vor dem Portikus des UCL' },
+      },
+    ],
+    facts: [
+      {
+        label: { en: 'Hospitals', de: 'Kliniken' },
+        text: { en: 'University College Hospital, Royal Free Hospital', de: 'University College Hospital, Royal Free Hospital' },
+      },
+      {
+        label: { en: 'Specialist placements', de: 'Spezialrotationen' },
+        text: {
+          en: 'Queen Square (neurology), Great Ormond Street (paediatrics), Moorfields (ophthalmology)',
+          de: 'Queen Square (Neurologie), Great Ormond Street (Pädiatrie), Moorfields (Augenheilkunde)',
+        },
+      },
+      {
+        label: { en: 'General practice', de: 'Allgemeinmedizin' },
+        text: { en: 'Rural GP placement, Isle of Harris', de: 'Landarztpraxis, Isle of Harris' },
+      },
+      {
+        label: { en: 'Intercalated BSc', de: 'Intercalated BSc' },
+        text: {
+          en: 'Medical Sciences with Global Health, 2022 – 2023. Thesis on the economics of AI screening for diabetic retinopathy, London School of Hygiene & Tropical Medicine',
+          de: 'Medical Sciences with Global Health, 2022 – 2023. Abschlussarbeit zur Wirtschaftlichkeit von KI-Screening auf diabetische Retinopathie, London School of Hygiene & Tropical Medicine',
+        },
+      },
+      {
+        label: { en: 'Teaching', de: 'Lehre' },
+        text: { en: 'Peer tutorials in cardiology, orthopaedics and neurology', de: 'Tutorien in Kardiologie, Orthopädie und Neurologie' },
+      },
+    ],
+  },
   background: [
-    { title: 'University College London', detail: { en: 'MBBS Medicine', de: 'MBBS Medizin' }, date: '2020 – 2026' },
-    {
-      title: 'University College London',
-      detail: { en: 'BSc Medical Sciences with Global Health', de: 'BSc Medical Sciences with Global Health' },
-      date: '2022 – 2023',
-    },
     { title: 'Vienna International School', detail: { en: 'International Baccalaureate', de: 'International Baccalaureate' }, date: '2019' },
     {
       title: { en: 'Austrian Red Cross', de: 'Österreichisches Rotes Kreuz' },
@@ -98,40 +139,57 @@ export const page = {
       date: '2019 – 2020',
     },
   ] satisfies Card[],
-  /** Hobbies with a photo each, then the rest as cards. */
-  sportPhotos: [
+  /** Each sport with a photo of Till doing it, and the details underneath. */
+  sports: [
     {
       file: 'ski-giant-slalom.jpg',
-      alt: { en: 'Giant slalom race', de: 'Riesentorlauf' },
+      alt: { en: 'Till racing giant slalom', de: 'Till im Riesentorlauf' },
       title: { en: 'Ski racing', de: 'Skirennen' },
-      detail: { en: 'FIS, Viennese youth champion', de: 'FIS, Wiener Jugendmeister' },
+      lines: [
+        { text: { en: 'FIS races', de: 'FIS-Rennen' } },
+        { text: { en: 'Viennese youth champion', de: 'Wiener Jugendmeister' } },
+        { text: { en: 'Ski instructor, Landesskilehrer (level 3)', de: 'Landesskilehrer' } },
+      ],
+    },
+    {
+      file: 'ironman-swim.jpg',
+      alt: { en: 'Till leaving the water at Ironman Kalmar', de: 'Till beim Schwimmausstieg beim Ironman Kalmar' },
+      title: { en: 'Triathlon', de: 'Triathlon' },
+      lines: [
+        { text: { en: 'Ironman Kalmar', de: 'Ironman Kalmar' }, url: links.ironmanKalmar },
+        { text: { en: 'Ironman Tallinn', de: 'Ironman Tallinn' } },
+      ],
     },
     {
       file: 'ironman-run.jpg',
-      alt: { en: 'Running at Ironman Kalmar', de: 'Laufen beim Ironman Kalmar' },
-      title: { en: 'Ironman Kalmar', de: 'Ironman Kalmar' },
-      detail: { en: '2023', de: '2023' },
-      url: links.ironmanKalmar,
+      alt: { en: 'Till running, black and white', de: 'Till beim Laufen, schwarz-weiß' },
+      title: { en: 'Running', de: 'Laufen' },
+      lines: [
+        { text: { en: 'Marathons, among them Amsterdam', de: 'Marathons, darunter Amsterdam' }, url: links.amsterdamMarathon },
+      ],
     },
     {
       file: 'pond-hockey.jpg',
-      alt: { en: 'Ice hockey on a frozen lake', de: 'Eishockey auf einem zugefrorenen See' },
+      alt: { en: 'Till playing ice hockey on a frozen lake', de: 'Till beim Eishockey auf einem zugefrorenen See' },
       title: { en: 'Ice hockey', de: 'Eishockey' },
-      detail: { en: 'UCL', de: 'UCL' },
+      lines: [{ text: { en: 'UCL Yetis, BUIHA Division 1', de: 'UCL Yetis, BUIHA Division 1' } }],
     },
-  ],
+  ] as { file: string; alt: L; title: L; lines: Part[] }[],
   hobbies: [
     {
       title: { en: 'Photography & film', de: 'Fotografie & Film' },
-      detail: { en: 'Photos and short films, edited in Photoshop and Premiere', de: 'Fotos und kurze Filme, geschnitten in Photoshop und Premiere' },
+      detail: { en: 'Photoshop, Premiere Pro', de: 'Photoshop, Premiere Pro' },
       date: '',
-      wide: true,
     },
-    { title: { en: 'Guitar', de: 'Gitarre' }, detail: { en: 'For fun', de: 'Zum Spaß' }, date: '' },
-    { title: { en: 'Ski instructor', de: 'Skilehrer' }, detail: { en: 'Qualified, Austria', de: 'Ausgebildet, Österreich' }, date: '' },
-    { title: 'Ironman Tallinn', detail: { en: 'Triathlon', de: 'Triathlon' }, date: '2026' },
-    { title: 'Amsterdam Marathon', detail: { en: 'Marathon', de: 'Marathon' }, date: '2024', url: links.amsterdamMarathon },
+    { title: { en: 'Guitar', de: 'Gitarre' }, detail: { en: '', de: '' }, date: '' },
   ] satisfies Card[],
+  contact: {
+    text: {
+      en: 'The best way to reach me is LinkedIn.',
+      de: 'Am besten erreichst du mich über LinkedIn.',
+    },
+    pending: { en: 'LinkedIn link coming soon', de: 'LinkedIn-Link folgt' },
+  },
   footer: {
     forMachines: { en: 'Summary for AI assistants', de: 'Zusammenfassung für KI-Assistenten' },
   },
@@ -160,7 +218,7 @@ export const facts = {
       country: 'AT',
       since: 2024,
       about:
-        'Practice software for physiotherapists in Austria: booking, notes that write themselves, payments on the phone, and Echo, the patient app for the time between visits. Free to start (from €0). Team of four in Vienna, with engineers from MIT and TU Wien.',
+        'Software for physiotherapy practices in Austria: booking, notes that write themselves, payments on the phone, and Echo, the patient app that keeps patients on track between visits. Free to start (from €0). Team of four in Vienna, with engineers from MIT and TU Wien.',
     },
     {
       name: 'Eigen Running',
@@ -184,9 +242,9 @@ export const facts = {
     'International Baccalaureate, Vienna International School, 2019.',
   ],
   outside: [
-    'Alpine ski racing at FIS level; Viennese youth champion; qualified ski instructor.',
-    `Ironman Kalmar 2023 (${links.ironmanKalmar}), Ironman Tallinn 2026, Amsterdam Marathon 2024 (${links.amsterdamMarathon}).`,
-    'Ice hockey for UCL (BUIHA Division 1).',
+    'Alpine ski racing at FIS level; Viennese youth champion; ski instructor (Landesskilehrer, level 3).',
+    `Triathlon: Ironman Kalmar (${links.ironmanKalmar}), Ironman Tallinn. Several marathons, among them Amsterdam (${links.amsterdamMarathon}).`,
+    'Ice hockey for the UCL Yetis (BUIHA Division 1).',
     'Photography and film (Photoshop, Premiere Pro).',
     'Guitar.',
   ],

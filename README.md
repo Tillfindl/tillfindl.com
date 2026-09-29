@@ -4,8 +4,8 @@ The personal website of Till Findl: a small one-page site built with [Astro](htt
 hosted on GitHub Pages at [tillfindl.com](https://tillfindl.com). The domain is registered on
 Cloudflare.
 
-A personal page in English (`/`) and German (`/de/`): an intro with Till's portrait and two buttons,
-then work, education and experience, and sports and hobbies as cards. Plain wording, no taglines. The fuller facts go to search
+A personal page in English (`/`) and German (`/de/`): name, portrait and buttons,
+then work, medicine and background, sports and hobbies, and contact as cards. Plain wording only. The fuller facts go to search
 engines (JSON-LD) and AI assistants (`/llms.txt`), generated from the same file.
 
 ## Working on it

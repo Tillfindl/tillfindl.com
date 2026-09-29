@@ -11,6 +11,10 @@
   /* Colour: a near-black ground with a faint cool glow, cards one shade lighter, off-white ink. */
   --bg: #090a0b;
   --glow: rgb(118 138 168 / 0.12);
+  /* The drifting lights behind the page: faint cool blue, faint warm, faint teal. */
+  --light-a: rgb(96 128 196 / 0.22);
+  --light-b: rgb(196 140 110 / 0.14);
+  --light-c: rgb(90 170 160 / 0.14);
   --card: rgb(255 255 255 / 0.035);
   --card-hover: rgb(255 255 255 / 0.06);
   --border: rgb(255 255 255 / 0.08);
@@ -51,10 +55,7 @@ html {
 
 body {
   margin: 0;
-  background:
-    radial-gradient(70rem 45rem at 15% -15%, var(--glow), transparent 70%),
-    var(--bg);
-  background-repeat: no-repeat;
+  background: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
   font-size: var(--text-base);

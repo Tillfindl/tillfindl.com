@@ -27,9 +27,13 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
   Bounceback is checked against its product facts (the `the-why` skill); never claim insurance
   billing. Nothing private: no phone, address, birth date, personal email, or third parties named
   without their OK.
-- A normal personal website: intro (name, place, one factual paragraph, buttons) beside a
-  medium portrait (never full-bleed), then sections of cards. Plain, factual wording: no
-  taglines, no slogans, no statements about beliefs, no calls to network. Words Till
+- A normal personal website: name, place and buttons beside a medium portrait (never
+  full-bleed), then sections of cards. Facts only: no intro paragraph, no storytelling lines
+  ("grew up on skis", "I like making things"), no taglines, slogans or calls to network. If a
+  line describes Till's personality rather than stating a fact, cut it.
+- Sports show a photo of Till doing each sport, with the details underneath; races are grouped
+  by sport (triathlon, running), not listed with dates. The /llms.txt link in the footer is the
+  ground colour on purpose. Words Till
   has ruled out: founder (as a label), doctor, "building". Detail belongs in `facts`.
 - No race times on the site; race names link to their result pages.
 - Colours, type sizes and spacing are tokens in `src/styles/global.css`. Use the tokens; a change
