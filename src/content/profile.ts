@@ -1,12 +1,13 @@
 /*
  * Everything the site says about Till, in English and German.
  *
- * Two parts: `page` is what the page shows, a name and a few plain lists, and `facts` is the
- * fuller record that only machines read: the JSON-LD for search engines and /llms.txt for AI
- * assistants. The page stays plain: no taglines, no slogans, no sentences about Till.
+ * Two parts: `page` is what the page shows, and `facts` is the fuller record that only machines
+ * read: the JSON-LD for search engines and /llms.txt for AI assistants.
  *
- * Rules: no em dashes, no race times, nothing private (no phone, address, birth date or personal
- * email).
+ * Wording rules: one "I" sentence at the top, everything else verb-first or plain nouns. State
+ * facts, never prove them (no test results, no counts as a flex). No company names in the intro.
+ * Never call Till an engineer; "dad", not "father". No em dashes, no race times, nothing private
+ * (no phone, address, birth date or email).
  */
 
 export type Lang = 'en' | 'de';
@@ -17,14 +18,12 @@ export type L = Record<Lang, string>;
 export const SITE_URL = 'https://tillfindl.com';
 
 export const links = {
-  /** Till will send the URL; until then LinkedIn is left out. */
+  /** Till will send the URL; until then the LinkedIn buttons are left out. */
   linkedin: null as string | null,
   bounceback: 'https://bounceback.at/',
   eigen: 'https://www.eigen-running.com',
   ironmanKalmar: 'https://www.endurance-data.com/de/ergebnis/898/1616-till-findl/',
   amsterdamMarathon: 'https://sporthive.com/events/s/7250456063290378496/race/7250456063290379008/bib/21040',
-  /** Public on purpose: Till wants people to reach him by email. */
-  email: 'till@findl.at',
 };
 
 export const person = {
@@ -38,11 +37,9 @@ export interface Card {
   title: string | L;
   detail: L;
   date: string;
-  /** One plain line under the title, if the card needs it. */
-  about?: L;
+  /** Short plain lines under the title, verb-first or nouns, no "I". */
+  lines?: L[];
   url?: string;
-  /** Takes two columns in a three-column grid. */
-  wide?: boolean;
 }
 
 /** A line of text, optionally a link. Lines under a title are joined with " · ". */
@@ -51,25 +48,31 @@ export interface Part {
   url?: string;
 }
 
-/** What the page shows: name and portrait, then cards. Plain facts only, no storytelling. */
+/** A photo shown as its own card. The description is never shown; screen readers and search engines read it. */
+export interface Photo {
+  file: string;
+  alt: L;
+  /** Which part of the photo to keep when the card crops it (CSS object-position). */
+  position?: string;
+}
+
+/** What the page shows, top to bottom. */
 export const page = {
   portrait: {
     file: 'portrait-harris.jpg',
     alt: { en: 'Till Findl on the Isle of Harris, Scotland', de: 'Till Findl auf der Isle of Harris, Schottland' },
-  },
+  } satisfies Photo,
   place: { en: 'Vienna', de: 'Wien' },
-  /**
-   * Who Till is, for a stranger or an AI assistant who has never heard of him: in the order it
-   * happened, plain and understated, with the work doing the talking.
-   */
+  /** The one sentence about Till: plain, Max-style, no company names. */
   intro: {
-    en: 'I got into engineering at 13, putting together FPV drones. Later I studied medicine at UCL in London and worked on healthcare software alongside my degree. Today I live in Vienna and run Bounceback, AI software that helps physiotherapy practices keep patients doing their home exercises. I also lead product at Eigen Running in Zurich.',
-    de: 'Zur Technik bin ich mit 13 über FPV-Drohnen gekommen. Danach habe ich am UCL in London Medizin studiert und neben dem Studium an Software für das Gesundheitswesen gearbeitet. Heute lebe ich in Wien und leite Bounceback, eine KI-Software, mit der Physiotherapiepraxen ihre Patient:innen bei den Heimübungen halten. Außerdem leite ich das Produkt bei Eigen Running in Zürich.',
+    en: 'I studied medicine at UCL in London and now work on software for physiotherapy and running, mostly applying AI and computer vision to how people move and recover.',
+    de: 'Ich habe am UCL in London Medizin studiert und arbeite heute an Software für Physiotherapie und Laufsport, vor allem mit KI und Computer Vision rund um Bewegung und Rehabilitation.',
   },
   sections: {
     work: { en: 'Work', de: 'Arbeit' },
-    background: { en: 'Education & experience', de: 'Ausbildung & Erfahrung' },
-    hobbies: { en: 'Sports & hobbies', de: 'Sport & Hobbys' },
+    medicine: { en: 'Medicine', de: 'Medizin' },
+    sports: { en: 'Sport', de: 'Sport' },
+    hobbies: { en: 'Other things', de: 'Sonst noch' },
     contact: { en: 'Contact', de: 'Kontakt' },
   },
   work: [
@@ -77,33 +80,68 @@ export const page = {
       title: 'Bounceback',
       detail: { en: 'Cofounder & CEO · Vienna', de: 'Mitgründer & Geschäftsführer · Wien' },
       date: '2024 – now',
-      about: {
-        en: 'AI software for physiotherapy practices, designed around home exercise adherence. In Echo, patients film their exercises and get feedback between visits. Session notes are transcribed and written on our own hardware in Germany, and booking and payments run in the same app.',
-        de: 'KI-Software für Physiotherapiepraxen, ausgerichtet auf die Treue zu Heimübungen. In Echo filmen Patient:innen ihre Übungen und bekommen zwischen den Terminen Feedback. Die Dokumentation wird auf unserer eigenen Hardware in Deutschland transkribiert und geschrieben, Terminbuchung und Zahlungen laufen in derselben App.',
-      },
+      lines: [
+        {
+          en: 'Practice software for physiotherapists, designed around home exercise adherence.',
+          de: 'Praxissoftware für Physiotherapeut:innen, ausgerichtet auf das Dranbleiben bei Heimübungen.',
+        },
+        {
+          en: 'Patients record their exercises and get feedback between appointments; notes, booking and payments run in the same app.',
+          de: 'Patient:innen filmen ihre Übungen und bekommen zwischen den Terminen Feedback; Dokumentation, Termine und Zahlungen laufen in derselben App.',
+        },
+      ],
       url: links.bounceback,
     },
     {
       title: 'Eigen Running',
       detail: { en: 'Cofounder & Chief of Product · Zurich', de: 'Mitgründer & Chief of Product · Zürich' },
       date: '2025 – now',
-      about: {
-        en: 'From a short running video and a 3D scan of the feet, Eigen infers gait and foot mechanics and matches shoes against more than 200 studies. I lead product and developed the core biomechanics.',
-        de: 'Aus einem kurzen Laufvideo und einem 3D-Scan der Füße leitet Eigen Gang- und Fußmechanik ab und gleicht Schuhe mit über 200 Studien ab. Ich leite das Produkt und habe die biomechanischen Kernalgorithmen entwickelt.',
-      },
+      lines: [
+        {
+          en: 'Running shoe recommendations from a phone video and a 3D foot scan.',
+          de: 'Laufschuh-Empfehlungen aus einem Handyvideo und einem 3D-Fußscan.',
+        },
+        {
+          en: 'Developed the gait and foot biomechanics behind them.',
+          de: 'Entwicklung der Gang- und Fußbiomechanik dahinter.',
+        },
+      ],
       url: links.eigen,
     },
   ] satisfies Card[],
-  /** Medical school gets its own card with photos and the details that matter. */
-  medicine: {
-    title: 'University College London',
-    detail: { en: 'MBBS Medicine', de: 'MBBS Medizin' },
-    date: '2020 – 2026',
-    about: {
-      en: 'Clinical years at University College Hospital and the Royal Free, with specialist placements at Queen Square, Great Ormond Street and Moorfields Eye Hospital.',
-      de: 'Klinische Jahre am University College Hospital und am Royal Free, mit Rotationen am Queen Square, Great Ormond Street und Moorfields Eye Hospital.',
+  /** Two photos between Work and Medicine, no text. */
+  photoPair: [
+    {
+      file: 'night-run.jpg',
+      alt: { en: 'Till after an evening run in London', de: 'Till nach einem Abendlauf in London' },
+      position: '50% 35%',
     },
-    photos: [
+    {
+      file: 'with-dad.jpg',
+      alt: { en: 'Till and his dad in London at night', de: 'Till und sein Papa abends in London' },
+    },
+  ] satisfies Photo[],
+  medicine: {
+    ucl: {
+      title: 'University College London',
+      detail: { en: 'MBBS Medicine', de: 'MBBS Medizin' },
+      date: '2020 – 2026',
+      lines: [
+        {
+          en: 'Clinical years at University College Hospital and the Royal Free, with specialist placements at Queen Square, Great Ormond Street and Moorfields Eye Hospital.',
+          de: 'Klinische Jahre am University College Hospital und am Royal Free, mit Rotationen am Queen Square, Great Ormond Street und Moorfields Eye Hospital.',
+        },
+      ],
+    } satisfies Card,
+    bsc: {
+      title: { en: 'Intercalated BSc Medical Sciences with Global Health', de: 'Intercalated BSc Medical Sciences with Global Health' },
+      date: '2022 – 2023',
+      thesis: {
+        en: 'Thesis: Economic evaluations of diabetic retinopathy screening models in the era of digital medicine and AI, a scoping review',
+        de: 'Abschlussarbeit: Economic evaluations of diabetic retinopathy screening models in the era of digital medicine and AI, a scoping review',
+      },
+    },
+    graduation: [
       {
         file: 'ucl-medical-school.jpg',
         alt: {
@@ -115,26 +153,26 @@ export const page = {
         file: 'ucl-portico.jpg',
         alt: { en: 'Till in graduation gown in front of the UCL portico', de: 'Till im Talar vor dem Portikus des UCL' },
       },
-    ],
-    /** The intercalated degree, shown as part of the medicine card. */
-    bsc: {
-      title: { en: 'Intercalated BSc Medical Sciences with Global Health', de: 'Intercalated BSc Medical Sciences with Global Health' },
-      date: '2022 – 2023',
-      thesis: {
-        en: 'Thesis: Economic evaluations of diabetic retinopathy screening models in the era of digital medicine and AI, a scoping review',
-        de: 'Abschlussarbeit: Economic evaluations of diabetic retinopathy screening models in the era of digital medicine and AI, a scoping review',
+    ] satisfies Photo[],
+    elective: {
+      title: { en: 'Orthopaedics elective', de: 'Famulatur Orthopädie' },
+      detail: { en: 'Kuala Lumpur · spring and summer', de: 'Kuala Lumpur · Frühling und Sommer' },
+      date: '2026',
+    } satisfies Card,
+    electivePhoto: {
+      file: 'theatre-kl.jpg',
+      alt: { en: 'Till with the surgical team in an orthopaedic theatre in Kuala Lumpur', de: 'Till mit dem OP-Team in einem orthopädischen OP in Kuala Lumpur' },
+    } satisfies Photo,
+    other: [
+      { title: 'Vienna International School', detail: { en: 'International Baccalaureate', de: 'International Baccalaureate' }, date: '2019' },
+      {
+        title: { en: 'Austrian Red Cross', de: 'Österreichisches Rotes Kreuz' },
+        detail: { en: 'Paramedic, civil service · Vienna', de: 'Rettungssanitäter, Zivildienst · Wien' },
+        date: '2019 – 2020',
       },
-    },
+    ] satisfies Card[],
   },
-  background: [
-    { title: 'Vienna International School', detail: { en: 'International Baccalaureate', de: 'International Baccalaureate' }, date: '2019' },
-    {
-      title: { en: 'Austrian Red Cross', de: 'Österreichisches Rotes Kreuz' },
-      detail: { en: 'Paramedic, civil service · Vienna', de: 'Rettungssanitäter, Zivildienst · Wien' },
-      date: '2019 – 2020',
-    },
-  ] satisfies Card[],
-  /** Each sport with a photo of Till doing it, and the details underneath. */
+  /** Each sport with a photo of Till doing it, and the facts underneath. */
   sports: [
     {
       file: 'ironman-swim.jpg',
@@ -153,12 +191,12 @@ export const page = {
       lines: [
         { text: { en: 'FIS races', de: 'FIS-Rennen' } },
         { text: { en: 'Viennese youth champion', de: 'Wiener Jugendmeister' } },
-        { text: { en: 'Ski instructor, Landesskilehrer (level 3)', de: 'Landesskilehrer' } },
+        { text: { en: 'Landesskilehrer (level 3)', de: 'Landesskilehrer' } },
       ],
     },
     {
-      file: 'ice-hockey-sister.jpg',
-      alt: { en: 'Till in his UCL ice hockey jersey with his sister after a game', de: 'Till im UCL-Eishockeytrikot mit seiner Schwester nach einem Spiel' },
+      file: 'hockey-fisheye.jpg',
+      alt: { en: 'Till in the UCL Yetis locker room before a game', de: 'Till in der Kabine der UCL Yetis vor einem Spiel' },
       title: { en: 'Ice hockey', de: 'Eishockey' },
       lines: [{ text: { en: 'UCL Yetis, BUIHA Division 1', de: 'UCL Yetis, BUIHA Division 1' } }],
     },
@@ -168,26 +206,38 @@ export const page = {
       title: { en: 'Running', de: 'Laufen' },
       lines: [
         { text: { en: 'Marathons', de: 'Marathons' }, url: links.amsterdamMarathon },
+        { text: { en: 'Hosted a run club in London', de: 'Lauftreff in London geleitet' } },
       ],
     },
-  ] as { file: string; alt: L; title: L; lines: Part[]; position?: string }[],
+  ] as (Photo & { title: L; lines: Part[] })[],
   hobbies: [
     { title: { en: 'Photography & film', de: 'Fotografie & Film' }, detail: { en: '', de: '' }, date: '' },
     { title: { en: 'Philosophy', de: 'Philosophie' }, detail: { en: '', de: '' }, date: '' },
+    { title: { en: 'Dancing', de: 'Tanzen' }, detail: { en: '', de: '' }, date: '' },
     {
-      title: { en: 'DIY engineering projects', de: 'DIY-Technikprojekte' },
+      title: { en: 'DIY projects', de: 'DIY-Projekte' },
       detail: {
-        en: 'FPV drones since 13, 3D printing, and custom CPAP masks generated from smartphone face scans, bench-tested for seal against commercial masks',
-        de: 'FPV-Drohnen seit 13, 3D-Druck und maßgefertigte CPAP-Masken aus Smartphone-Gesichtsscans, im Labor auf Dichtheit gegen handelsübliche Masken getestet',
+        en: 'FPV drones from age 13, 3D printing, custom-fitted CPAP masks from phone face scans',
+        de: 'FPV-Drohnen seit 13, 3D-Druck, maßgefertigte CPAP-Masken aus Handy-Gesichtsscans',
       },
       date: '',
     },
   ] satisfies Card[],
-  contact: {
-    text: {
-      en: 'The easiest way to reach me is by email.',
-      de: 'Am einfachsten erreichst du mich per E-Mail.',
+  /** A last row of photos before Contact, no text. */
+  photoRow: [
+    { file: 'friends.jpg', alt: { en: 'Till with friends on a night out in London', de: 'Till mit Freunden an einem Abend in London' } },
+    {
+      file: 'ice-hockey-sister.jpg',
+      alt: { en: 'Till in his UCL ice hockey jersey with his sister after a game', de: 'Till im UCL-Eishockeytrikot mit seiner Schwester nach einem Spiel' },
     },
+    {
+      file: 'summer-austria.jpg',
+      alt: { en: 'Till and a friend in lederhosen in the Austrian mountains', de: 'Till und ein Freund in Lederhosen in den österreichischen Bergen' },
+    },
+  ] satisfies Photo[],
+  contact: {
+    text: { en: 'LinkedIn is the easiest way to reach me.', de: 'Am einfachsten erreichst du mich über LinkedIn.' },
+    pending: { en: 'Link coming soon', de: 'Link folgt' },
   },
   footer: {
     forMachines: { en: 'Summary for AI assistants', de: 'Zusammenfassung für KI-Assistenten' },
@@ -199,8 +249,8 @@ export const text = (t: string | L, lang: Lang) => (typeof t === 'string' ? t : 
 /** The fuller record, for search engines (JSON-LD) and AI assistants (/llms.txt) only. */
 export const facts = {
   summary: {
-    en: 'Till Findl is the cofounder and CEO of Bounceback, AI-powered practice software for physiotherapists in Germany, Austria and Switzerland, based in Vienna. He studied medicine at University College London (MBBS, 2020 to 2026) and is also cofounder and Chief of Product of Eigen Running in Zurich, which recommends running shoes from a smartphone scan of the feet and running biomechanics.',
-    de: 'Till Findl ist Mitgründer und Geschäftsführer von Bounceback, KI-gestützter Praxissoftware für Physiotherapeut:innen in Deutschland, Österreich und der Schweiz, mit Sitz in Wien. Er hat am University College London Medizin studiert (MBBS, 2020 bis 2026) und ist außerdem Mitgründer und Chief of Product von Eigen Running in Zürich, das Laufschuhe anhand eines Smartphone-Scans der Füße und der Laufbiomechanik empfiehlt.',
+    en: 'Till Findl studied medicine at University College London (MBBS, 2020 to 2026) and lives in Vienna. He is cofounder and CEO of Bounceback, AI-powered practice software for physiotherapists in Germany, Austria and Switzerland, and cofounder and Chief of Product of Eigen Running in Zurich, which recommends running shoes from a phone video and a 3D scan of the feet.',
+    de: 'Till Findl hat am University College London Medizin studiert (MBBS, 2020 bis 2026) und lebt in Wien. Er ist Mitgründer und Geschäftsführer von Bounceback, KI-gestützter Praxissoftware für Physiotherapeut:innen in Deutschland, Österreich und der Schweiz, und Mitgründer und Chief of Product von Eigen Running in Zürich, das Laufschuhe anhand eines Handyvideos und eines 3D-Fußscans empfiehlt.',
   } satisfies L,
   place: { en: 'Vienna', de: 'Wien' } satisfies L,
   languages: {
@@ -217,7 +267,7 @@ export const facts = {
       country: 'AT',
       since: 2024,
       about:
-        'AI-powered software for physiotherapy practices in the DACH region (Germany, Austria, Switzerland): booking, notes that write themselves, payments on the phone, and Echo, the patient app that keeps patients on track between visits. Free to start (from €0). Team of four in Vienna, with engineers from MIT and TU Wien.',
+        'AI-powered software for physiotherapy practices in the DACH region (Germany, Austria, Switzerland), designed around home exercise adherence: Echo, the patient app, lets patients record their exercises and get feedback between appointments; notes, booking and payments run in the same app. Team of four in Vienna.',
     },
     {
       name: 'Eigen Running',
@@ -228,25 +278,23 @@ export const facts = {
       country: 'CH',
       since: 2025,
       about:
-        'Recommends running shoes from a 3D scan of the feet and running biomechanics captured on an iPhone, grounded in more than 200 peer-reviewed studies. Till built the core biomechanics (3D gait from 2D video). Built with engineers at ETH Zurich; backed by an ETH Zurich jFund grant.',
+        'Recommends running shoes from a phone video and a 3D scan of the feet, grounded in more than 200 peer-reviewed studies. Till developed the core gait and foot biomechanics. Built with engineers at ETH Zurich; backed by an ETH Zurich jFund grant.',
     },
   ],
   background: [
     'MBBS Medicine, University College London, 2020 to 2026. Clinical placements at University College Hospital and the Royal Free, with specialist time at Queen Square (neurology), Great Ormond Street (paediatrics) and Moorfields (ophthalmology).',
-    'Intercalated BSc Medical Sciences with Global Health, UCL, 2022 to 2023. Thesis: a scoping review of economic evaluations of diabetic retinopathy screening in the era of AI, supervised at the London School of Hygiene & Tropical Medicine.',
-    'Final-year placement in a rural GP practice on the Isle of Harris, Outer Hebrides, including work on handling medicine shortages.',
-    'Peer teaching at UCL Medical School in cardiology, orthopaedics and neurology.',
-    'Civil service as a paramedic with the Red Cross in Vienna, 2019 to 2020, through the first months of COVID-19.',
-    'Side project: custom 3D-printed CPAP masks from smartphone face scans, bench-tested against commercial masks.',
+    'Orthopaedics elective in Kuala Lumpur, spring and summer 2026.',
+    'Intercalated BSc Medical Sciences with Global Health, UCL, 2022 to 2023. Thesis: Economic evaluations of diabetic retinopathy screening models in the era of digital medicine and AI, a scoping review.',
+    'Civil service as a paramedic with the Red Cross in Vienna, 2019 to 2020.',
     'International Baccalaureate, Vienna International School, 2019.',
   ],
   outside: [
-    'Alpine ski racing at FIS level; Viennese youth champion; ski instructor (Landesskilehrer, level 3).',
-    `Triathlon: Ironman Kalmar (${links.ironmanKalmar}), Ironman Tallinn. Several marathons, among them Amsterdam (${links.amsterdamMarathon}).`,
+    'Triathlon: Ironman Kalmar, Ironman Tallinn.',
+    'Ski racing: FIS races, Viennese youth champion, Landesskilehrer (state ski instructor, level 3).',
     'Ice hockey for the UCL Yetis (BUIHA Division 1).',
-    'Photography and film.',
-    'Reading philosophy.',
-    'DIY engineering: FPV drones since age 13 (how he got into engineering), 3D printing.',
+    'Running: several marathons, among them Amsterdam; hosted a run club in London for years.',
+    'Photography and film, philosophy, dancing.',
+    'DIY projects: FPV drones from age 13, 3D printing, custom-fitted CPAP masks from phone face scans.',
   ],
   education: [
     { name: 'University College London', degree: 'MBBS Medicine' },
@@ -256,10 +304,7 @@ export const facts = {
 };
 
 export const meta = {
-  title: {
-    en: 'Till Findl · Founder of Bounceback, trained doctor',
-    de: 'Till Findl · Gründer von Bounceback, Mediziner',
-  } satisfies L,
+  title: { en: 'Till Findl', de: 'Till Findl' } satisfies L,
   description: facts.summary,
 };
 

@@ -26,7 +26,6 @@ export const GET: APIRoute = () => {
     '',
     `- Based in: ${facts.place.en}`,
     `- Languages: ${facts.languages.en}`,
-    `- Email: ${links.email}`,
     `- Website: ${SITE_URL}/ (Deutsch: ${SITE_URL}/de/)`,
     ...(links.linkedin ? [`- LinkedIn: ${links.linkedin}`] : []),
     '',

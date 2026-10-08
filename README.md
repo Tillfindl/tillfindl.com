@@ -31,7 +31,7 @@ src/
   pages/index.astro     "/" (English); pages/de/index.astro is "/de/" (German); both render Page
   pages/llms.txt.ts     "/llms.txt": a plain summary for AI assistants, built from the profile
   pages/404.astro       The not-found page
-  components/           Page (intro and sections), InfoCard (one card), Footer
+  components/           Page (intro and sections), InfoCard (a text card), PhotoCard (a photo card), Footer
   layouts/Base.astro    The HTML shell: <head>, language alternates, social card, JSON-LD
   styles/global.css     Design tokens (colour, type, spacing) and base styles
   assets/photos/        Photos; the build resizes them and strips their metadata

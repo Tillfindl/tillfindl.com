@@ -1,11 +1,13 @@
 ---
-// The whole page, in one language: name and portrait, then work, education, sport and contact
-// as cards. /index.astro and /de/index.astro both render this.
+// The whole page, in one language: name, one sentence and portrait, then work, a pair of
+// photos, medicine, sport, other things, a row of photos and contact. Text cards and photo
+// cards share one grid so they mix freely. /index.astro and /de/index.astro both render this.
 import { getImage, Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import InfoCard from './InfoCard.astro';
+import PhotoCard from './PhotoCard.astro';
 import Footer from './Footer.astro';
-import { links, meta, page, pathFor, person, SITE_URL, type Lang } from '../content/profile';
+import { links, meta, page, pathFor, person, SITE_URL, text, type Lang } from '../content/profile';
 import { photo } from '../content/images';
 import { personJsonLd } from '../content/jsonld';
 
@@ -42,7 +44,6 @@ const langs: Lang[] = ['en', 'de'];
         <div class="buttons">
           <a class="button primary" href={links.bounceback} rel="noopener">Bounceback <span aria-hidden="true">↗</span></a>
           <a class="button" href={links.eigen} rel="noopener">Eigen <span aria-hidden="true">↗</span></a>
-          <a class="button" href={`mailto:${links.email}`}>{lang === 'en' ? 'Email' : 'E-Mail'}</a>
           {links.linkedin && <a class="button" href={links.linkedin} rel="me noopener">LinkedIn <span aria-hidden="true">↗</span></a>}
         </div>
       </div>
@@ -60,51 +61,50 @@ const langs: Lang[] = ['en', 'de'];
     <main>
       <section aria-labelledby="work">
         <h2 id="work">{sections.work[lang]}</h2>
-        <div class="grid two">
-          {page.work.map((c) => <InfoCard lang={lang} card={c} />)}
+        <div class="bento">
+          {page.work.map((c) => <InfoCard lang={lang} card={c} class="d-6" />)}
+          {page.photoPair.map((p) => <PhotoCard lang={lang} photo={p} class="d-6 t-3 half tall" sizes="(min-width: 40rem) 30rem, 50vw" />)}
         </div>
       </section>
 
-      <section aria-labelledby="background">
-        <h2 id="background">{sections.background[lang]}</h2>
-        <article class="card medicine">
-          <div class="med-photos">
-            {medicine.photos.map((p) => <Image src={photo(p.file)} alt={p.alt[lang]} widths={[320, 480, 640]} sizes="(min-width: 48rem) 12rem, 45vw" />)}
-          </div>
-          <div class="med-text">
-            <div class="med-top">
-              <h3>{medicine.title}</h3>
-              <span class="muted small">{medicine.date}</span>
-            </div>
-            <p class="muted small">{medicine.detail[lang]}</p>
-            <p class="med-about">{medicine.about[lang]}</p>
+      <section aria-labelledby="medicine">
+        <h2 id="medicine">{sections.medicine[lang]}</h2>
+        <div class="bento">
+          <InfoCard lang={lang} card={medicine.ucl} class="d-6">
             <div class="bsc">
-              <div class="med-top">
-                <p class="muted small">{medicine.bsc.title[lang]}</p>
-                <span class="muted small">{medicine.bsc.date}</span>
+              <div class="row">
+                <p class="small muted">{medicine.bsc.title[lang]}</p>
+                <span class="small muted nowrap">{medicine.bsc.date}</span>
               </div>
-              <p>{medicine.bsc.thesis[lang]}</p>
+              <p class="body">{medicine.bsc.thesis[lang]}</p>
             </div>
-          </div>
-        </article>
-        <div class="grid two after">
-          {page.background.map((c) => <InfoCard lang={lang} card={c} />)}
+          </InfoCard>
+          {medicine.graduation.map((p) => <PhotoCard lang={lang} photo={p} class="d-3 t-3 half" sizes="(min-width: 60rem) 15rem, 50vw" />)}
+          <PhotoCard lang={lang} photo={medicine.electivePhoto} class="d-6 landscape beside-3" sizes="(min-width: 60rem) 30rem, 100vw" />
+          <InfoCard lang={lang} card={medicine.elective} class="d-6" />
+          {medicine.other.map((c) => <InfoCard lang={lang} card={c} class="d-6 t-3" />)}
         </div>
       </section>
 
-      <section aria-labelledby="hobbies">
-        <h2 id="hobbies">{sections.hobbies[lang]}</h2>
-        <div class="grid sports">
+      <section aria-labelledby="sport">
+        <h2 id="sport">{sections.sports[lang]}</h2>
+        <div class="bento">
           {
             page.sports.map((s) => (
-              <article class="card sport">
-                <Image src={photo(s.file)} alt={s.alt[lang]} style={s.position ? `object-position: ${s.position}` : undefined} widths={[320, 480, 720]} sizes="(min-width: 60rem) 14rem, (min-width: 40rem) 45vw, 70vw" />
+              <article class="card sport d-3 t-3 half">
+                <Image
+                  src={photo(s.file)}
+                  alt={s.alt[lang]}
+                  style={s.position ? `object-position: ${s.position}` : undefined}
+                  widths={[320, 480, 720]}
+                  sizes="(min-width: 60rem) 14rem, 45vw"
+                />
                 <div class="caption">
                   <h3>{s.title[lang]}</h3>
                   <p>
                     {s.lines.map((l, i) => (
                       <>
-                        {i > 0 && <span class="dot"> · </span>}
+                        {i > 0 && <span> · </span>}
                         {l.url ? (
                           <a href={l.url} rel="noopener">
                             {l.text[lang]} <span aria-hidden="true">↗</span>
@@ -120,8 +120,14 @@ const langs: Lang[] = ['en', 'de'];
             ))
           }
         </div>
-        <div class="grid three after">
-          {page.hobbies.map((c) => <InfoCard lang={lang} card={c} />)}
+      </section>
+
+      <section aria-labelledby="other">
+        <h2 id="other">{sections.hobbies[lang]}</h2>
+        <div class="bento">
+          {page.hobbies.map((c) => <InfoCard lang={lang} card={c} class="d-3 t-3 half" />)}
+          <PhotoCard lang={lang} photo={page.photoRow[0]} class="d-4 t-2 tall" sizes="(min-width: 60rem) 20rem, 100vw" />
+          {page.photoRow.slice(1).map((p) => <PhotoCard lang={lang} photo={p} class="d-4 t-2 half tall" sizes="(min-width: 60rem) 20rem, 50vw" />)}
         </div>
       </section>
 
@@ -129,7 +135,15 @@ const langs: Lang[] = ['en', 'de'];
         <h2 id="contact">{sections.contact[lang]}</h2>
         <div class="card contact">
           <p>{page.contact.text[lang]}</p>
-          <a class="button primary" href={`mailto:${links.email}`}>{links.email}</a>
+          {
+            links.linkedin ? (
+              <a class="button primary" href={links.linkedin} rel="me noopener">
+                LinkedIn <span aria-hidden="true">↗</span>
+              </a>
+            ) : (
+              <span class="button">{page.contact.pending[lang]}</span>
+            )
+          }
         </div>
       </section>
     </main>
@@ -305,110 +319,6 @@ const langs: Lang[] = ['en', 'de'];
     letter-spacing: -0.015em;
   }
 
-  .muted {
-    color: var(--muted);
-  }
-
-  .small {
-    font-size: var(--text-sm);
-  }
-
-  .grid {
-    display: grid;
-    gap: var(--gap);
-  }
-
-  .after {
-    margin-top: var(--gap);
-  }
-
-  @media (min-width: 40rem) {
-    .two {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
-
-  @media (min-width: 48rem) {
-    .three {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
-
-  /* Medical school: two photos beside the details. */
-  .medicine {
-    display: grid;
-    gap: 1.5rem;
-  }
-
-  .med-photos {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 0.5rem;
-    align-self: start;
-  }
-
-  .med-photos :global(img) {
-    width: 100%;
-    aspect-ratio: 2 / 3;
-    object-fit: cover;
-    border-radius: calc(var(--radius) - 0.4rem);
-  }
-
-  @media (min-width: 48rem) {
-    .medicine {
-      grid-template-columns: 24rem minmax(0, 1fr);
-      gap: 2rem;
-    }
-
-    /* The photos run the full height of the card, beside however long the details are. */
-    .med-photos {
-      align-self: stretch;
-    }
-
-    .med-photos :global(img) {
-      height: 100%;
-      aspect-ratio: auto;
-    }
-  }
-
-  .med-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 1rem;
-  }
-
-  .med-text > p {
-    margin-top: 0.3rem;
-  }
-
-  .med-text {
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* The BSc sits at the foot of the medicine card, under a hairline. */
-  .bsc {
-    display: grid;
-    gap: 0.4rem;
-    margin-top: auto;
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--border);
-  }
-
-  .med-text > p + .bsc {
-    margin-top: 2rem;
-  }
-
-  .med-about,
-  .bsc p:not(.muted) {
-    color: var(--body);
-  }
-
-  .med-about {
-    margin-top: 0.75rem;
-  }
-
   .lede {
     max-width: 30em;
     margin-top: 1.5rem;
@@ -417,38 +327,121 @@ const langs: Lang[] = ['en', 'de'];
     line-height: 1.55;
   }
 
-  /* Sports: a photo of Till doing each one, with the details underneath. */
-  .sports {
-    grid-auto-flow: column;
-    grid-auto-columns: 72%;
-    margin: 0 calc(-1 * var(--side));
-    padding: 0 var(--side);
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-padding-inline: var(--side);
-    scrollbar-width: none;
+  .muted {
+    color: var(--muted);
   }
 
-  .sports > * {
-    scroll-snap-align: start;
+  .small {
+    font-size: var(--text-sm);
+  }
+
+  .nowrap {
+    white-space: nowrap;
+  }
+
+  /*
+   * One grid for text and photo cards. Two columns on a phone (every card full width unless it
+   * is a `half`), six on a tablet (`t-*` spans), twelve on a desktop (`d-*` spans).
+   */
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--gap);
+  }
+
+  .bento > :global(*) {
+    grid-column: span 2;
+  }
+
+  .bento > :global(.half) {
+    grid-column: span 1;
   }
 
   @media (min-width: 40rem) {
-    .sports {
-      grid-auto-flow: row;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      margin: 0;
-      padding: 0;
-      overflow: visible;
+    .bento {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .bento > :global(*) {
+      grid-column: span 6;
+    }
+
+    .bento > :global(.t-2) {
+      grid-column: span 2;
+    }
+
+    .bento > :global(.t-3) {
+      grid-column: span 3;
     }
   }
 
   @media (min-width: 60rem) {
-    .sports {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+    .bento {
+      grid-template-columns: repeat(12, minmax(0, 1fr));
+    }
+
+    .bento > :global(.d-3) {
+      grid-column: span 3;
+    }
+
+    .bento > :global(.d-4) {
+      grid-column: span 4;
+    }
+
+    .bento > :global(.d-6) {
+      grid-column: span 6;
+    }
+
+    .bento > :global(.d-8) {
+      grid-column: span 8;
+    }
+
+    /* A photo that runs beside three stacked text cards, as tall as they are together. */
+    .bento > :global(.beside-3) {
+      grid-row: span 3;
+      aspect-ratio: auto;
+      min-height: 18rem;
     }
   }
 
+  /* Photo cards with no text beside them need a height of their own. */
+  .bento > :global(.tall) {
+    height: clamp(15rem, 34vw, 28rem);
+  }
+
+  .bento > :global(.landscape) {
+    aspect-ratio: 3 / 2;
+  }
+
+  .bento > :global(.photo-card:not(.tall):not(.landscape)) {
+    min-height: 14rem;
+  }
+
+  /* The BSc sits at the foot of the UCL card, under a hairline. */
+  .bsc {
+    display: grid;
+    gap: 0.4rem;
+    margin-top: auto;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+  }
+
+  :global(.lines) + .bsc {
+    margin-top: 1.5rem;
+  }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+  }
+
+  .body {
+    color: var(--body);
+  }
+
+  /* Sports: a photo of Till doing each one, with the facts underneath. */
   .sport {
     display: grid;
     align-content: start;
@@ -458,6 +451,7 @@ const langs: Lang[] = ['en', 'de'];
 
   .sport :global(img) {
     width: 100%;
+    height: auto;
     aspect-ratio: 4 / 5;
     object-fit: cover;
     border-radius: calc(var(--radius) - 0.4rem);

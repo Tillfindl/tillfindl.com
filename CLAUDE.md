@@ -33,6 +33,11 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
   and the technical detail carry the weight; the words stay plain.
 - Write for a stranger or an AI assistant who has never heard of Till or Bounceback: explain
   what things are, in the order they happened, and let one sentence lead into the next.
+- Like Max Krause's site: one "I" sentence at the top, then short verb-first lines or plain
+  nouns with no "I". State facts, never prove them (no test results, no "lab-level", no counts
+  as a flex). No company names in the intro. Never call Till an engineer. "Dad", not "father".
+- Photos are their own cards with no visible captions; the alt text is for screen readers and
+  search engines only. Text and photo cards share one grid (`.bento` in `Page.astro`).
 - A normal personal website: name, place and buttons beside a medium portrait (never
   full-bleed), then sections of cards. It is a personal website, not a CV: leave out tools,
   placements and dates wherever they are not needed. If a line describes Till's personality

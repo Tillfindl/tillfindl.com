@@ -1,19 +1,22 @@
 ---
-// One card: a title with its date, a detail line, an optional sentence, and a link if it has one.
+// One text card: a title with its date, a detail line, short lines under it, a link if it has
+// one, and room (the slot) for anything else the card needs.
 import { text, type Card, type Lang } from '../content/profile';
 
 interface Props {
   lang: Lang;
   card: Card;
+  /** Extra classes, usually the card's width in the grid. */
+  class?: string;
 }
 
-const { lang, card: c } = Astro.props;
+const { lang, card: c, class: extra } = Astro.props;
 const Tag = c.url ? 'a' : 'div';
 // Dates are written in English ("2024 – now"); only the open end needs translating.
 const date = lang === 'de' ? c.date.replace('now', 'heute') : c.date;
 ---
 
-<Tag class:list={['card', 'info', { wide: c.wide }]} href={c.url} rel={c.url ? 'noopener' : undefined}>
+<Tag class:list={['card', 'info', extra]} href={c.url} rel={c.url ? 'noopener' : undefined}>
   <div class="top">
     <h3>
       {text(c.title, lang)}
@@ -22,13 +25,22 @@ const date = lang === 'de' ? c.date.replace('now', 'heute') : c.date;
     {date && <span class="date">{date}</span>}
   </div>
   {c.detail[lang] && <p class="detail">{c.detail[lang]}</p>}
-  {c.about && <p class="about">{c.about[lang]}</p>}
+  {
+    c.lines && (
+      <div class="lines">
+        {c.lines.map((l) => (
+          <p>{l[lang]}</p>
+        ))}
+      </div>
+    )
+  }
+  <slot />
 </Tag>
 
 <style>
   .info {
-    display: grid;
-    align-content: start;
+    display: flex;
+    flex-direction: column;
     gap: 0.3rem;
   }
 
@@ -66,7 +78,9 @@ const date = lang === 'de' ? c.date.replace('now', 'heute') : c.date;
     white-space: nowrap;
   }
 
-  .about {
+  .lines {
+    display: grid;
+    gap: 0.4rem;
     margin-top: 0.75rem;
     color: var(--body);
   }
