@@ -37,10 +37,8 @@ export function personJsonLd(lang: Lang, imageUrl: string) {
       })),
       knowsLanguage: ['de', 'en', 'es'],
       knowsAbout: ['Medicine', 'Physiotherapy software', 'Digital health', 'Biomechanics', 'Gait analysis', 'Product design'],
-      homeLocation: [
-        { '@type': 'City', name: 'Vienna', address: { '@type': 'PostalAddress', addressCountry: 'AT' } },
-        { '@type': 'City', name: 'London', address: { '@type': 'PostalAddress', addressCountry: 'GB' } },
-      ],
+      email: `mailto:${links.email}`,
+      homeLocation: { '@type': 'City', name: 'Vienna', address: { '@type': 'PostalAddress', addressCountry: 'AT' } },
       sameAs: [links.linkedin, links.bounceback, links.eigen].filter(Boolean),
     },
   };

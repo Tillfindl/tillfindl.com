@@ -42,6 +42,7 @@ const langs: Lang[] = ['en', 'de'];
         <div class="buttons">
           <a class="button primary" href={links.bounceback} rel="noopener">Bounceback <span aria-hidden="true">↗</span></a>
           <a class="button" href={links.eigen} rel="noopener">Eigen <span aria-hidden="true">↗</span></a>
+          <a class="button" href={`mailto:${links.email}`}>{lang === 'en' ? 'Email' : 'E-Mail'}</a>
           {links.linkedin && <a class="button" href={links.linkedin} rel="me noopener">LinkedIn <span aria-hidden="true">↗</span></a>}
         </div>
       </div>
@@ -128,15 +129,7 @@ const langs: Lang[] = ['en', 'de'];
         <h2 id="contact">{sections.contact[lang]}</h2>
         <div class="card contact">
           <p>{page.contact.text[lang]}</p>
-          {
-            links.linkedin ? (
-              <a class="button primary" href={links.linkedin} rel="me noopener">
-                LinkedIn <span aria-hidden="true">↗</span>
-              </a>
-            ) : (
-              <span class="button">{page.contact.pending[lang]}</span>
-            )
-          }
+          <a class="button primary" href={`mailto:${links.email}`}>{links.email}</a>
         </div>
       </section>
     </main>

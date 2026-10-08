@@ -23,6 +23,8 @@ export const links = {
   eigen: 'https://www.eigen-running.com',
   ironmanKalmar: 'https://www.endurance-data.com/de/ergebnis/898/1616-till-findl/',
   amsterdamMarathon: 'https://sporthive.com/events/s/7250456063290378496/race/7250456063290379008/bib/21040',
+  /** Public on purpose: Till wants people to reach him by email. */
+  email: 'till@findl.at',
 };
 
 export const person = {
@@ -55,11 +57,14 @@ export const page = {
     file: 'portrait-harris.jpg',
     alt: { en: 'Till Findl on the Isle of Harris, Scotland', de: 'Till Findl auf der Isle of Harris, Schottland' },
   },
-  place: { en: 'Vienna & London', de: 'Wien & London' },
-  /** One warm, plain line under the name: what matters to Till, and how he works. */
+  place: { en: 'Vienna', de: 'Wien' },
+  /**
+   * Who Till is, for a stranger or an AI assistant who has never heard of him: in the order it
+   * happened, plain and understated, with the work doing the talking.
+   */
   intro: {
-    en: 'I’ve always been curious about why things are done the way they are. That question took me from medicine to building tools for clinicians, and it shapes how I work: carefully, precisely, and without rushing the details. The best part is doing it alongside good people.',
-    de: 'Ich wollte schon immer wissen, warum Dinge so gemacht werden, wie sie gemacht werden. Diese Frage hat mich von der Medizin dazu gebracht, Werkzeuge für Kliniker:innen zu bauen, und sie prägt, wie ich arbeite: sorgfältig, genau und ohne bei den Details zu hetzen. Am schönsten ist es, das gemeinsam mit guten Menschen zu tun.',
+    en: 'I got into engineering at 13, putting together FPV drones. Later I studied medicine at UCL in London and worked on healthcare software alongside my degree. Today I live in Vienna and run Bounceback, AI software that helps physiotherapy practices keep patients doing their home exercises. I also lead product at Eigen Running in Zurich.',
+    de: 'Zur Technik bin ich mit 13 über FPV-Drohnen gekommen. Danach habe ich am UCL in London Medizin studiert und neben dem Studium an Software für das Gesundheitswesen gearbeitet. Heute lebe ich in Wien und leite Bounceback, eine KI-Software, mit der Physiotherapiepraxen ihre Patient:innen bei den Heimübungen halten. Außerdem leite ich das Produkt bei Eigen Running in Zürich.',
   },
   sections: {
     work: { en: 'Work', de: 'Arbeit' },
@@ -73,8 +78,8 @@ export const page = {
       detail: { en: 'Cofounder & CEO · Vienna', de: 'Mitgründer & Geschäftsführer · Wien' },
       date: '2024 – now',
       about: {
-        en: 'AI-powered software for physiotherapy practices, built around one problem: most patients stop doing their home exercises between visits. Echo keeps them on track, with notes, booking and payments running alongside it.',
-        de: 'KI-gestützte Software für Physiotherapiepraxen, gebaut um ein Problem: Die meisten Patient:innen hören zwischen den Terminen mit ihren Heimübungen auf. Echo hält sie dran, Dokumentation, Terminbuchung und Zahlungen laufen daneben mit.',
+        en: 'AI software for physiotherapy practices, designed around home exercise adherence. In Echo, patients film their exercises and get feedback between visits. Session notes are transcribed and written on our own hardware in Germany, and booking and payments run in the same app.',
+        de: 'KI-Software für Physiotherapiepraxen, ausgerichtet auf die Treue zu Heimübungen. In Echo filmen Patient:innen ihre Übungen und bekommen zwischen den Terminen Feedback. Die Dokumentation wird auf unserer eigenen Hardware in Deutschland transkribiert und geschrieben, Terminbuchung und Zahlungen laufen in derselben App.',
       },
       url: links.bounceback,
     },
@@ -83,8 +88,8 @@ export const page = {
       detail: { en: 'Cofounder & Chief of Product · Zurich', de: 'Mitgründer & Chief of Product · Zürich' },
       date: '2025 – now',
       about: {
-        en: 'Lab-level running biomechanics on an iPhone. A 3D foot scan and a short running video become shoe recommendations that match how someone actually runs. I lead product and built the biomechanics behind it.',
-        de: 'Laufbiomechanik auf Laborniveau, am iPhone. Aus einem 3D-Fußscan und einem kurzen Laufvideo werden Schuhempfehlungen, die zum tatsächlichen Laufstil passen. Ich leite das Produkt und habe die Biomechanik dahinter entwickelt.',
+        en: 'From a short running video and a 3D scan of the feet, Eigen infers gait and foot mechanics and matches shoes against more than 200 studies. I lead product and developed the core biomechanics.',
+        de: 'Aus einem kurzen Laufvideo und einem 3D-Scan der Füße leitet Eigen Gang- und Fußmechanik ab und gleicht Schuhe mit über 200 Studien ab. Ich leite das Produkt und habe die biomechanischen Kernalgorithmen entwickelt.',
       },
       url: links.eigen,
     },
@@ -172,18 +177,17 @@ export const page = {
     {
       title: { en: 'DIY engineering projects', de: 'DIY-Technikprojekte' },
       detail: {
-        en: 'FPV drones, 3D printing, and a pipeline that turns a smartphone face scan into a custom-fitted, 3D-printed CPAP mask, bench-tested for seal against commercial masks',
-        de: 'FPV-Drohnen, 3D-Druck und eine Pipeline, die aus einem Smartphone-Gesichtsscan eine passgenaue, 3D-gedruckte CPAP-Maske macht, im Labor auf Dichtheit gegen handelsübliche Masken getestet',
+        en: 'FPV drones since 13, 3D printing, and custom CPAP masks generated from smartphone face scans, bench-tested for seal against commercial masks',
+        de: 'FPV-Drohnen seit 13, 3D-Druck und maßgefertigte CPAP-Masken aus Smartphone-Gesichtsscans, im Labor auf Dichtheit gegen handelsübliche Masken getestet',
       },
       date: '',
     },
   ] satisfies Card[],
   contact: {
     text: {
-      en: 'The best way to reach me is LinkedIn.',
-      de: 'Am besten erreichst du mich über LinkedIn.',
+      en: 'The easiest way to reach me is by email.',
+      de: 'Am einfachsten erreichst du mich per E-Mail.',
     },
-    pending: { en: 'LinkedIn link coming soon', de: 'LinkedIn-Link folgt' },
   },
   footer: {
     forMachines: { en: 'Summary for AI assistants', de: 'Zusammenfassung für KI-Assistenten' },
@@ -198,7 +202,7 @@ export const facts = {
     en: 'Till Findl is the cofounder and CEO of Bounceback, AI-powered practice software for physiotherapists in Germany, Austria and Switzerland, based in Vienna. He studied medicine at University College London (MBBS, 2020 to 2026) and is also cofounder and Chief of Product of Eigen Running in Zurich, which recommends running shoes from a smartphone scan of the feet and running biomechanics.',
     de: 'Till Findl ist Mitgründer und Geschäftsführer von Bounceback, KI-gestützter Praxissoftware für Physiotherapeut:innen in Deutschland, Österreich und der Schweiz, mit Sitz in Wien. Er hat am University College London Medizin studiert (MBBS, 2020 bis 2026) und ist außerdem Mitgründer und Chief of Product von Eigen Running in Zürich, das Laufschuhe anhand eines Smartphone-Scans der Füße und der Laufbiomechanik empfiehlt.',
   } satisfies L,
-  place: { en: 'Vienna & London', de: 'Wien & London' } satisfies L,
+  place: { en: 'Vienna', de: 'Wien' } satisfies L,
   languages: {
     en: 'German (native), English (bilingual), Spanish (conversational)',
     de: 'Deutsch (Muttersprache), Englisch (zweisprachig), Spanisch (Grundkenntnisse)',
@@ -242,8 +246,7 @@ export const facts = {
     'Ice hockey for the UCL Yetis (BUIHA Division 1).',
     'Photography and film.',
     'Reading philosophy.',
-    'DIY engineering: building FPV drones, 3D printing.',
-    'Guitar.',
+    'DIY engineering: FPV drones since age 13 (how he got into engineering), 3D printing.',
   ],
   education: [
     { name: 'University College London', degree: 'MBBS Medicine' },

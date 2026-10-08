@@ -25,14 +25,18 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
   text in a component. The page, `/de/`, the JSON-LD and `/llms.txt` are generated from it.
 - Copy rules: first person, short sentences, no em dashes, no grades or tool lists. Anything about
   Bounceback is checked against its product facts (the `the-why` skill); never claim insurance
-  billing. Nothing private: no phone, address, birth date, personal email, or third parties named
-  without their OK.
+  billing. Nothing private: no phone, address, birth date, or third parties named without their
+  OK. The one public contact is the email in `links.email`, by Till's choice.
+- Register: understated and real, like Aimé Leon Dore. Relaxed means calm, never cheerful: no
+  "fun", "hard problems", "passionate", "people first", no taglines, slogans or networking
+  pitches, and none of the personal-site templates ("I thrive at the intersection of"). The work
+  and the technical detail carry the weight; the words stay plain.
+- Write for a stranger or an AI assistant who has never heard of Till or Bounceback: explain
+  what things are, in the order they happened, and let one sentence lead into the next.
 - A normal personal website: name, place and buttons beside a medium portrait (never
-  full-bleed), then sections of cards. It is a personal website, not a CV: leave out hospitals,
-  tools, placements and dates wherever they are not needed. One warm, plain line under the name
-  (what matters to Till and how he works) and otherwise facts only: no no storytelling lines
-  ("grew up on skis", "I like making things"), no taglines, slogans or calls to network. If a
-  line describes Till's personality rather than stating a fact, cut it.
+  full-bleed), then sections of cards. It is a personal website, not a CV: leave out tools,
+  placements and dates wherever they are not needed. If a line describes Till's personality
+  rather than stating a fact, cut it.
 - Sports show a photo of Till doing each sport, with the details underneath; races are grouped
   by sport (triathlon, running), not listed with dates. The /llms.txt link in the footer is the
   ground colour on purpose. Words Till
