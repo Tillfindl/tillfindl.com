@@ -42,11 +42,12 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
   let one sentence lead into the next. Plain section titles (Bounceback, Medicine). Where Till
   has his own wording for something (the `till-voice` skill holds his product sentences), use it.
   When Till pushes back, change what he pointed at, proportionally; don't swing to the opposite.
-- Professional, with the why: one line under the name about what Till does now (never his
-  childhood), then Medicine, Bounceback, Eigen and Sport. What he saw on the wards leads into
-  Bounceback, the run club into Max, the CPAP masks and Eigen. Storytelling is fine only while the
-  reader doesn't notice it: no "that's where I met", no set-ups and pay-offs. No dad, no dancing,
-  Global Health not featured. State facts, never prove them (no test results, no "lab-level", no
+- Professional, with the why: the line under the name is Till's own wording, so keep it as
+  written. Then Medicine (UCL on its own line, the elective separate), Bounceback, Eigen and
+  Personal. What he saw on the wards leads into Bounceback; the Highbury run club leads to Max,
+  the CPAP masks (quick iterations), the pivot and Eigen. Bounceback stays short and technical, and
+  the link does the explaining. Storytelling is fine only while the reader doesn't notice it: no
+  "that's where I met", no set-ups and pay-offs. No dad, no dancing, Global Health not featured. State facts, never prove them (no test results, no "lab-level", no
   counts as a flex). Never call Till an engineer. "Dad", not "father". German says
   "Physios" and "Patienten", no ":innen" forms.
 - A personal page, not a CV or a keynote: portrait, name, one line and buttons, then short
@@ -62,8 +63,9 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
   32px, sections 96px, 64px on a phone). Below 52rem it is one centred reading column.
 - Photos sit inside the sections with no visible captions; the alt text is for screen readers
   and search engines only. Two sizes only: landscape fills the text column, upright and pairs
-  take half each; the sport photos close the last section as a grid across both columns (see
-  `Chapter.astro`). One small corner radius.
+  take half each. Personal is a set of `items` (sports and interests one by one), each with its
+  photo, a short title and one specific line, two to a row (see `Chapter.astro`). One small
+  corner radius.
 - Races are named in the text, not listed with dates, and link to their result pages; no race
   times. The /llms.txt link in the footer is the ground colour on purpose. Words Till has ruled
   out: founder (as a label), doctor (as a label for himself), "building".

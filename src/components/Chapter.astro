@@ -1,10 +1,10 @@
 ---
 // One section: a small label, then its paragraphs and photos in the text column (see `.row` in
 // global.css). Photos come in two sizes only: landscape ones fill the text column, upright ones
-// and pairs take half of it each. A strip becomes a grid across both columns and closes the
-// section, so strips belong at the end of a section's blocks.
+// and pairs take half of it each. Personal items sit two to a row at the same half width, each
+// photo with a short title and one line under it.
 import { Image } from 'astro:assets';
-import type { Block, Chapter, Lang, Photo } from '../content/profile';
+import type { Chapter, Lang, Photo } from '../content/profile';
 import { photo } from '../content/images';
 import { rich } from '../content/rich';
 
@@ -20,17 +20,13 @@ const upright = (p: Photo) => {
   return height > width;
 };
 const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : undefined);
-
-type Strip = Extract<Block, { kind: 'strip' }>;
-const content = chapter.blocks.filter((b) => b.kind !== 'strip');
-const strips = chapter.blocks.filter((b): b is Strip => b.kind === 'strip');
 ---
 
 <section class="row" id={chapter.id} aria-labelledby={`${chapter.id}-title`}>
   <h2 class="label" id={`${chapter.id}-title`}>{chapter.title[lang]}</h2>
   <div class="content">
     {
-      content.map((b) => {
+      chapter.blocks.map((b) => {
         if (b.kind === 'p') return <p set:html={rich(b.text[lang])} />;
         if (b.kind === 'photo') {
           const tall = upright(b.photo);
@@ -54,19 +50,20 @@ const strips = chapter.blocks.filter((b): b is Strip => b.kind === 'strip');
               ))}
             </div>
           );
-        return null;
+        return (
+          <ul class="items">
+            {b.items.map((item) => (
+              <li>
+                <Image src={photo(item.photo.file)} alt={item.photo.alt[lang]} widths={[400, 640, 960]} sizes="(min-width: 52rem) 18rem, 50vw" style={position(item.photo)} />
+                <h3>{item.title[lang]}</h3>
+                <p set:html={rich(item.text[lang])} />
+              </li>
+            ))}
+          </ul>
+        );
       })
     }
   </div>
-  {
-    strips.map((b) => (
-      <div class="grid full">
-        {b.photos.map((p) => (
-          <Image src={photo(p.file)} alt={p.alt[lang]} widths={[320, 480, 720]} sizes="(min-width: 52rem) 16rem, 50vw" style={position(p)} />
-        ))}
-      </div>
-    ))
-  }
 </section>
 
 <style>
@@ -79,10 +76,12 @@ const strips = chapter.blocks.filter((b): b is Strip => b.kind === 'strip');
     margin-top: var(--s-4);
   }
 
-  .content > .photo,
-  .content > .pair,
+  .content > * + .photo,
+  .content > * + .pair,
+  .content > * + .items,
   .content > .photo + *,
-  .content > .pair + * {
+  .content > .pair + *,
+  .content > .items + * {
     margin-top: var(--s-8);
   }
 
@@ -123,25 +122,37 @@ const strips = chapter.blocks.filter((b): b is Strip => b.kind === 'strip');
 
   .half :global(img),
   .pair :global(img),
-  .grid :global(img) {
+  .items :global(img) {
     aspect-ratio: 4 / 5;
   }
 
   .pair,
-  .grid {
+  .items {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--gap);
   }
 
-  /* With the row's own 8px gap above it, 32px in all, like every other photo. */
-  .grid {
-    margin-top: var(--s-6);
+  /* Personal items: two to a row, 32px between rows; title 12px under the photo, its line 4px under that. */
+  .items {
+    row-gap: var(--s-8);
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 
-  @media (min-width: 52rem) {
-    .grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
+  h3 {
+    margin-top: var(--s-3);
+    color: var(--ink);
+    font-size: var(--text-base);
+    font-weight: 500;
+    line-height: 1.4;
+  }
+
+  li p {
+    margin-top: var(--s-1);
+    color: var(--muted);
+    font-size: var(--text-sm);
+    line-height: 1.5;
   }
 </style>

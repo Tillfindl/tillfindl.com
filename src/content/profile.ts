@@ -2,13 +2,14 @@
  * Everything the site says about Till, in English and German.
  *
  * `page` is what the page shows: name and one line about what Till does now, then short sections
- * (medicine, Bounceback, Eigen, sport) with photos set into the text. `facts` is the fuller record for machines (JSON-LD for search engines, /llms.txt for AI
+ * (medicine, Bounceback, Eigen) with photos set into the text, and a personal section of items.
+ * `facts` is the fuller record for machines (JSON-LD for search engines, /llms.txt for AI
  * assistants).
  *
  * Voice: professional and plain. The why runs through the sections (the wards lead to Bounceback,
  * the run club to Max and Eigen) without ever announcing itself as a story. No lessons, no
- * rhetorical questions. Facts, never proof. Never call Till an
- * engineer; "dad", not "father". No em dashes, no race times, nothing private.
+ * rhetorical questions. Facts, never proof. Never call Till an engineer; "dad", not "father". No
+ * em dashes, no race times, nothing private.
  *
  * Inline markup in paragraphs: [label](url) for a link, *text* for italics (see rich.ts).
  */
@@ -43,12 +44,19 @@ export interface Photo {
   position?: string;
 }
 
-/** One piece of a chapter: a paragraph, a photo, a pair of photos, or a strip of photos. */
+/** One thing in the personal section: a photo, a short title and one line. */
+export interface Item {
+  title: L;
+  text: L;
+  photo: Photo;
+}
+
+/** One piece of a section: a paragraph, a photo, a pair of photos, or a grid of personal items. */
 export type Block =
   | { kind: 'p'; text: L }
   | { kind: 'photo'; photo: Photo }
   | { kind: 'pair'; photos: [Photo, Photo] }
-  | { kind: 'strip'; photos: Photo[] };
+  | { kind: 'items'; items: Item[] };
 
 export interface Chapter {
   id: string;
@@ -101,25 +109,27 @@ export const page = {
     alt: { en: 'Till Findl on the Isle of Harris, Scotland', de: 'Till Findl auf der Isle of Harris, Schottland' },
   } satisfies Photo,
   place: { en: 'Vienna', de: 'Wien' },
+  /** Till's own wording; keep it as written. */
   intro: {
-    en: 'I studied medicine at UCL in London and now run a healthcare software company in Vienna.',
-    de: 'Ich habe am UCL in London Medizin studiert und leite heute ein Unternehmen für Gesundheitssoftware in Wien.',
+    en: 'Studied medicine at UCL. Now I build the software physiotherapy runs on, from Vienna.',
+    de: 'Medizin am UCL studiert. Heute baue ich aus Wien die Software, auf der Physiotherapie läuft.',
   },
   chapters: [
     {
       id: 'medicine',
       title: { en: 'Medicine', de: 'Medizin' },
       blocks: [
-        p(
-          'I graduated from UCL in 2026, after an orthopaedics elective in Kuala Lumpur and a few days in two eye hospitals in Bangalore.',
-          '2026 habe ich am UCL abgeschlossen, nach einer Famulatur in der Orthopädie in Kuala Lumpur und ein paar Tagen in zwei Augenkliniken in Bangalore.',
-        ),
+        p('Six years of medicine at UCL in London.', 'Sechs Jahre Medizin am UCL in London.'),
         { kind: 'pair', photos: [photos.medSchool, photos.portico] },
         p(
-          'On the wards, a lot of the day went into software instead of patients: one program for imaging, another for notes, another for prescriptions. And once patients went home, they were mostly on their own with their exercises.',
-          'Auf Station verbrachte man einen großen Teil des Tages mit Software statt mit Patienten: ein Programm für die Bildgebung, eines für die Notizen, eines für Verschreibungen. Und sobald Patienten nach Hause gingen, waren sie mit ihren Übungen meistens auf sich allein gestellt.',
+          'An orthopaedics elective in Kuala Lumpur, and a few days in two eye hospitals in Bangalore.',
+          'Eine Famulatur in der Orthopädie in Kuala Lumpur und ein paar Tage in zwei Augenkliniken in Bangalore.',
         ),
         { kind: 'photo', photo: photos.theatre },
+        p(
+          'On the wards, a lot of the day went into software instead of patients: one program for imaging, another for notes, another for prescriptions. And once patients went home, they were mostly on their own.',
+          'Auf Station verbrachte man einen großen Teil des Tages mit Software statt mit Patienten: ein Programm für die Bildgebung, eines für die Notizen, eines für Verschreibungen. Und sobald Patienten nach Hause gingen, waren sie meistens auf sich allein gestellt.',
+        ),
       ],
     },
     {
@@ -127,8 +137,8 @@ export const page = {
       title: { en: 'Bounceback', de: 'Bounceback' },
       blocks: [
         p(
-          `So with my team in Vienna I developed Bounceback, practice software for physiotherapists. Patients get their exercises as video, with feedback from their physio between appointments, and our AI writes the notes from the conversation during treatment. It has been on the market since June 2026. In low- and middle-income countries it costs €1 per physio per month, because the places with the fewest physios need it most. [bounceback.at](${links.bounceback})`,
-          `Also habe ich mit meinem Team in Wien Bounceback entwickelt, eine Praxissoftware für Physios. Patienten bekommen ihre Übungen als Video, mit Feedback vom Physio auch zwischen den Terminen, und die Dokumentation schreibt unsere KI aus dem Gespräch während der Behandlung. Seit Juni 2026 ist Bounceback am Markt. In Ländern mit niedrigem und mittlerem Einkommen kostet es €1 pro Physio und Monat, weil die Orte mit den wenigsten Physios es am dringendsten brauchen. [bounceback.at](${links.bounceback})`,
+          `So with my team in Vienna I built Bounceback, one system for the whole physiotherapy practice. Its AI writes the notes during treatment and helps physios answer their patients’ exercise videos between appointments, learning their corrections as it goes. Booking and payments sit in the same app, and all of it runs on a phone. [bounceback.at](${links.bounceback})`,
+          `Also habe ich mit meinem Team in Wien Bounceback gebaut, ein System für die ganze Physiotherapiepraxis. Die KI schreibt die Dokumentation während der Behandlung und hilft Physios, die Übungsvideos ihrer Patienten zwischen den Terminen zu beantworten, und lernt dabei ihre Korrekturen. Terminbuchung und Bezahlung laufen in derselben App, alles auf einem Handy. [bounceback.at](${links.bounceback})`,
         ),
       ],
     },
@@ -137,21 +147,53 @@ export const page = {
       title: { en: 'Eigen', de: 'Eigen' },
       blocks: [
         p(
-          `In London I hosted a Sunday run club, and one of the people who came along was Max, a robotics engineer from ETH Zurich. Together we first built a Face ID scan for custom CPAP masks. When patents got in the way, we moved the scan to feet, and that became Eigen: a 3D foot scan and a short running video, matched to the shoes that suit how someone runs. I look after the product and the biomechanics. [eigen-running.com](${links.eigen})`,
-          `In London habe ich einen Sonntagslauf organisiert, und einer, der mitkam, war Max, Robotikingenieur von der ETH Zürich. Zusammen haben wir zuerst einen Face-ID-Scan für maßgefertigte CPAP-Masken gebaut. Als Patente dazwischenkamen, haben wir den Scan auf die Füße verlegt, und daraus wurde Eigen: ein 3D-Fußscan und ein kurzes Laufvideo, abgeglichen mit den Schuhen, die zum Laufstil passen. Ich kümmere mich um das Produkt und die Biomechanik. [eigen-running.com](${links.eigen})`,
+          `During my time in London I hosted a Sunday run club in Highbury for two years. Some of my best friends came from it, and so did Max, a robotics engineer from ETH Zurich. Our first project together was a Face ID scan for custom CPAP masks, built in quick iterations. Then we pivoted to running, and that became Eigen: a 3D foot scan and a short running video, matched to the shoes that suit how someone runs. I look after the product and the biomechanics. [eigen-running.com](${links.eigen})`,
+          `In meiner Zeit in London habe ich zwei Jahre lang einen Sonntagslauf in Highbury organisiert. Einige meiner besten Freunde kommen von dort, und auch Max, Robotikingenieur von der ETH Zürich. Unser erstes gemeinsames Projekt war ein Face-ID-Scan für maßgefertigte CPAP-Masken, in schnellen Iterationen gebaut. Dann haben wir auf Laufen umgeschwenkt, und daraus wurde Eigen: ein 3D-Fußscan und ein kurzes Laufvideo, abgeglichen mit den Schuhen, die zum Laufstil passen. Ich kümmere mich um das Produkt und die Biomechanik. [eigen-running.com](${links.eigen})`,
         ),
         { kind: 'photo', photo: photos.nightRun },
       ],
     },
     {
-      id: 'sport',
-      title: { en: 'Sport', de: 'Sport' },
+      id: 'personal',
+      title: { en: 'Personal', de: 'Privat' },
       blocks: [
-        p(
-          `Triathlon ([Ironman Kalmar](${links.ironmanKalmar}), Ironman Tallinn), [marathons](${links.amsterdamMarathon}) and ice hockey for the UCL Yetis. I raced skis as a kid and teach as a ski instructor today.`,
-          `Triathlon ([Ironman Kalmar](${links.ironmanKalmar}), Ironman Tallinn), [Marathons](${links.amsterdamMarathon}) und Eishockey für die UCL Yetis. Als Kind bin ich Skirennen gefahren, heute bin ich Skilehrer.`,
-        ),
-        { kind: 'strip', photos: [photos.swim, photos.ski, photos.hockey, photos.run, photos.sister, photos.summer] },
+        {
+          kind: 'items',
+          items: [
+            {
+              title: { en: 'Triathlon', de: 'Triathlon' },
+              text: {
+                en: `[Ironman Kalmar](${links.ironmanKalmar}) and Ironman Tallinn, with [marathons](${links.amsterdamMarathon}) in between.`,
+                de: `[Ironman Kalmar](${links.ironmanKalmar}) und Ironman Tallinn, dazwischen [Marathons](${links.amsterdamMarathon}).`,
+              },
+              photo: photos.swim,
+            },
+            {
+              title: { en: 'Skiing', de: 'Skifahren' },
+              text: {
+                en: 'FIS races and Viennese youth champion as a kid. Ski instructor (LS2) today.',
+                de: 'Als Kind FIS-Rennen und Wiener Jugendmeister. Heute Skilehrer (LS2).',
+              },
+              photo: photos.ski,
+            },
+            {
+              title: { en: 'Ice hockey', de: 'Eishockey' },
+              text: {
+                en: 'Played for the UCL Yetis in BUIHA Division 1.',
+                de: 'Für die UCL Yetis in der BUIHA Division 1 gespielt.',
+              },
+              photo: photos.hockey,
+            },
+            {
+              title: { en: 'Photography and film', de: 'Fotografie und Film' },
+              text: {
+                en: 'FPV drones at thirteen, landscape prints at sixteen. Now mostly short films of trips with friends.',
+                de: 'Mit dreizehn FPV-Drohnen, mit sechzehn Landschaftsdrucke. Heute vor allem kurze Filme von Reisen mit Freunden.',
+              },
+              photo: photos.summer,
+            },
+          ],
+        },
       ],
     },
   ] satisfies Chapter[],

@@ -6,9 +6,17 @@ import type { APIRoute } from 'astro';
 import { facts, links, page, person, SITE_URL, type Lang } from '../content/profile';
 import { plain } from '../content/rich';
 
-/** The page's chapters as plain text: a heading each, then its paragraphs. Photos are left out. */
+/** The page's sections as plain text: a heading each, then its paragraphs and items. Photos are left out. */
 const chapters = (lang: Lang) =>
-  page.chapters.flatMap((c) => [`### ${c.title[lang]}`, '', ...c.blocks.flatMap((b) => (b.kind === 'p' ? [plain(b.text[lang]), ''] : []))]);
+  page.chapters.flatMap((c) => [
+    `### ${c.title[lang]}`,
+    '',
+    ...c.blocks.flatMap((b) => {
+      if (b.kind === 'p') return [plain(b.text[lang]), ''];
+      if (b.kind === 'items') return [...b.items.map((i) => `- ${i.title[lang]}: ${plain(i.text[lang])}`), ''];
+      return [];
+    }),
+  ]);
 
 export const GET: APIRoute = () => {
   const text = [

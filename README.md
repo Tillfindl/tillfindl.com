@@ -5,8 +5,9 @@ hosted on GitHub Pages at [tillfindl.com](https://tillfindl.com). The domain is 
 Cloudflare.
 
 A short personal page in English (`/`) and German (`/de/`): name, one line about what Till does,
-portrait and buttons, then four plain sections (medicine, Bounceback, Eigen, sport) with photos
-set into the text, and contact at the end, on warm off-white paper. Each section is a small
+portrait and buttons, then three plain sections (medicine, Bounceback, Eigen) with photos set into
+the text, a personal section of interests with a photo each, and contact at the end, on warm
+off-white paper. Each section is a small
 label beside a reading column, so the whole page shares two edges. The fuller facts go to search engines
 (JSON-LD) and AI assistants (`/llms.txt`, which also carries the page text), generated from the
 same file.
@@ -51,8 +52,8 @@ astro.config.mjs        Site URL, languages, sitemap
   `/llms.txt` all follow. Before adding a sentence to the page, ask whether it could go in `facts`.
 - **Photos:** drop the file into `src/assets/photos/`, add it to `photos` in the profile with alt
   text in both languages, and place it in a section. A landscape `photo` fills the text column,
-  an upright one takes half of it, a `pair` sets two halves side by side, and a `strip` becomes a
-  grid across both columns at the end of its section.
+  an upright one takes half of it, and a `pair` sets two halves side by side. In the personal
+  section, each of the `items` has its own photo, title and line.
 - **The look:** colours, type sizes, the 8px spacing scale and the column widths are tokens at
   the top of `src/styles/global.css`.
 
