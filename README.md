@@ -4,9 +4,12 @@ The personal website of Till Findl: a small one-page site built with [Astro](htt
 hosted on GitHub Pages at [tillfindl.com](https://tillfindl.com). The domain is registered on
 Cloudflare.
 
-A personal page in English (`/`) and German (`/de/`): name, portrait and buttons,
-then work, medicine and background, sports and hobbies, and contact as cards. One warm line under the name; everything else plain. The fuller facts go to search
-engines (JSON-LD) and AI assistants (`/llms.txt`), generated from the same file.
+A personal page to read, in English (`/`) and German (`/de/`): name, portrait and buttons, then
+short chapters (how it started, medical school, a Sunday run club, the wards, Bounceback, Eigen,
+Bangalore, AI, sport) with photos set into the text, and contact at the end. On a wide screen the
+list of chapters stays beside the text and marks how far the reader has got. The fuller facts go
+to search engines (JSON-LD) and AI assistants (`/llms.txt`, which also carries the chapters in
+full), generated from the same file.
 
 ## Working on it
 
@@ -24,14 +27,16 @@ npm run preview   # serve the built dist/ locally
 
 ```
 src/
-  content/profile.ts    `page`: the intro and the cards the page shows, in English and German.
-                        `facts`: the fuller record, read only by search engines and AI assistants
+  content/profile.ts    `page`: the intro and the chapters the page shows (paragraphs and photos),
+                        in English and German. `facts`: the fuller record, read only by search
+                        engines and AI assistants
+  content/rich.ts       The small markup paragraphs may use: [label](url) links and *italics*
   content/jsonld.ts     Structured data (schema.org Person) built from the profile
   content/images.ts     Looks up photos in src/assets/photos by file name
   pages/index.astro     "/" (English); pages/de/index.astro is "/de/" (German); both render Page
   pages/llms.txt.ts     "/llms.txt": a plain summary for AI assistants, built from the profile
   pages/404.astro       The not-found page
-  components/           Page (intro and sections), InfoCard (a text card), PhotoCard (a photo card), Footer
+  components/           Page (intro, chapter list, contact), Chapter (one chapter's text and photos), Footer
   layouts/Base.astro    The HTML shell: <head>, language alternates, social card, JSON-LD
   styles/global.css     Design tokens (colour, type, spacing) and base styles
   assets/photos/        Photos; the build resizes them and strips their metadata
@@ -44,8 +49,10 @@ astro.config.mjs        Site URL, languages, sitemap
 
 - **Words:** edit `src/content/profile.ts`. The page, the German page, the structured data and
   `/llms.txt` all follow. Before adding a sentence to the page, ask whether it could go in `facts`.
-- **Photos:** drop the file into `src/assets/photos/` and add it to `photos` in the profile, with
-  alt text in both languages.
+- **Photos:** drop the file into `src/assets/photos/`, add it to `photos` in the profile with alt
+  text in both languages, and place it in a chapter. A `photo` block that is upright hangs in the
+  margin beside the paragraph before it (from a tablet up); a landscape one runs across text and
+  margin. A `pair` sets two side by side, a `strip` runs a row out to the edges of the screen.
 - **The look:** tokens at the top of `src/styles/global.css`.
 
 Keep private details out of the repo: no phone number, home address, birth date or personal email.

@@ -1,0 +1,271 @@
+---
+// One chapter: a numbered title, then its paragraphs and photos. On a phone everything runs in
+// one column. From a tablet up there is a margin beside the text: an upright photo hangs there
+// beside the paragraph before it, while landscape photos, pairs and the strip run across both.
+import { Image } from 'astro:assets';
+import type { Block, Chapter, Lang, Photo } from '../content/profile';
+import { photo } from '../content/images';
+import { rich } from '../content/rich';
+
+interface Props {
+  chapter: Chapter;
+  number: string;
+  lang: Lang;
+}
+
+const { chapter, number, lang } = Astro.props;
+
+const upright = (p: Photo) => {
+  const { width, height } = photo(p.file);
+  return height > width;
+};
+
+/*
+ * Grid rows, worked out here rather than left to auto-placement: a margin photo starts on the row
+ * of the paragraph before it and runs down to the next item that spans the margin too, or to a
+ * last, flexible row. That last row soaks up the photo's extra height, so the paragraphs beside
+ * it stay evenly spaced instead of being pushed apart.
+ */
+type Placed = { block: Block; side: boolean; row: number; end?: number };
+let row = 2; // Row 1 holds the title.
+const placed: Placed[] = chapter.blocks.map((block) => {
+  const side = block.kind === 'photo' && upright(block.photo);
+  return side ? { block, side, row: row - 1 } : { block, side, row: row++ };
+});
+const spans = (b: Block) => b.kind !== 'p';
+for (const [i, item] of placed.entries()) {
+  if (item.side) item.end = placed.slice(i + 1).find((next) => !next.side && spans(next.block))?.row;
+}
+const hasSide = placed.some((item) => item.side);
+const rows = hasSide ? `repeat(${row - 1}, auto) 1fr` : undefined;
+const area = (item: Placed) => `--row: ${item.row} / ${item.side ? (item.end ?? -1) : 'span 1'}`;
+
+const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : undefined);
+---
+
+<section class="chapter" id={chapter.id} aria-labelledby={`${chapter.id}-title`} style={rows && `--rows: ${rows}`}>
+  <h2 id={`${chapter.id}-title`}><span class="n">{number}</span>{chapter.title[lang]}</h2>
+  {
+    placed.map((item) => {
+      const b = item.block;
+      if (b.kind === 'p') return <p style={area(item)} set:html={rich(b.text[lang])} />;
+      if (b.kind === 'photo')
+        return (
+          <figure class:list={[item.side ? 'side' : 'wide']} style={area(item)} data-reveal>
+            <Image
+              src={photo(b.photo.file)}
+              alt={b.photo.alt[lang]}
+              widths={item.side ? [400, 640, 960] : [640, 960, 1280, 1600]}
+              sizes={item.side ? '(min-width: 48rem) 16rem, 78vw' : '(min-width: 48rem) 53rem, 100vw'}
+              style={position(b.photo)}
+            />
+          </figure>
+        );
+      if (b.kind === 'pair')
+        return (
+          <div class="pair" style={area(item)} data-reveal>
+            {b.photos.map((p) => (
+              <Image src={photo(p.file)} alt={p.alt[lang]} widths={[400, 640, 960]} sizes="(min-width: 48rem) 20rem, 46vw" style={position(p)} />
+            ))}
+          </div>
+        );
+      return (
+        <div class="strip" style={area(item)} data-reveal>
+          {b.photos.map((p) => (
+            <Image
+              src={photo(p.file)}
+              alt={p.alt[lang]}
+              widths={[320, 480, 720]}
+              sizes="(min-width: 73rem) 16vw, (min-width: 48rem) 31vw, 62vw"
+              style={position(p)}
+            />
+          ))}
+        </div>
+      );
+    })
+  }
+</section>
+
+<style>
+  .chapter {
+    display: grid;
+    row-gap: 1.15rem;
+    scroll-margin-top: 2rem;
+  }
+
+  h2 {
+    display: flex;
+    align-items: baseline;
+    gap: 0.8rem;
+    margin-bottom: 0.35rem;
+    font-size: var(--text-title);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+  }
+
+  .n {
+    color: var(--muted);
+    font-size: var(--text-sm);
+    font-weight: 500;
+    letter-spacing: 0;
+  }
+
+  p {
+    max-width: var(--measure);
+    color: var(--body);
+    font-size: var(--text-read);
+    line-height: 1.7;
+  }
+
+  p :global(a) {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--border-hover);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+    transition: text-decoration-color 0.2s;
+  }
+
+  p :global(a:hover) {
+    text-decoration-color: var(--ink);
+  }
+
+  p :global(a span) {
+    color: var(--muted);
+  }
+
+  p :global(em) {
+    color: var(--ink);
+  }
+
+  figure {
+    margin: 0.6rem 0;
+  }
+
+  .chapter :global(img) {
+    width: 100%;
+    object-fit: cover;
+    border-radius: var(--radius);
+  }
+
+  figure :global(img) {
+    height: 100%;
+  }
+
+  /* An upright photo: narrower than the text on a phone, set to the right. */
+  .side {
+    justify-self: end;
+    width: min(78%, 20rem);
+    aspect-ratio: 3 / 4;
+  }
+
+  .wide {
+    aspect-ratio: 3 / 2;
+  }
+
+  /* Two photos side by side, the second a little lower, as if laid down by hand. */
+  .pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+    gap: var(--gap);
+    max-width: 40rem;
+    margin: 0.6rem 0 2.5rem;
+  }
+
+  .pair :global(img) {
+    aspect-ratio: 2 / 3;
+  }
+
+  .pair :global(img:last-child) {
+    margin-top: 2.5rem;
+  }
+
+  /*
+   * A row of photos that runs out to the edges of the screen (--bleed-start and --bleed-end are
+   * the distances from the text to the edges, set in Page.astro); on a phone it scrolls sideways.
+   */
+  .strip {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: 62vw;
+    align-items: start;
+    gap: var(--gap);
+    margin: 1rem calc(-1 * var(--bleed-end)) 0 calc(-1 * var(--bleed-start));
+    padding: 0 var(--side) 2rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-inline: var(--side);
+    scrollbar-width: none;
+  }
+
+  .strip::-webkit-scrollbar {
+    display: none;
+  }
+
+  .strip :global(img) {
+    aspect-ratio: 4 / 5;
+    scroll-snap-align: start;
+  }
+
+  .strip :global(img:nth-child(even)) {
+    margin-top: 2rem;
+  }
+
+  @media (min-width: 48rem) {
+    .chapter {
+      grid-template-columns: minmax(0, var(--measure)) minmax(0, var(--aside));
+      grid-template-rows: var(--rows, none);
+      column-gap: var(--column-gap);
+    }
+
+    .chapter > * {
+      grid-column: 1;
+      grid-row: var(--row, auto);
+    }
+
+    .chapter > .side {
+      grid-column: 2;
+      align-self: start;
+      justify-self: stretch;
+      width: auto;
+      margin: 0.35rem 0 0;
+    }
+
+    .chapter > .wide,
+    .chapter > .pair,
+    .chapter > .strip {
+      grid-column: 1 / -1;
+    }
+
+    .strip {
+      grid-auto-flow: row;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      overflow: visible;
+    }
+
+    /* In three columns the middle one sits lower, rather than every other photo. */
+    .strip :global(img:nth-child(even)) {
+      margin-top: 0;
+    }
+
+    .strip :global(img:nth-child(3n + 2)) {
+      margin-top: 2rem;
+    }
+  }
+
+  @media (min-width: 73rem) {
+    .strip {
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+
+    .strip :global(img:nth-child(3n + 2)) {
+      margin-top: 0;
+    }
+
+    .strip :global(img:nth-child(even)) {
+      margin-top: 2rem;
+    }
+  }
+</style>

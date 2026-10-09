@@ -1,9 +1,14 @@
 /*
  * /llms.txt: a plain-text summary of Till for AI assistants (the llms.txt convention).
- * The page says little on purpose; this carries the fuller facts, from profile.ts.
+ * The facts first, then the page's chapters in full, both from profile.ts.
  */
 import type { APIRoute } from 'astro';
-import { facts, links, person, SITE_URL } from '../content/profile';
+import { facts, links, page, person, SITE_URL, type Lang } from '../content/profile';
+import { plain } from '../content/rich';
+
+/** The page's chapters as plain text: a heading each, then its paragraphs. Photos are left out. */
+const chapters = (lang: Lang) =>
+  page.chapters.flatMap((c) => [`### ${c.title[lang]}`, '', ...c.blocks.flatMap((b) => (b.kind === 'p' ? [plain(b.text[lang]), ''] : []))]);
 
 export const GET: APIRoute = () => {
   const text = [
@@ -29,10 +34,18 @@ export const GET: APIRoute = () => {
     `- Website: ${SITE_URL}/ (Deutsch: ${SITE_URL}/de/)`,
     ...(links.linkedin ? [`- LinkedIn: ${links.linkedin}`] : []),
     '',
+    `## In his own words (from ${SITE_URL}/)`,
+    '',
+    page.intro.en,
+    '',
+    ...chapters('en'),
     '## Deutsch',
     '',
     `> ${facts.summary.de}`,
     '',
+    page.intro.de,
+    '',
+    ...chapters('de'),
   ].join('\n');
 
   return new Response(text, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });

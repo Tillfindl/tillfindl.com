@@ -1,13 +1,13 @@
 ---
-// The whole page, in one language: name, one sentence and portrait, then work, a pair of
-// photos, medicine, sport, other things, a row of photos and contact. Text cards and photo
-// cards share one grid so they mix freely. /index.astro and /de/index.astro both render this.
+// The whole page, in one language: name, place, one sentence and a portrait, then chapters to
+// read, with photos set beside and between the paragraphs, and contact at the end. On a wide
+// screen the list of chapters stays beside the text and marks how far the reader has got.
+// /index.astro and /de/index.astro both render this.
 import { getImage, Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
-import InfoCard from './InfoCard.astro';
-import PhotoCard from './PhotoCard.astro';
+import Chapter from './Chapter.astro';
 import Footer from './Footer.astro';
-import { links, meta, page, pathFor, person, SITE_URL, text, type Lang } from '../content/profile';
+import { links, meta, page, pathFor, person, SITE_URL, type Lang } from '../content/profile';
 import { photo } from '../content/images';
 import { personJsonLd } from '../content/jsonld';
 
@@ -16,13 +16,15 @@ interface Props {
 }
 
 const { lang } = Astro.props;
-const { sections, medicine } = page;
 const og = await getImage({ src: photo(page.portrait.file), width: 800, height: 800, fit: 'cover', format: 'jpg' });
 const jsonLd = personJsonLd(lang, new URL(og.src, SITE_URL).href);
 const langs: Lang[] = ['en', 'de'];
+const number = (i: number) => String(i + 1).padStart(2, '0');
 ---
 
 <Base lang={lang} title={meta.title[lang]} description={meta.description[lang]} jsonLd={jsonLd}>
+  <!-- Set before anything paints, so photos that fade in never flash first. -->
+  <script is:inline>document.documentElement.classList.add('js');</script>
   <div class="lights" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
 
   <div class="page">
@@ -52,88 +54,34 @@ const langs: Lang[] = ['en', 'de'];
         src={photo(page.portrait.file)}
         alt={page.portrait.alt[lang]}
         widths={[400, 640, 880]}
-        sizes="(min-width: 48rem) 22rem, calc(100vw - 2.5rem)"
+        sizes="(min-width: 48rem) 20rem, min(22rem, calc(100vw - 2.5rem))"
         loading="eager"
         fetchpriority="high"
       />
     </header>
 
-    <main>
-      <section aria-labelledby="work">
-        <h2 id="work">{sections.work[lang]}</h2>
-        <div class="bento">
-          {page.work.map((c) => <InfoCard lang={lang} card={c} class="d-6" />)}
-          {page.photoPair.map((p) => <PhotoCard lang={lang} photo={p} class="d-6 t-3 half tall" sizes="(min-width: 40rem) 30rem, 50vw" />)}
-        </div>
-      </section>
-
-      <section aria-labelledby="medicine">
-        <h2 id="medicine">{sections.medicine[lang]}</h2>
-        <div class="bento">
-          <InfoCard lang={lang} card={medicine.ucl} class="d-6">
-            <div class="bsc">
-              <div class="row">
-                <p class="small muted">{medicine.bsc.title[lang]}</p>
-                <span class="small muted nowrap">{medicine.bsc.date}</span>
-              </div>
-              <p class="body">{medicine.bsc.thesis[lang]}</p>
-            </div>
-          </InfoCard>
-          {medicine.graduation.map((p) => <PhotoCard lang={lang} photo={p} class="d-3 t-3 half" sizes="(min-width: 60rem) 15rem, 50vw" />)}
-          <PhotoCard lang={lang} photo={medicine.electivePhoto} class="d-6 landscape beside-3" sizes="(min-width: 60rem) 30rem, 100vw" />
-          <InfoCard lang={lang} card={medicine.elective} class="d-6" />
-          {medicine.other.map((c) => <InfoCard lang={lang} card={c} class="d-6 t-3" />)}
-        </div>
-      </section>
-
-      <section aria-labelledby="sport">
-        <h2 id="sport">{sections.sports[lang]}</h2>
-        <div class="bento">
+    <div class="reading">
+      <nav class="toc" aria-labelledby="toc-label">
+        <p id="toc-label">{page.chaptersLabel[lang]}</p>
+        <ol>
           {
-            page.sports.map((s) => (
-              <article class="card sport d-3 t-3 half">
-                <Image
-                  src={photo(s.file)}
-                  alt={s.alt[lang]}
-                  style={s.position ? `object-position: ${s.position}` : undefined}
-                  widths={[320, 480, 720]}
-                  sizes="(min-width: 60rem) 14rem, 45vw"
-                />
-                <div class="caption">
-                  <h3>{s.title[lang]}</h3>
-                  <p>
-                    {s.lines.map((l, i) => (
-                      <>
-                        {i > 0 && <span> · </span>}
-                        {l.url ? (
-                          <a href={l.url} rel="noopener">
-                            {l.text[lang]} <span aria-hidden="true">↗</span>
-                          </a>
-                        ) : (
-                          l.text[lang]
-                        )}
-                      </>
-                    ))}
-                  </p>
-                </div>
-              </article>
+            page.chapters.map((c, i) => (
+              <li>
+                <a href={`#${c.id}`}>
+                  <span class="n">{number(i)}</span>
+                  <span>{c.title[lang]}</span>
+                </a>
+              </li>
             ))
           }
-        </div>
-      </section>
+        </ol>
+      </nav>
 
-      <section aria-labelledby="other">
-        <h2 id="other">{sections.hobbies[lang]}</h2>
-        <div class="bento">
-          {page.hobbies.map((c) => <InfoCard lang={lang} card={c} class="d-3 t-3 half" />)}
-          <PhotoCard lang={lang} photo={page.photoRow[0]} class="d-4 t-2 tall" sizes="(min-width: 60rem) 20rem, 100vw" />
-          {page.photoRow.slice(1).map((p) => <PhotoCard lang={lang} photo={p} class="d-4 t-2 half tall" sizes="(min-width: 60rem) 20rem, 50vw" />)}
-        </div>
-      </section>
+      <main>
+        {page.chapters.map((c, i) => <Chapter chapter={c} number={number(i)} lang={lang} />)}
 
-      <section aria-labelledby="contact">
-        <h2 id="contact">{sections.contact[lang]}</h2>
-        <div class="card contact">
+        <section class="contact" id="contact" aria-labelledby="contact-title">
+          <h2 id="contact-title">{page.contact.title[lang]}</h2>
           <p>{page.contact.text[lang]}</p>
           {
             links.linkedin ? (
@@ -141,16 +89,82 @@ const langs: Lang[] = ['en', 'de'];
                 LinkedIn <span aria-hidden="true">↗</span>
               </a>
             ) : (
-              <span class="button">{page.contact.pending[lang]}</span>
+              <span class="button pending">{page.contact.pending[lang]}</span>
             )
           }
-        </div>
-      </section>
-    </main>
+        </section>
+      </main>
+    </div>
 
     <Footer lang={lang} />
   </div>
+
+  <script>
+    // Photos fade in once, the first time they come into view.
+    const reveal = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          entry.target.classList.add('in');
+          reveal.unobserve(entry.target);
+        }
+      },
+      { rootMargin: '0px 0px -8% 0px' },
+    );
+    document.querySelectorAll('[data-reveal]').forEach((el) => reveal.observe(el));
+
+    /*
+     * The list of chapters follows the reading: chapters already read are lit, the one being read
+     * is brightest, and a short line beside it fills as the reader moves through it. Everything is
+     * worked out from the scroll position alone, so scrolling back simply undoes it.
+     */
+    const toc = document.querySelector<HTMLElement>('.toc');
+    const chapters = [...document.querySelectorAll<HTMLElement>('.chapter')];
+    const marks = chapters.map((c) => document.querySelector<HTMLAnchorElement>(`.toc a[href="#${c.id}"]`));
+    /** Photos that run out to the screen's edges, and so would pass over the list. */
+    const strips = [...document.querySelectorAll<HTMLElement>('.strip')];
+    /** How far down the screen the reader's eye is taken to be, as a share of its height. */
+    const READING_LINE = 0.4;
+    let queued = false;
+
+    function follow() {
+      queued = false;
+      const line = innerHeight * READING_LINE;
+      const atEnd = scrollY + innerHeight >= document.documentElement.scrollHeight - 2;
+      chapters.forEach((chapter, i) => {
+        const box = chapter.getBoundingClientRect();
+        const end = chapters[i + 1]?.getBoundingClientRect().top ?? box.bottom;
+        const progress = atEnd ? 1 : Math.min(1, Math.max(0, (line - box.top) / (end - box.top)));
+        const mark = marks[i];
+        if (!mark) return;
+        mark.style.setProperty('--progress', progress.toFixed(3));
+        mark.classList.toggle('read', progress >= 1);
+        if (progress > 0 && progress < 1) mark.setAttribute('aria-current', 'location');
+        else mark.removeAttribute('aria-current');
+      });
+      // The list steps aside while a strip of photos passes behind it.
+      if (toc) {
+        const list = toc.getBoundingClientRect();
+        const under = strips.some((strip) => {
+          const box = strip.getBoundingClientRect();
+          return box.top < list.bottom + 24 && box.bottom > list.top - 24;
+        });
+        toc.classList.toggle('away', under);
+      }
+    }
+
+    const queue = () => {
+      if (queued) return;
+      queued = true;
+      requestAnimationFrame(follow);
+    };
+    addEventListener('scroll', queue, { passive: true });
+    addEventListener('resize', queue);
+    follow();
+  </script>
 </Base>
+
+
 
 <style>
   /* Soft spots of light that wander across the whole screen behind everything. */
@@ -228,7 +242,14 @@ const langs: Lang[] = ['en', 'de'];
     }
   }
 
+  /*
+   * --edge is the gap between the page and the screen's edge. --bleed-start and --bleed-end: how
+   * far the chapter text sits from the left and right edges, so the photo strip can run out to both.
+   */
   .page {
+    --edge: max(var(--side), (100vw - var(--page)) / 2);
+    --bleed-start: var(--edge);
+    --bleed-end: var(--edge);
     max-width: calc(var(--page) + 2 * var(--side));
     margin: 0 auto;
     padding: 0 var(--side);
@@ -265,19 +286,19 @@ const langs: Lang[] = ['en', 'de'];
     aspect-ratio: 4 / 5;
     object-fit: cover;
     object-position: 50% 30%;
-    border: 1px solid var(--border);
     border-radius: 1.25rem;
   }
 
   @media (min-width: 48rem) {
     .intro {
-      grid-template-columns: minmax(0, 1fr) 22rem;
+      grid-template-columns: minmax(0, 1fr) 20rem;
       align-items: end;
       gap: clamp(2.5rem, 6vw, 5rem);
     }
 
     .intro :global(.portrait) {
       order: 0;
+      max-width: none;
     }
   }
 
@@ -293,32 +314,6 @@ const langs: Lang[] = ['en', 'de'];
     color: var(--muted);
   }
 
-  .buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-top: 2rem;
-  }
-
-  main {
-    display: grid;
-    gap: var(--section-gap);
-    margin-top: var(--section-gap);
-  }
-
-  h2 {
-    margin-bottom: 1rem;
-    font-size: 1.375rem;
-    font-weight: 600;
-    letter-spacing: -0.02em;
-  }
-
-  h3 {
-    font-size: var(--text-card);
-    font-weight: 600;
-    letter-spacing: -0.015em;
-  }
-
   .lede {
     max-width: 30em;
     margin-top: 1.5rem;
@@ -327,173 +322,154 @@ const langs: Lang[] = ['en', 'de'];
     line-height: 1.55;
   }
 
-  .muted {
-    color: var(--muted);
-  }
-
-  .small {
-    font-size: var(--text-sm);
-  }
-
-  .nowrap {
-    white-space: nowrap;
-  }
-
-  /*
-   * One grid for text and photo cards. Two columns on a phone (every card full width unless it
-   * is a `half`), six on a tablet (`t-*` spans), twelve on a desktop (`d-*` spans).
-   */
-  .bento {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--gap);
-  }
-
-  .bento > :global(*) {
-    grid-column: span 2;
-  }
-
-  .bento > :global(.half) {
-    grid-column: span 1;
-  }
-
-  @media (min-width: 40rem) {
-    .bento {
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-    }
-
-    .bento > :global(*) {
-      grid-column: span 6;
-    }
-
-    .bento > :global(.t-2) {
-      grid-column: span 2;
-    }
-
-    .bento > :global(.t-3) {
-      grid-column: span 3;
-    }
-  }
-
-  @media (min-width: 60rem) {
-    .bento {
-      grid-template-columns: repeat(12, minmax(0, 1fr));
-    }
-
-    .bento > :global(.d-3) {
-      grid-column: span 3;
-    }
-
-    .bento > :global(.d-4) {
-      grid-column: span 4;
-    }
-
-    .bento > :global(.d-6) {
-      grid-column: span 6;
-    }
-
-    .bento > :global(.d-8) {
-      grid-column: span 8;
-    }
-
-    /* A photo that runs beside three stacked text cards, as tall as they are together. */
-    .bento > :global(.beside-3) {
-      grid-row: span 3;
-      aspect-ratio: auto;
-      min-height: 18rem;
-    }
-  }
-
-  /* Photo cards with no text beside them need a height of their own. */
-  .bento > :global(.tall) {
-    height: clamp(15rem, 34vw, 28rem);
-  }
-
-  .bento > :global(.landscape) {
-    aspect-ratio: 3 / 2;
-  }
-
-  .bento > :global(.photo-card:not(.tall):not(.landscape)) {
-    min-height: 14rem;
-  }
-
-  /* The BSc sits at the foot of the UCL card, under a hairline. */
-  .bsc {
-    display: grid;
-    gap: 0.4rem;
-    margin-top: auto;
-    padding-top: 1.25rem;
-    border-top: 1px solid var(--border);
-  }
-
-  :global(.lines) + .bsc {
-    margin-top: 1.5rem;
-  }
-
-  .row {
+  .buttons {
     display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 1rem;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 2rem;
   }
 
-  .body {
-    color: var(--body);
+  /* The chapters: the list first on a phone, beside the text from a wide screen up. */
+  .reading {
+    margin-top: var(--section-gap);
   }
 
-  /* Sports: a photo of Till doing each one, with the facts underneath. */
-  .sport {
+  main {
     display: grid;
-    align-content: start;
-    gap: 0.9rem;
-    padding: 0.5rem 0.5rem 1.1rem;
+    gap: var(--chapter-gap);
+    margin-top: var(--chapter-gap);
   }
 
-  .sport :global(img) {
-    width: 100%;
-    height: auto;
-    aspect-ratio: 4 / 5;
-    object-fit: cover;
-    border-radius: calc(var(--radius) - 0.4rem);
-  }
-
-  .caption {
-    display: grid;
-    gap: 0.35rem;
-    padding: 0 0.6rem;
-  }
-
-  .caption h3 {
-    font-size: var(--text-base);
-  }
-
-  .caption p {
+  .toc p {
+    margin-bottom: 0.75rem;
     color: var(--muted);
     font-size: var(--text-sm);
   }
 
-  .caption a {
+  .toc ol {
+    display: grid;
+    gap: 0.15rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .toc a {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.3rem 0;
     color: var(--body);
+    font-size: var(--text-base);
+    line-height: 1.35;
+    transition: color 0.3s;
   }
 
-  .caption a span {
-    color: var(--muted);
-  }
-
-  .caption a:hover,
-  .caption a:hover span {
+  .toc a:hover {
     color: var(--ink);
   }
 
+  .toc .n {
+    flex: none;
+    width: 1.4rem;
+    color: var(--muted);
+    font-size: var(--text-sm);
+    line-height: 1.55;
+  }
+
+  @media (min-width: 73rem) {
+    .page {
+      --bleed-start: calc(var(--edge) + var(--index) + var(--column-gap));
+    }
+
+    .reading {
+      display: grid;
+      grid-template-columns: var(--index) minmax(0, 1fr);
+      column-gap: var(--column-gap);
+    }
+
+    main {
+      margin-top: 0;
+    }
+
+    .toc {
+      position: sticky;
+      top: 2.5rem;
+      align-self: start;
+      transition:
+        opacity 0.4s,
+        visibility 0.4s;
+    }
+
+    .toc.away {
+      visibility: hidden;
+      opacity: 0;
+    }
+
+    .toc a {
+      color: var(--muted);
+      font-size: var(--text-sm);
+    }
+
+    .toc .n {
+      position: relative;
+      width: 1.25rem;
+      line-height: inherit;
+    }
+
+    /* The line that fills while a chapter is being read, hung just left of its number. */
+    .toc .n::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      right: calc(100% + 0.5rem);
+      width: 1rem;
+      height: 1px;
+      background: currentColor;
+      transform: scaleX(var(--progress, 0));
+      transform-origin: left;
+    }
+
+    .toc a.read {
+      color: var(--body);
+    }
+
+    .toc a[aria-current],
+    .toc a:hover {
+      color: var(--ink);
+    }
+
+    .toc a[aria-current] .n,
+    .toc a.read .n {
+      color: inherit;
+    }
+  }
+
   .contact {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem 2rem;
+    display: grid;
+    justify-items: start;
+    gap: 1.15rem;
+    max-width: var(--measure);
+    scroll-margin-top: 2rem;
+  }
+
+  .contact h2 {
+    font-size: var(--text-title);
+    font-weight: 600;
+    letter-spacing: -0.02em;
   }
 
   .contact p {
     color: var(--body);
+    font-size: var(--text-read);
+    line-height: 1.7;
+  }
+
+  .pending {
+    color: var(--muted);
+  }
+
+  .pending:hover {
+    background: none;
+    border-color: var(--border-hover);
   }
 </style>
