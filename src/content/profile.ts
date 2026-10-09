@@ -1,12 +1,12 @@
 /*
  * Everything the site says about Till, in English and German.
  *
- * `page` is what the page shows: a short opening, then chapters to read, with photos set into
- * the text. `facts` is the fuller record for machines (JSON-LD for search engines, /llms.txt
- * for AI assistants).
+ * `page` is what the page shows: name and place, then short sections with photos set into the
+ * text. `facts` is the fuller record for machines (JSON-LD for search engines, /llms.txt for AI
+ * assistants).
  *
- * Voice: plain and observational, told through what Till saw and did (Alain de Botton is the
- * reference). Facts, never proof: no test results, no counts as a flex. Never call Till an
+ * Voice: say what the thing is and the detail that is interesting in itself, then stop. No
+ * lessons, no rhetorical questions, no story arc. Facts, never proof. Never call Till an
  * engineer; "dad", not "father". No em dashes, no race times, nothing private.
  *
  * Inline markup in paragraphs: [label](url) for a link, *text* for italics (see rich.ts).
@@ -100,82 +100,15 @@ export const page = {
     alt: { en: 'Till Findl on the Isle of Harris, Scotland', de: 'Till Findl auf der Isle of Harris, Schottland' },
   } satisfies Photo,
   place: { en: 'Vienna', de: 'Wien' },
-  intro: {
-    en: 'I studied medicine at UCL in London and now work on software for physiotherapy and running.',
-    de: 'Ich habe am UCL in London Medizin studiert und arbeite heute an Software für Physiotherapie und Laufsport.',
-  },
-  chaptersLabel: { en: 'Chapters', de: 'Kapitel' },
+  chaptersLabel: { en: 'On this page', de: 'Auf dieser Seite' },
   chapters: [
-    {
-      id: 'start',
-      title: { en: 'How it started', de: 'Wie es angefangen hat' },
-      blocks: [
-        p(
-          'At thirteen I was ordering drone parts from China, soldering speed controllers to motors and cutting frames out of aluminium. FPV drones weren’t a thing yet. Most of mine ended up crashed somewhere in the mountains or in a park in Vienna. A GoPro on top turned the crashing into filming, and filming into photography. By sixteen I was selling landscape prints, mostly from long, cold trips through the Austrian countryside and up to the Lofoten Islands.',
-          'Mit dreizehn habe ich Drohnenteile aus China bestellt, Motorregler an Motoren gelötet und Rahmen aus Aluminium gesägt. FPV-Drohnen kannte damals kaum jemand. Die meisten von meinen sind irgendwo in den Bergen oder in einem Wiener Park abgestürzt. Mit einer GoPro obendrauf wurde aus dem Abstürzen Filmen, und aus dem Filmen Fotografie. Mit sechzehn habe ich Landschaftsfotos als Drucke verkauft, meistens von langen, kalten Touren durchs österreichische Land und hinauf zu den Lofoten.',
-        ),
-        p(
-          'My dad is an eye surgeon. He needed videos to show patients what would happen in theatre, so they’d feel calmer about it, and I started filming his operations. Standing in operating theatres with a camera is how I got curious about how hospitals work, and eventually about medicine.',
-          'Mein Papa ist Augenchirurg. Er brauchte Videos, um Patient:innen zu zeigen, was im OP passiert, damit sie ruhiger hineingehen, und so habe ich angefangen, seine Operationen zu filmen. Mit der Kamera im OP zu stehen hat mich neugierig darauf gemacht, wie Spitäler funktionieren, und irgendwann auf die Medizin.',
-        ),
-        { kind: 'photo', photo: photos.dad },
-      ],
-    },
-    {
-      id: 'half',
-      title: { en: 'Half', de: 'Halb' },
-      blocks: [
-        p(
-          'For most of school, and the first two years of medical school, I gave about half. If it went well, I felt clever. If it didn’t, I could tell myself I hadn’t really tried. It took me a while to see that for what it was: fear of failure.',
-          'Den Großteil der Schulzeit und die ersten zwei Jahre des Medizinstudiums habe ich ungefähr die Hälfte gegeben. Lief es gut, fühlte ich mich schlau. Lief es nicht, konnte ich mir sagen, dass ich es ja nicht wirklich versucht hatte. Es hat eine Weile gedauert, bis ich gesehen habe, was das war: Angst vor dem Scheitern.',
-        ),
-        p(
-          'At the end of second year, a week and a half before an exam, I was revising neurology and found it fascinating. I also realised I had no time left to enjoy it, because I hadn’t engaged all year. The thought that stuck: what if I get to the end and I’ve half-assed the whole thing?',
-          'Am Ende des zweiten Jahres, eineinhalb Wochen vor einer Prüfung, habe ich Neurologie gelernt und fand es faszinierend. Gleichzeitig war klar, dass keine Zeit mehr blieb, es zu genießen, weil ich mich das ganze Jahr nicht darauf eingelassen hatte. Der Gedanke, der hängen geblieben ist: Was, wenn ich am Ende merke, dass ich alles nur halbherzig gemacht habe?',
-        ),
-        p(
-          'The next year I ended up in Global Health, a degree I hadn’t chosen. I gave it everything anyway, learned more than in any year before and got on well with the people teaching me. I missed a First by a couple of percent, as essays aren’t my strength. I was still alive, still me, still happy. The fear went, and it hasn’t come back. Since then the only question is where to put the hundred percent.',
-          'Im Jahr darauf bin ich in Global Health gelandet, einem Studium, das ich mir nicht ausgesucht hatte. Ich habe trotzdem alles gegeben, mehr gelernt als in jedem Jahr davor und mich gut mit den Lehrenden verstanden. Die Bestnote habe ich um ein paar Prozent verpasst, Essays sind nicht meine Stärke. Ich war immer noch am Leben, immer noch ich, immer noch glücklich. Die Angst war weg und ist nicht zurückgekommen. Seitdem ist die einzige Frage, wo die hundert Prozent hingehen.',
-        ),
-        { kind: 'pair', photos: [photos.medSchool, photos.portico] },
-      ],
-    },
-    {
-      id: 'sundays',
-      title: { en: 'Sunday mornings', de: 'Sonntagmorgen' },
-      blocks: [
-        p(
-          'For two years in Highbury there was a run every Sunday morning, winter included. No name, usually five to eight people, and people brought people. We ran all over London and I barbecued afterwards. I can’t cook well, but I can barbecue very well.',
-          'Zwei Jahre lang gab es in Highbury jeden Sonntagmorgen einen Lauf, auch im Winter. Kein Name, meistens fünf bis acht Leute, und Leute haben Leute mitgebracht. Wir sind quer durch London gelaufen, und danach habe ich gegrillt. Kochen kann ich nicht gut, grillen dafür sehr.',
-        ),
-        { kind: 'photo', photo: photos.nightRun },
-        p(
-          'A small group that meets every week gets to know each other properly, because the conversations carry on from one Sunday to the next. That’s where I got into philosophy, from talking rather than from a book. Mine is roughly Camus and *The Myth of Sisyphus*: see how absurd things are, and live fully anyway. Some of my best friends came from that run, and so did Max, a robotics engineer from ETH Zurich and now my cofounder at Eigen.',
-          'Eine kleine Gruppe, die sich jede Woche trifft, lernt sich richtig kennen, weil die Gespräche von einem Sonntag zum nächsten weitergehen. Dort bin ich zur Philosophie gekommen, durchs Reden und nicht durch ein Buch. Meine ist ungefähr Camus und *Der Mythos des Sisyphos*: sehen, wie absurd vieles ist, und trotzdem voll leben. Einige meiner besten Freunde kommen aus dieser Laufgruppe, und auch Max, Robotikingenieur von der ETH Zürich und heute mein Mitgründer bei Eigen.',
-        ),
-      ],
-    },
-    {
-      id: 'wards',
-      title: { en: 'What I saw on the wards', de: 'Was ich auf Station gesehen habe' },
-      blocks: [
-        p(
-          'Systems that don’t talk to each other: one program for imaging, another for notes, another for prescriptions. Typing instead of looking at the patient. And once patients go home, they are mostly on their own, worried, with exercises that most of them don’t do and many do wrong.',
-          'Systeme, die nicht miteinander reden: ein Programm für die Bildgebung, eines für die Notizen, eines für Verschreibungen. Tippen, statt die Patientin anzusehen. Und sobald Patient:innen nach Hause gehen, sind sie meistens auf sich allein gestellt, besorgt, mit Übungen, die die meisten nicht machen und viele falsch.',
-        ),
-        p(
-          'As a doctor you might make ten thousand people’s lives twenty percent better over a career. Software that makes good care easier to reach might only make things one percent better, but for ten million people. That arithmetic is why I work on software.',
-          'Als Ärztin oder Arzt macht man vielleicht zehntausend Menschen das Leben über eine Karriere um zwanzig Prozent besser. Software, die gute Versorgung leichter erreichbar macht, verbessert vielleicht nur um ein Prozent, aber für zehn Millionen Menschen. Diese Rechnung ist der Grund, warum ich an Software arbeite.',
-        ),
-      ],
-    },
     {
       id: 'bounceback',
       title: { en: 'Bounceback', de: 'Bounceback' },
       blocks: [
         p(
-          'It started as video feedback on home exercises: patients film their sets, and physios answer between appointments. Most corrections repeat, so they become reusable feedback, and the system learns each physio’s corrections over time. Why make the repetitive part the biggest part of the job? It grew into the whole practice: booking straight into notes, notes written by an AI that listens in, payments, and the care between visits, all running on one phone. Physios in Austria use it, and it grows every week. [bounceback.at](https://bounceback.at/)',
-          'Angefangen hat es mit Video-Feedback für Heimübungen: Patient:innen filmen ihre Sätze, Physiotherapeut:innen antworten zwischen den Terminen. Die meisten Korrekturen wiederholen sich, also werden sie zu wiederverwendbarem Feedback, und das System lernt mit der Zeit die Korrekturen jeder Therapeutin. Warum sollte der repetitive Teil der größte Teil der Arbeit sein? Daraus ist die ganze Praxis geworden: Terminbuchung direkt in die Dokumentation, Notizen, die eine KI beim Zuhören schreibt, Zahlungen und die Betreuung zwischen den Terminen, alles auf einem Handy. Physiotherapeut:innen in Österreich arbeiten damit, und es wächst jede Woche. [bounceback.at](https://bounceback.at/)',
+          'With my team in Vienna I developed Bounceback, all-in-one software for physiotherapy practices, on the market since June 2026. At its heart is the patient app: home exercises as video, and feedback from the physio between appointments too. Our AI writes the notes from the conversation during treatment, and payment happens on the phone. In low- and middle-income countries it costs €1 per physio per month. [bounceback.at](https://bounceback.at/)',
+          'Mit meinem Team in Wien habe ich Bounceback entwickelt, eine All-in-one-Software für Physiotherapiepraxen, seit Juni 2026 am Markt. Herzstück ist die Patienten-App mit den Heimübungen als Video und Feedback vom Physio, auch zwischen den Terminen. Die Dokumentation schreibt unsere KI aus dem Gespräch während der Behandlung, bezahlt wird direkt am Handy. In Ländern mit niedrigem und mittlerem Einkommen kostet Bounceback €1 pro Physio und Monat. [bounceback.at](https://bounceback.at/)',
         ),
       ],
     },
@@ -184,47 +117,53 @@ export const page = {
       title: { en: 'Eigen', de: 'Eigen' },
       blocks: [
         p(
-          'Max and I first built a prototype that used the iPhone’s Face ID camera to scan faces for custom CPAP masks. Patents got in the way, so the scanning moved to feet. Eigen combines a 3D foot scan with a short running video to recommend shoes that fit how someone actually runs, which also means fewer returns. [eigen-running.com](https://www.eigen-running.com)',
-          'Max und ich haben zuerst einen Prototyp gebaut, der mit der Face-ID-Kamera des iPhones Gesichter für maßgefertigte CPAP-Masken scannt. Patente kamen in die Quere, also ist das Scannen zu den Füßen gewandert. Eigen kombiniert einen 3D-Fußscan mit einem kurzen Laufvideo und empfiehlt Schuhe, die dazu passen, wie jemand wirklich läuft, was auch weniger Retouren bedeutet. [eigen-running.com](https://www.eigen-running.com)',
+          'Eigen recommends running shoes from a 3D scan of the feet and a short running video. I started it in Zurich with Max, a robotics engineer from ETH, and look after the product and the biomechanics. It began as a Face ID scan for custom CPAP masks, until patents got in the way. [eigen-running.com](https://www.eigen-running.com)',
+          'Eigen empfiehlt Laufschuhe anhand eines 3D-Scans der Füße und eines kurzen Laufvideos. Gegründet habe ich es in Zürich mit Max, einem Robotikingenieur von der ETH, und ich kümmere mich um das Produkt und die Biomechanik. Angefangen hat es als Face-ID-Scan für maßgefertigte CPAP-Masken, bis Patente dazwischenkamen. [eigen-running.com](https://www.eigen-running.com)',
         ),
       ],
     },
     {
-      id: 'bangalore',
-      title: { en: 'Bangalore', de: 'Bangalore' },
+      id: 'medicine',
+      title: { en: 'Medicine', de: 'Medizin' },
       blocks: [
+        p('I studied medicine at UCL in London, with a year of Global Health in between.', 'Medizin habe ich am UCL in London studiert, mit einem Jahr Global Health dazwischen.'),
+        { kind: 'pair', photos: [photos.medSchool, photos.portico] },
         p(
-          'Before an orthopaedics elective in Kuala Lumpur this year, I spent four days in two eye hospitals in Bangalore. They ran several patients in the same theatre, with very short turnarounds, about a tenth of the waste of a Western cataract theatre, and the same infection rates as in the UK. Much of the surgery was cross-subsidised for people who couldn’t pay. Some of our rules turn out to be habits rather than evidence.',
-          'Vor einer Famulatur in der Orthopädie in Kuala Lumpur dieses Jahr war ich vier Tage in zwei Augenkliniken in Bangalore. Dort wurden mehrere Patient:innen im selben OP operiert, mit sehr kurzen Wechselzeiten, etwa einem Zehntel des Abfalls eines westlichen Katarakt-OPs und denselben Infektionsraten wie in Großbritannien. Ein großer Teil der Operationen war quersubventioniert für Menschen, die nicht zahlen konnten. Manche unserer Regeln sind eher Gewohnheit als Evidenz.',
+          'In 2026 I did an orthopaedics elective in Kuala Lumpur, and before that I spent four days in two eye hospitals in Bangalore. Several cataract patients were operated on in one theatre, with a tenth of the waste and the same infection rates as in the UK.',
+          '2026 war ich für eine Famulatur in der Orthopädie in Kuala Lumpur und davor vier Tage in zwei Augenkliniken in Bangalore. Dort wurden mehrere Kataraktpatienten in einem OP operiert, mit einem Zehntel des Abfalls und denselben Infektionsraten wie in Großbritannien.',
         ),
         { kind: 'photo', photo: photos.theatre },
-        p(
-          'It changed something at Bounceback. In low- and middle-income countries, through NGOs and partners, it costs €1 per physio per month. Clinical software is usually priced for rich countries, while the places with the fewest physios need it most. If it costs us almost nothing, why gatekeep it?',
-          'Das hat bei Bounceback etwas verändert. In Ländern mit niedrigem und mittlerem Einkommen kostet es über NGOs und Partner €1 pro Physiotherapeut:in und Monat. Klinische Software ist meistens für reiche Länder bepreist, während die Orte mit den wenigsten Physiotherapeut:innen sie am dringendsten brauchen. Wenn es uns fast nichts kostet, warum sollten wir es zurückhalten?',
-        ),
       ],
     },
     {
-      id: 'ai',
-      title: { en: 'On AI', de: 'Über KI' },
+      id: 'before',
+      title: { en: 'Before medicine', de: 'Vor der Medizin' },
       blocks: [
         p(
-          'Most conversations about AI in medicine are about replacing doctors. That’s a real and complicated question, with good and bad sides, and I find it interesting. But it skips the present. In 2026, AI can already take over note-taking, summaries and simple, guideline-based reasoning. Healthcare’s problems right now are too few staff, too many patients and too much documentation, and the way processes run inside even big hospitals would shock most people.',
-          'Die meisten Gespräche über KI in der Medizin drehen sich darum, Ärzt:innen zu ersetzen. Das ist eine echte und komplizierte Frage, mit guten und schlechten Seiten, und ich finde sie spannend. Aber sie überspringt die Gegenwart. 2026 kann KI schon Dokumentation, Zusammenfassungen und einfaches, leitlinienbasiertes Denken übernehmen. Die Probleme im Gesundheitswesen sind gerade zu wenig Personal, zu viele Patient:innen und zu viel Dokumentation, und wie Abläufe selbst in großen Spitälern laufen, würde die meisten schockieren.',
+          'At thirteen I built FPV drones, before they were common, and crashed most of them. That turned into filming and photography, and by sixteen I was selling landscape prints from Austria and Lofoten. Filming my dad’s eye operations for his patients is what got me into medicine.',
+          'Mit dreizehn habe ich FPV-Drohnen gebaut, als das noch kaum jemand machte, und die meisten davon zu Bruch geflogen. Daraus wurden Filmen und Fotografie, und mit sechzehn habe ich Landschaftsfotos aus Österreich und von den Lofoten verkauft. Die Augenoperationen meines Papas für seine Patienten zu filmen, hat mich zur Medizin gebracht.',
         ),
-        p(
-          'The money flows towards replacing clinicians, when making them twice as efficient is possible today. The human part of medicine will matter for a very long time, maybe always. Good AI gives it more room.',
-          'Das Geld fließt ins Ersetzen von Kliniker:innen, obwohl es heute schon möglich ist, sie doppelt so effizient zu machen. Der menschliche Teil der Medizin wird sehr lange wichtig bleiben, vielleicht immer. Gute KI gibt ihm mehr Raum.',
-        ),
+        { kind: 'photo', photo: photos.dad },
       ],
     },
     {
-      id: 'outside',
-      title: { en: 'Outside', de: 'Draußen' },
+      id: 'run-club',
+      title: { en: 'Run club', de: 'Lauftreff' },
       blocks: [
         p(
-          `Triathlon ([Ironman Kalmar](${links.ironmanKalmar}), Ironman Tallinn), [marathons](${links.amsterdamMarathon}), ice hockey for the UCL Yetis, and ski racing as a kid: FIS races, Viennese youth champion, and now ski instructor (LS2). I dance whenever there’s music, and I film almost everything: small edits of trips and friends that we still watch years later.`,
-          `Triathlon ([Ironman Kalmar](${links.ironmanKalmar}), Ironman Tallinn), [Marathons](${links.amsterdamMarathon}), Eishockey für die UCL Yetis und als Kind Skirennen: FIS-Rennen, Wiener Jugendmeister und heute Skilehrer (LS2). Ich tanze, sobald Musik läuft, und filme fast alles: kleine Edits von Reisen und Freunden, die wir uns Jahre später noch anschauen.`,
+          'For two years I hosted a Sunday morning run in Highbury, usually five to eight people, winter included, with a barbecue after. That’s where I met Max.',
+          'Zwei Jahre lang habe ich in Highbury jeden Sonntagmorgen einen Lauf organisiert, meistens fünf bis acht Leute, auch im Winter, und danach wurde gegrillt. Dort habe ich Max kennengelernt.',
+        ),
+        { kind: 'photo', photo: photos.nightRun },
+      ],
+    },
+    {
+      id: 'other',
+      title: { en: 'Other things', de: 'Sonst' },
+      blocks: [
+        p(
+          `Triathlon ([Ironman Kalmar](${links.ironmanKalmar}), Ironman Tallinn), [marathons](${links.amsterdamMarathon}) and ice hockey for the UCL Yetis. I raced skis as a kid, FIS races and Viennese youth champion, and now teach as a ski instructor (LS2). I also film most things and dance whenever there’s music.`,
+          `Triathlon ([Ironman Kalmar](${links.ironmanKalmar}), Ironman Tallinn), [Marathons](${links.amsterdamMarathon}) und Eishockey für die UCL Yetis. Als Kind bin ich Skirennen gefahren, FIS-Rennen und Wiener Jugendmeister, heute bin ich Skilehrer (LS2). Außerdem filme ich fast alles und tanze, sobald Musik läuft.`,
         ),
         { kind: 'strip', photos: [photos.swim, photos.ski, photos.hockey, photos.run, photos.sister, photos.summer] },
       ],
@@ -244,7 +183,7 @@ export const page = {
 export const facts = {
   summary: {
     en: 'Till Findl studied medicine at University College London (MBBS, 2020 to 2026) and lives in Vienna. He is cofounder and CEO of Bounceback, AI-powered practice software for physiotherapists in Germany, Austria and Switzerland, and cofounder and Chief of Product of Eigen Running in Zurich, which recommends running shoes from a phone video and a 3D scan of the feet.',
-    de: 'Till Findl hat am University College London Medizin studiert (MBBS, 2020 bis 2026) und lebt in Wien. Er ist Mitgründer und Geschäftsführer von Bounceback, KI-gestützter Praxissoftware für Physiotherapeut:innen in Deutschland, Österreich und der Schweiz, und Mitgründer und Chief of Product von Eigen Running in Zürich, das Laufschuhe anhand eines Handyvideos und eines 3D-Fußscans empfiehlt.',
+    de: 'Till Findl hat am University College London Medizin studiert (MBBS, 2020 bis 2026) und lebt in Wien. Er ist Mitgründer und Geschäftsführer von Bounceback, KI-gestützter Praxissoftware für Physiotherapeuten in Deutschland, Österreich und der Schweiz, und Mitgründer und Chief of Product von Eigen Running in Zürich, das Laufschuhe anhand eines Handyvideos und eines 3D-Fußscans empfiehlt.',
   } satisfies L,
   place: { en: 'Vienna', de: 'Wien' } satisfies L,
   languages: {

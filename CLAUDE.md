@@ -1,6 +1,6 @@
 # Working on tillfindl.com
 
-Till's personal website: a calm one-pager to read. Read `README.md` for the stack (Astro, static
+Till's personal website: a calm, short one-pager. Read `README.md` for the stack (Astro, static
 output, GitHub Pages on the custom domain) and the layout of the repo.
 
 ## Each round
@@ -11,7 +11,7 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
 4. **Look at it** before showing it: `npm run preview`, then screenshot with Playwright at phone
    sizes (393×852 @2x, and a small phone, 331×716), a tablet (820×1180) and desktop (1280×800,
    1440×900). Photos fade in as they come into view, so scroll through before capturing, and
-   capture the viewport at each chapter (full-page captures of a page this long come out
+   capture the viewport at each section (full-page captures of long pages can come out
    garbled). Zoom into details (alignment, wrapping, edges that clip) and fix what you see.
 5. Build the self-contained preview (`npm run preview:single`, writes `preview/`) and republish
    the preview artifact Till is watching (same link every round, never a new one unless asked).
@@ -35,18 +35,24 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
   and the technical detail carry the weight; the words stay plain.
 - Write for a stranger or an AI assistant who has never heard of Till or Bounceback: explain
   what things are, in the order they happened, and let one sentence lead into the next.
-- The page is read, not scanned: short chapters in the spirit of Alain de Botton, observational
-  and plain, told through what Till saw and did, one thought leading into the next. Keep Till's
-  own words and phrases where he gives them. State facts, never prove them (no test results, no
-  "lab-level", no counts as a flex). No company names in the intro. Never call Till an engineer.
-  "Dad", not "father". If a line describes Till's personality rather than showing it, cut it.
+- Till's own register, not anyone else's: never imitate a reference site or author (Max's site,
+  Alain de Botton). Say what the thing is and the one or two details that are interesting in
+  themselves, then stop. No lessons ("it taught me"), no rhetorical questions, no closing
+  one-liners, no story arc, no feelings narrated. Don't stack short feature sentences either;
+  let one sentence lead into the next. Plain section titles (Bounceback, Medicine). Where Till
+  has his own wording for something (the `till-voice` skill holds his product sentences), use it.
+  When Till pushes back, change what he pointed at, proportionally; don't swing to the opposite.
+- State facts, never prove them (no test results, no "lab-level", no counts as a flex). No
+  sentence under the name. Never call Till an engineer. "Dad", not "father". German says
+  "Physios" and "Patienten", no ":innen" forms.
 - A personal page, not a CV or a keynote: name, place and buttons beside a medium portrait
-  (never full-bleed), then the chapters, with the chapter list beside them on a wide screen. No
-  cards: experiences, schooling and hobbies are told in the text, and the detail that does not
-  fit goes in `facts`. Leave out tools, placements and dates wherever they are not needed.
-- Photos sit inside the chapters with no visible captions; the alt text is for screen readers
+  (never full-bleed), then short sections, with their list beside them on a wide screen. About
+  300 words in all. No cards: experiences, schooling and hobbies are told in the text, and the
+  detail that does not fit goes in `facts`. Leave out tools, placements and dates wherever they
+  are not needed.
+- Photos sit inside the sections with no visible captions; the alt text is for screen readers
   and search engines only. Upright photos hang in the margin, landscape ones run across, and the
-  sport photos close the last chapter as a strip (see `Chapter.astro`).
+  sport photos close the last section as a strip (see `Chapter.astro`).
 - Races are named in the text, not listed with dates, and link to their result pages; no race
   times. The /llms.txt link in the footer is the ground colour on purpose. Words Till has ruled
   out: founder (as a label), doctor (as a label for himself), "building".

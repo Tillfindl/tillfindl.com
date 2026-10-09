@@ -1,7 +1,7 @@
 ---
-// The whole page, in one language: name, place, one sentence and a portrait, then chapters to
-// read, with photos set beside and between the paragraphs, and contact at the end. On a wide
-// screen the list of chapters stays beside the text and marks how far the reader has got.
+// The whole page, in one language: name, place and a portrait, then short sections with photos
+// set beside and between the paragraphs, and contact at the end. On a wide screen a list of the
+// sections stays beside the text and marks how far the reader has got.
 // /index.astro and /de/index.astro both render this.
 import { getImage, Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
@@ -42,7 +42,6 @@ const number = (i: number) => String(i + 1).padStart(2, '0');
       <div class="text">
         <h1>{person.name}</h1>
         <p class="place">{page.place[lang]}</p>
-        <p class="lede">{page.intro[lang]}</p>
         <div class="buttons">
           <a class="button primary" href={links.bounceback} rel="noopener">Bounceback <span aria-hidden="true">↗</span></a>
           <a class="button" href={links.eigen} rel="noopener">Eigen <span aria-hidden="true">↗</span></a>
@@ -62,7 +61,7 @@ const number = (i: number) => String(i + 1).padStart(2, '0');
 
     <div class="reading">
       <nav class="toc" aria-labelledby="toc-label">
-        <p id="toc-label">{page.chaptersLabel[lang]}</p>
+        <p id="toc-label" class="visually-hidden">{page.chaptersLabel[lang]}</p>
         <ol>
           {
             page.chapters.map((c, i) => (
@@ -314,13 +313,6 @@ const number = (i: number) => String(i + 1).padStart(2, '0');
     color: var(--muted);
   }
 
-  .lede {
-    max-width: 30em;
-    margin-top: 1.5rem;
-    color: var(--body);
-    font-size: var(--text-lg);
-    line-height: 1.55;
-  }
 
   .buttons {
     display: flex;
@@ -329,7 +321,7 @@ const number = (i: number) => String(i + 1).padStart(2, '0');
     margin-top: 2rem;
   }
 
-  /* The chapters: the list first on a phone, beside the text from a wide screen up. */
+  /* The sections, with their list beside them on a wide screen. Smaller screens go without it. */
   .reading {
     margin-top: var(--section-gap);
   }
@@ -337,14 +329,12 @@ const number = (i: number) => String(i + 1).padStart(2, '0');
   main {
     display: grid;
     gap: var(--chapter-gap);
-    margin-top: var(--chapter-gap);
   }
 
-  .toc p {
-    margin-bottom: 0.75rem;
-    color: var(--muted);
-    font-size: var(--text-sm);
+  .toc {
+    display: none;
   }
+
 
   .toc ol {
     display: grid;
@@ -387,11 +377,8 @@ const number = (i: number) => String(i + 1).padStart(2, '0');
       column-gap: var(--column-gap);
     }
 
-    main {
-      margin-top: 0;
-    }
-
     .toc {
+      display: block;
       position: sticky;
       top: 2.5rem;
       align-self: start;
