@@ -6,8 +6,8 @@ Cloudflare.
 
 A short personal page in English (`/`) and German (`/de/`): name, one line about what Till does,
 portrait and buttons, then four plain sections (medicine, Bounceback, Eigen, sport) with photos
-set into the text, and contact at the end. On a wide screen a list of the sections stays
-beside the text and marks how far the reader has got. The fuller facts go to search engines
+set into the text, and contact at the end, on warm off-white paper. Each section is a small
+label beside a reading column, so the whole page shares two edges. The fuller facts go to search engines
 (JSON-LD) and AI assistants (`/llms.txt`, which also carries the page text), generated from the
 same file.
 
@@ -36,7 +36,7 @@ src/
   pages/index.astro     "/" (English); pages/de/index.astro is "/de/" (German); both render Page
   pages/llms.txt.ts     "/llms.txt": a plain summary for AI assistants, built from the profile
   pages/404.astro       The not-found page
-  components/           Page (name, section list, contact), Chapter (one section's text and photos), Footer
+  components/           Page (intro and contact), Chapter (one section's label, text and photos), Footer
   layouts/Base.astro    The HTML shell: <head>, language alternates, social card, JSON-LD
   styles/global.css     Design tokens (colour, type, spacing) and base styles
   assets/photos/        Photos; the build resizes them and strips their metadata
@@ -50,10 +50,11 @@ astro.config.mjs        Site URL, languages, sitemap
 - **Words:** edit `src/content/profile.ts`. The page, the German page, the structured data and
   `/llms.txt` all follow. Before adding a sentence to the page, ask whether it could go in `facts`.
 - **Photos:** drop the file into `src/assets/photos/`, add it to `photos` in the profile with alt
-  text in both languages, and place it in a section. A `photo` block that is upright hangs in the
-  margin beside the paragraph before it (from a tablet up); a landscape one runs across text and
-  margin. A `pair` sets two side by side, a `strip` runs a row out to the edges of the screen.
-- **The look:** tokens at the top of `src/styles/global.css`.
+  text in both languages, and place it in a section. A landscape `photo` fills the text column,
+  an upright one takes half of it, a `pair` sets two halves side by side, and a `strip` becomes a
+  grid across both columns at the end of its section.
+- **The look:** colours, type sizes, the 8px spacing scale and the column widths are tokens at
+  the top of `src/styles/global.css`.
 
 Keep private details out of the repo: no phone number, home address, birth date or personal email.
 

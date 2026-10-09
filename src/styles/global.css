@@ -7,47 +7,55 @@
 @import '@fontsource-variable/archivo';
 @import '@fontsource-variable/archivo/wght-italic.css';
 
-/* Layout: a centred page with an intro beside the portrait, then chapters to read. */
 :root {
-  /* Colour: a near-black ground with soft wandering lights, off-white ink, grey reading text. */
-  --bg: #090a0b;
-  /* The wandering lights behind the page: blue, violet, teal and a warm one. */
-  --light-a: rgb(70 110 220 / 0.42);
-  --light-b: rgb(140 90 210 / 0.34);
-  --light-c: rgb(40 170 160 / 0.32);
-  --light-d: rgb(220 140 90 / 0.24);
-  --hover: rgb(255 255 255 / 0.06);
-  --border: rgb(255 255 255 / 0.08);
-  --border-hover: rgb(255 255 255 / 0.16);
-  --ink: #ededeb;
-  --body: #b3b4b6;
-  --muted: #808286;
+  /* Colour: warm paper, near-black ink, a softer ink for reading, grey for labels, hairlines. */
+  --bg: #f3f0e8;
+  --ink: #171614;
+  --body: #2e2c28;
+  --muted: #6e6a62;
+  --line: #ddd8cc;
 
-  /* Type: Archivo throughout. */
+  /* Type: Archivo throughout. Body at 17px with a 1.6 line height; labels and small print at 14px. */
   --font-sans: 'Archivo Variable', 'Helvetica Neue', Arial, sans-serif;
   --text-sm: 0.875rem;
-  --text-base: 1rem;
-  --text-lg: 1.125rem;
-  /* The chapters: the text being read, and each chapter's title. */
-  --text-read: 1.125rem;
-  --text-title: 1.3125rem;
-  --text-name: clamp(2.5rem, 5.5vw, 4rem);
+  --text-base: 1.0625rem;
+  --text-lg: 1.25rem;
+  --text-name: clamp(2.25rem, 4.5vw, 3rem);
+  --leading: 1.6;
 
-  /* Space: page width and gutter, the gap after the intro and between chapters. */
-  --page: 68rem;
-  --side: clamp(1.25rem, 4vw, 2.5rem);
-  --section-gap: clamp(4.5rem, 10vh, 6.5rem);
-  --chapter-gap: clamp(4rem, 9vh, 6rem);
-  /* Columns on a wide screen: the chapter list, the text, and the margin for upright photos. */
-  --index: 12rem;
-  --measure: 34rem;
-  --aside: 16rem;
-  --column-gap: 3rem;
+  /* Space: one scale on an 8px base. Every gap on the page comes from it. */
+  --s-1: 0.25rem;
+  --s-2: 0.5rem;
+  --s-3: 0.75rem;
+  --s-4: 1rem;
+  --s-6: 1.5rem;
+  --s-8: 2rem;
+  --s-12: 3rem;
+  --s-16: 4rem;
+  --s-24: 6rem;
+
+  /*
+   * Layout: on a wide screen every section is a label column and a text column (--measure keeps
+   * lines at about 65 characters). --section is the gap between sections, three times the
+   * largest gap inside one, so the space alone shows what belongs together.
+   */
+  --label: 11rem;
+  --gutter: 2.5rem;
+  --measure: 36rem;
+  --page: calc(var(--label) + var(--gutter) + var(--measure));
+  --side: var(--s-6);
+  --section: var(--s-16);
   /* Photos: the gap between photos side by side, and their corners. */
-  --gap: 0.75rem;
-  --radius: 1rem;
+  --gap: var(--s-3);
+  --radius: 0.375rem;
 
-  color-scheme: dark;
+  color-scheme: light;
+}
+
+@media (min-width: 52rem) {
+  :root {
+    --section: var(--s-24);
+  }
 }
 
 *,
@@ -61,34 +69,13 @@ html {
   text-size-adjust: 100%;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  html {
-    scroll-behavior: smooth;
-  }
-
-  /* Photos fade up once as they come into view (Page.astro adds .in). Without script they just show. */
-  .js [data-reveal] {
-    transition:
-      opacity 0.9s ease,
-      transform 0.9s ease;
-  }
-
-  .js [data-reveal]:not(.in) {
-    opacity: 0;
-    transform: translateY(1.25rem);
-  }
-}
-
 body {
   margin: 0;
-  /* The photo strip runs out to the screen edges; this stops it scrolling the page sideways. */
-  overflow-x: clip;
   background: var(--bg);
-  color: var(--ink);
+  color: var(--body);
   font-family: var(--font-sans);
   font-size: var(--text-base);
-  line-height: 1.55;
-  font-variant-numeric: tabular-nums;
+  line-height: var(--leading);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -126,23 +113,55 @@ img {
   white-space: nowrap;
 }
 
-/* Buttons: a solid pill for the first action, outlined pills for the rest. */
+/*
+ * A row of the page: label above content on a phone; from 52rem up, the label column and the text
+ * column side by side. The intro, every section and contact use it, so all of them share the
+ * same two edges. `.full` spans both columns.
+ */
+.row {
+  display: grid;
+  row-gap: var(--s-2);
+}
+
+@media (min-width: 52rem) {
+  .row {
+    grid-template-columns: var(--label) minmax(0, var(--measure));
+    column-gap: var(--gutter);
+  }
+
+  .row > .full {
+    grid-column: 1 / -1;
+  }
+}
+
+/* Section labels: small and grey, sitting on the first line of the text beside them. */
+.label {
+  color: var(--muted);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  line-height: calc(var(--text-base) * var(--leading));
+}
+
+/* Buttons: a solid ink pill for the first action, hairline pills for the rest. */
 .button {
   display: inline-flex;
   align-items: center;
-  gap: 0.4em;
-  padding: 0.7em 1.2em;
-  border: 1px solid var(--border-hover);
+  gap: 0.375em;
+  height: 2.5rem;
+  padding: 0 var(--s-4);
+  border: 1px solid var(--line);
   border-radius: 999px;
+  color: var(--ink);
   font-size: var(--text-sm);
   font-weight: 500;
   white-space: nowrap;
-  transition: background 0.2s, border-color 0.2s, opacity 0.2s;
+  transition:
+    border-color 0.2s,
+    opacity 0.2s;
 }
 
 .button:hover {
-  background: var(--hover);
-  border-color: rgb(255 255 255 / 0.3);
+  border-color: var(--muted);
 }
 
 .button.primary {
@@ -152,5 +171,5 @@ img {
 }
 
 .button.primary:hover {
-  opacity: 0.88;
+  opacity: 0.85;
 }

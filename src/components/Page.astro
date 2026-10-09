@@ -1,8 +1,7 @@
 ---
-// The whole page, in one language: name, a line about Till and a portrait, then short sections with photos
-// set beside and between the paragraphs, and contact at the end. On a wide screen a list of the
-// sections stays beside the text and marks how far the reader has got.
-// /index.astro and /de/index.astro both render this.
+// The whole page, in one language: the portrait, name, one line and the two links, then the
+// sections and contact. Everything sits on the same two columns (`.row` in global.css), so it
+// all shares one left edge. /index.astro and /de/index.astro both render this.
 import { getImage, Image } from 'astro:assets';
 import Base from '../layouts/Base.astro';
 import Chapter from './Chapter.astro';
@@ -19,14 +18,9 @@ const { lang } = Astro.props;
 const og = await getImage({ src: photo(page.portrait.file), width: 800, height: 800, fit: 'cover', format: 'jpg' });
 const jsonLd = personJsonLd(lang, new URL(og.src, SITE_URL).href);
 const langs: Lang[] = ['en', 'de'];
-const number = (i: number) => String(i + 1).padStart(2, '0');
 ---
 
 <Base lang={lang} title={meta.title[lang]} description={meta.description[lang]} jsonLd={jsonLd}>
-  <!-- Set before anything paints, so photos that fade in never flash first. -->
-  <script is:inline>document.documentElement.classList.add('js');</script>
-  <div class="lights" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
-
   <div class="page">
     <nav class="top" aria-label={lang === 'en' ? 'Language' : 'Sprache'}>
       {
@@ -38,8 +32,17 @@ const number = (i: number) => String(i + 1).padStart(2, '0');
       }
     </nav>
 
-    <header class="intro">
-      <div class="text">
+    <header class="row hero">
+      <Image
+        class="portrait"
+        src={photo(page.portrait.file)}
+        alt={page.portrait.alt[lang]}
+        widths={[256, 384, 512]}
+        sizes="11rem"
+        loading="eager"
+        fetchpriority="high"
+      />
+      <div>
         <h1>{person.name}</h1>
         <p class="lede">{page.intro[lang]}</p>
         <div class="buttons">
@@ -48,39 +51,14 @@ const number = (i: number) => String(i + 1).padStart(2, '0');
           {links.linkedin && <a class="button" href={links.linkedin} rel="me noopener">LinkedIn <span aria-hidden="true">↗</span></a>}
         </div>
       </div>
-      <Image
-        class="portrait"
-        src={photo(page.portrait.file)}
-        alt={page.portrait.alt[lang]}
-        widths={[400, 640, 880]}
-        sizes="(min-width: 48rem) 20rem, min(22rem, calc(100vw - 2.5rem))"
-        loading="eager"
-        fetchpriority="high"
-      />
     </header>
 
-    <div class="reading">
-      <nav class="toc" aria-labelledby="toc-label">
-        <p id="toc-label" class="visually-hidden">{page.chaptersLabel[lang]}</p>
-        <ol>
-          {
-            page.chapters.map((c, i) => (
-              <li>
-                <a href={`#${c.id}`}>
-                  <span class="n">{number(i)}</span>
-                  <span>{c.title[lang]}</span>
-                </a>
-              </li>
-            ))
-          }
-        </ol>
-      </nav>
+    <main>
+      {page.chapters.map((c) => <Chapter chapter={c} lang={lang} />)}
 
-      <main>
-        {page.chapters.map((c, i) => <Chapter chapter={c} number={number(i)} lang={lang} />)}
-
-        <section class="contact" id="contact" aria-labelledby="contact-title">
-          <h2 id="contact-title">{page.contact.title[lang]}</h2>
+      <section class="row" id="contact" aria-labelledby="contact-title">
+        <h2 class="label" id="contact-title">{page.contact.title[lang]}</h2>
+        <div class="contact">
           <p>{page.contact.text[lang]}</p>
           {
             links.linkedin ? (
@@ -91,179 +69,39 @@ const number = (i: number) => String(i + 1).padStart(2, '0');
               <span class="button pending">{page.contact.pending[lang]}</span>
             )
           }
-        </section>
-      </main>
-    </div>
+        </div>
+      </section>
+    </main>
 
     <Footer lang={lang} />
   </div>
-
-  <script>
-    // Photos fade in once, the first time they come into view.
-    const reveal = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          entry.target.classList.add('in');
-          reveal.unobserve(entry.target);
-        }
-      },
-      { rootMargin: '0px 0px -8% 0px' },
-    );
-    document.querySelectorAll('[data-reveal]').forEach((el) => reveal.observe(el));
-
-    /*
-     * The list of chapters follows the reading: chapters already read are lit, the one being read
-     * is brightest, and a short line beside it fills as the reader moves through it. Everything is
-     * worked out from the scroll position alone, so scrolling back simply undoes it.
-     */
-    const toc = document.querySelector<HTMLElement>('.toc');
-    const chapters = [...document.querySelectorAll<HTMLElement>('.chapter')];
-    const marks = chapters.map((c) => document.querySelector<HTMLAnchorElement>(`.toc a[href="#${c.id}"]`));
-    /** Photos that run out to the screen's edges, and so would pass over the list. */
-    const strips = [...document.querySelectorAll<HTMLElement>('.strip')];
-    /** How far down the screen the reader's eye is taken to be, as a share of its height. */
-    const READING_LINE = 0.4;
-    let queued = false;
-
-    function follow() {
-      queued = false;
-      const line = innerHeight * READING_LINE;
-      const atEnd = scrollY + innerHeight >= document.documentElement.scrollHeight - 2;
-      chapters.forEach((chapter, i) => {
-        const box = chapter.getBoundingClientRect();
-        const end = chapters[i + 1]?.getBoundingClientRect().top ?? box.bottom;
-        const progress = atEnd ? 1 : Math.min(1, Math.max(0, (line - box.top) / (end - box.top)));
-        const mark = marks[i];
-        if (!mark) return;
-        mark.style.setProperty('--progress', progress.toFixed(3));
-        mark.classList.toggle('read', progress >= 1);
-        if (progress > 0 && progress < 1) mark.setAttribute('aria-current', 'location');
-        else mark.removeAttribute('aria-current');
-      });
-      // The list steps aside while a strip of photos passes behind it.
-      if (toc) {
-        const list = toc.getBoundingClientRect();
-        const under = strips.some((strip) => {
-          const box = strip.getBoundingClientRect();
-          return box.top < list.bottom + 24 && box.bottom > list.top - 24;
-        });
-        toc.classList.toggle('away', under);
-      }
-    }
-
-    const queue = () => {
-      if (queued) return;
-      queued = true;
-      requestAnimationFrame(follow);
-    };
-    addEventListener('scroll', queue, { passive: true });
-    addEventListener('resize', queue);
-    follow();
-  </script>
 </Base>
 
-
-
 <style>
-  /* Soft spots of light that wander across the whole screen behind everything. */
-  .lights {
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    overflow: hidden;
-    pointer-events: none;
-  }
-
-  .lights span {
-    position: absolute;
-    width: 42vmax;
-    height: 42vmax;
-    margin: -21vmax 0 0 -21vmax;
-    border-radius: 50%;
-    filter: blur(60px);
-    animation: wander 34s ease-in-out infinite alternate;
-  }
-
-  .lights span:nth-child(1) {
-    top: 10%;
-    left: 15%;
-    background: radial-gradient(circle, var(--light-a), transparent 68%);
-  }
-
-  .lights span:nth-child(2) {
-    top: 45%;
-    left: 85%;
-    background: radial-gradient(circle, var(--light-b), transparent 68%);
-    animation-duration: 41s;
-    animation-delay: -12s;
-    animation-direction: alternate-reverse;
-  }
-
-  .lights span:nth-child(3) {
-    top: 85%;
-    left: 35%;
-    background: radial-gradient(circle, var(--light-c), transparent 68%);
-    animation-duration: 47s;
-    animation-delay: -25s;
-  }
-
-  .lights span:nth-child(4) {
-    top: 25%;
-    left: 60%;
-    width: 30vmax;
-    height: 30vmax;
-    margin: -15vmax 0 0 -15vmax;
-    background: radial-gradient(circle, var(--light-d), transparent 68%);
-    animation-duration: 29s;
-    animation-delay: -7s;
-    animation-direction: alternate-reverse;
-  }
-
-  @keyframes wander {
-    0% {
-      transform: translate(0, 0) scale(1);
-    }
-    33% {
-      transform: translate(28vw, 18vh) scale(1.2);
-    }
-    66% {
-      transform: translate(-18vw, 32vh) scale(0.9);
-    }
-    100% {
-      transform: translate(12vw, -22vh) scale(1.1);
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .lights span {
-      animation: none;
-    }
-  }
-
-  /*
-   * --edge is the gap between the page and the screen's edge. --bleed-start and --bleed-end: how
-   * far the chapter text sits from the left and right edges, so the photo strip can run out to both.
-   */
+  /* One reading column below 52rem (so a tablet keeps the same line length), both columns above. */
   .page {
-    --edge: max(var(--side), (100vw - var(--page)) / 2);
-    --bleed-start: var(--edge);
-    --bleed-end: var(--edge);
-    max-width: calc(var(--page) + 2 * var(--side));
+    max-width: calc(var(--measure) + 2 * var(--side));
     margin: 0 auto;
     padding: 0 var(--side);
+  }
+
+  @media (min-width: 52rem) {
+    .page {
+      max-width: calc(var(--page) + 2 * var(--side));
+    }
   }
 
   .top {
     display: flex;
     justify-content: flex-end;
-    gap: 0.9rem;
-    padding: 1.5rem 0;
+    gap: var(--s-4);
+    padding: var(--s-6) 0;
     font-size: var(--text-sm);
   }
 
   .top a {
     color: var(--muted);
+    transition: color 0.2s;
   }
 
   .top a[aria-current],
@@ -271,187 +109,64 @@ const number = (i: number) => String(i + 1).padStart(2, '0');
     color: var(--ink);
   }
 
-  /* Intro: name and buttons on the left, the portrait on the right; portrait first on a phone. */
-  .intro {
-    display: grid;
-    gap: 2rem;
-    padding-top: clamp(1rem, 6vh, 4rem);
+  /* The intro: portrait in the label column, name, line and links in the text column. */
+  .hero {
+    row-gap: var(--s-6);
+    padding-top: var(--s-8);
   }
 
-  .intro :global(.portrait) {
-    order: -1;
-    width: 100%;
-    max-width: 22rem;
+  .hero :global(.portrait) {
+    width: 8rem;
     aspect-ratio: 4 / 5;
     object-fit: cover;
     object-position: 50% 30%;
-    border-radius: 1.25rem;
-  }
-
-  @media (min-width: 48rem) {
-    .intro {
-      grid-template-columns: minmax(0, 1fr) 20rem;
-      align-items: end;
-      gap: clamp(2.5rem, 6vw, 5rem);
-    }
-
-    .intro :global(.portrait) {
-      order: 0;
-      max-width: none;
-    }
+    border-radius: var(--radius);
+    background: var(--line);
   }
 
   h1 {
+    color: var(--ink);
     font-size: var(--text-name);
     font-weight: 600;
-    letter-spacing: -0.04em;
-    line-height: 1;
+    letter-spacing: -0.035em;
+    line-height: 1.1;
   }
 
   .lede {
-    max-width: 26em;
-    margin-top: 1.25rem;
+    margin-top: var(--s-3);
     color: var(--body);
     font-size: var(--text-lg);
-    line-height: 1.55;
+    line-height: 1.5;
   }
-
 
   .buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-top: 2rem;
+    gap: var(--s-2);
+    margin-top: var(--s-6);
   }
 
-  /* The sections, with their list beside them on a wide screen. Smaller screens go without it. */
-  .reading {
-    margin-top: var(--section-gap);
+  @media (min-width: 52rem) {
+    .hero {
+      align-items: end;
+      padding-top: var(--s-16);
+    }
+
+    .hero :global(.portrait) {
+      width: 100%;
+    }
   }
 
   main {
     display: grid;
-    gap: var(--chapter-gap);
-  }
-
-  .toc {
-    display: none;
-  }
-
-
-  .toc ol {
-    display: grid;
-    gap: 0.15rem;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
-
-  .toc a {
-    display: flex;
-    gap: 0.75rem;
-    padding: 0.3rem 0;
-    color: var(--body);
-    font-size: var(--text-base);
-    line-height: 1.35;
-    transition: color 0.3s;
-  }
-
-  .toc a:hover {
-    color: var(--ink);
-  }
-
-  .toc .n {
-    flex: none;
-    width: 1.4rem;
-    color: var(--muted);
-    font-size: var(--text-sm);
-    line-height: 1.55;
-  }
-
-  @media (min-width: 73rem) {
-    .page {
-      --bleed-start: calc(var(--edge) + var(--index) + var(--column-gap));
-    }
-
-    .reading {
-      display: grid;
-      grid-template-columns: var(--index) minmax(0, 1fr);
-      column-gap: var(--column-gap);
-    }
-
-    .toc {
-      display: block;
-      position: sticky;
-      top: 2.5rem;
-      align-self: start;
-      transition:
-        opacity 0.4s,
-        visibility 0.4s;
-    }
-
-    .toc.away {
-      visibility: hidden;
-      opacity: 0;
-    }
-
-    .toc a {
-      color: var(--muted);
-      font-size: var(--text-sm);
-    }
-
-    .toc .n {
-      position: relative;
-      width: 1.25rem;
-      line-height: inherit;
-    }
-
-    /* The line that fills while a chapter is being read, hung just left of its number. */
-    .toc .n::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      right: calc(100% + 0.5rem);
-      width: 1rem;
-      height: 1px;
-      background: currentColor;
-      transform: scaleX(var(--progress, 0));
-      transform-origin: left;
-    }
-
-    .toc a.read {
-      color: var(--body);
-    }
-
-    .toc a[aria-current],
-    .toc a:hover {
-      color: var(--ink);
-    }
-
-    .toc a[aria-current] .n,
-    .toc a.read .n {
-      color: inherit;
-    }
+    gap: var(--section);
+    margin-top: var(--section);
   }
 
   .contact {
     display: grid;
     justify-items: start;
-    gap: 1.15rem;
-    max-width: var(--measure);
-    scroll-margin-top: 2rem;
-  }
-
-  .contact h2 {
-    font-size: var(--text-title);
-    font-weight: 600;
-    letter-spacing: -0.02em;
-  }
-
-  .contact p {
-    color: var(--body);
-    font-size: var(--text-read);
-    line-height: 1.7;
+    gap: var(--s-6);
   }
 
   .pending {
@@ -459,7 +174,6 @@ const number = (i: number) => String(i + 1).padStart(2, '0');
   }
 
   .pending:hover {
-    background: none;
-    border-color: var(--border-hover);
+    border-color: var(--line);
   }
 </style>

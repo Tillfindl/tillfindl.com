@@ -105,7 +105,6 @@ export const page = {
     en: 'I studied medicine at UCL in London and now run a healthcare software company in Vienna.',
     de: 'Ich habe am UCL in London Medizin studiert und leite heute ein Unternehmen für Gesundheitssoftware in Wien.',
   },
-  chaptersLabel: { en: 'On this page', de: 'Auf dieser Seite' },
   chapters: [
     {
       id: 'medicine',

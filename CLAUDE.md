@@ -49,22 +49,28 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
   Global Health not featured. State facts, never prove them (no test results, no "lab-level", no
   counts as a flex). Never call Till an engineer. "Dad", not "father". German says
   "Physios" and "Patienten", no ":innen" forms.
-- A personal page, not a CV or a keynote: name, place and buttons beside a medium portrait
-  (never full-bleed), then short sections, with their list beside them on a wide screen. About
-  250 words in all. No cards: experiences, schooling and hobbies are told in the text, and the
+- A personal page, not a CV or a keynote: portrait, name, one line and buttons, then short
+  sections and contact. About 250 words in all. No cards: experiences, schooling and hobbies are told in the text, and the
   detail that does not fit goes in `facts`. Leave out tools, placements and dates wherever they
   are not needed.
+- The look is warm paper: off-white ground, near-black ink, grey labels, hairlines. No lights,
+  glow or animation; the photos carry the colour.
+- Layout, as a professional designer would set it: every part of the page is a `.row` (a small
+  grey label column and a 36rem text column, about 65 characters a line), so everything shares
+  two edges. Every gap comes from the 8px spacing scale in `global.css`, and gaps inside a group
+  stay at most a third of the gap between sections (label to text 8px, paragraphs 16px, photos
+  32px, sections 96px, 64px on a phone). Below 52rem it is one centred reading column.
 - Photos sit inside the sections with no visible captions; the alt text is for screen readers
-  and search engines only. Upright photos hang in the margin, landscape ones run across, and the
-  sport photos close the last section as a strip (see `Chapter.astro`).
+  and search engines only. Two sizes only: landscape fills the text column, upright and pairs
+  take half each; the sport photos close the last section as a grid across both columns (see
+  `Chapter.astro`). One small corner radius.
 - Races are named in the text, not listed with dates, and link to their result pages; no race
   times. The /llms.txt link in the footer is the ground colour on purpose. Words Till has ruled
   out: founder (as a label), doctor (as a label for himself), "building".
 - Colours, type sizes and spacing are tokens in `src/styles/global.css`. Use the tokens; a change
   to the look should be a one-number change there.
-- The site works on a phone first: 16px side gutter at least, no horizontal page scroll (the
-  photo strip may scroll sideways on its own), readable without zooming. Dark only. It respects
-  `prefers-reduced-motion`: the lights stand still and photos show without fading in.
+- The site works on a phone first: 24px side margins, no horizontal scroll, readable without
+  zooming. Light only, and nothing moves.
 - Keep it fast: no third-party trackers or scripts without asking, fonts self-hosted if added,
   images through `astro:assets`.
 - Comments explain intent and the non-obvious, in full sentences, British spelling. Don't narrate.
