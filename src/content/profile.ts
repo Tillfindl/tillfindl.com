@@ -1,12 +1,13 @@
 /*
  * Everything the site says about Till, in English and German.
  *
- * `page` is what the page shows: name and a short line about Till, then short sections (medicine,
- * now, outside) with photos set into the text. `facts` is the fuller record for machines (JSON-LD for search engines, /llms.txt for AI
+ * `page` is what the page shows: name and one line about what Till does now, then short sections
+ * (medicine, Bounceback, Eigen, sport) with photos set into the text. `facts` is the fuller record for machines (JSON-LD for search engines, /llms.txt for AI
  * assistants).
  *
- * Voice: as little explaining as possible; the links explain the companies. Short sentences, no
- * lessons, no rhetorical questions, no story arc. Facts, never proof. Never call Till an
+ * Voice: professional and plain. The why runs through the sections (the wards lead to Bounceback,
+ * the run club to Max and Eigen) without ever announcing itself as a story. No lessons, no
+ * rhetorical questions. Facts, never proof. Never call Till an
  * engineer; "dad", not "father". No em dashes, no race times, nothing private.
  *
  * Inline markup in paragraphs: [label](url) for a link, *text* for italics (see rich.ts).
@@ -101,8 +102,8 @@ export const page = {
   } satisfies Photo,
   place: { en: 'Vienna', de: 'Wien' },
   intro: {
-    en: 'Grew up in Vienna, building drones and taking photos. Studied medicine in London, now back home.',
-    de: 'In Wien aufgewachsen, mit selbstgebauten Drohnen und einer Kamera. Medizin in London studiert, jetzt wieder zu Hause.',
+    en: 'I studied medicine at UCL in London and now run a healthcare software company in Vienna.',
+    de: 'Ich habe am UCL in London Medizin studiert und leite heute ein Unternehmen für Gesundheitssoftware in Wien.',
   },
   chaptersLabel: { en: 'On this page', de: 'Auf dieser Seite' },
   chapters: [
@@ -110,45 +111,47 @@ export const page = {
       id: 'medicine',
       title: { en: 'Medicine', de: 'Medizin' },
       blocks: [
-        p('My dad is an eye surgeon, and filming his operations got me into medicine.', 'Mein Papa ist Augenchirurg, und seine Operationen zu filmen hat mich zur Medizin gebracht.'),
-        { kind: 'photo', photo: photos.dad },
-        p('Studied at UCL in London, with a year of Global Health in between.', 'Studiert habe ich am UCL in London, mit einem Jahr Global Health dazwischen.'),
+        p(
+          'I graduated from UCL in 2026, after an orthopaedics elective in Kuala Lumpur and a few days in two eye hospitals in Bangalore.',
+          '2026 habe ich am UCL abgeschlossen, nach einer Famulatur in der Orthopädie in Kuala Lumpur und ein paar Tagen in zwei Augenkliniken in Bangalore.',
+        ),
         { kind: 'pair', photos: [photos.medSchool, photos.portico] },
         p(
-          'Orthopaedics elective in Kuala Lumpur, and a few days in two eye hospitals in Bangalore.',
-          'Famulatur in der Orthopädie in Kuala Lumpur und ein paar Tage in zwei Augenkliniken in Bangalore.',
+          'On the wards, a lot of the day went into software instead of patients: one program for imaging, another for notes, another for prescriptions. And once patients went home, they were mostly on their own with their exercises.',
+          'Auf Station verbrachte man einen großen Teil des Tages mit Software statt mit Patienten: ein Programm für die Bildgebung, eines für die Notizen, eines für Verschreibungen. Und sobald Patienten nach Hause gingen, waren sie mit ihren Übungen meistens auf sich allein gestellt.',
         ),
         { kind: 'photo', photo: photos.theatre },
       ],
     },
     {
-      id: 'now',
-      title: { en: 'Now', de: 'Jetzt' },
+      id: 'bounceback',
+      title: { en: 'Bounceback', de: 'Bounceback' },
       blocks: [
         p(
-          `[Bounceback](${links.bounceback}): practice software for physiotherapists, with my team in Vienna.`,
-          `[Bounceback](${links.bounceback}): Praxissoftware für Physios, mit meinem Team in Wien.`,
-        ),
-        p(
-          `[Eigen](${links.eigen}): running shoes matched to how someone runs, with Max in Zurich.`,
-          `[Eigen](${links.eigen}): Laufschuhe, die zum Laufstil passen, mit Max in Zürich.`,
+          `So with my team in Vienna I developed Bounceback, practice software for physiotherapists. Patients get their exercises as video, with feedback from their physio between appointments, and our AI writes the notes from the conversation during treatment. It has been on the market since June 2026. In low- and middle-income countries it costs €1 per physio per month, because the places with the fewest physios need it most. [bounceback.at](${links.bounceback})`,
+          `Also habe ich mit meinem Team in Wien Bounceback entwickelt, eine Praxissoftware für Physios. Patienten bekommen ihre Übungen als Video, mit Feedback vom Physio auch zwischen den Terminen, und die Dokumentation schreibt unsere KI aus dem Gespräch während der Behandlung. Seit Juni 2026 ist Bounceback am Markt. In Ländern mit niedrigem und mittlerem Einkommen kostet es €1 pro Physio und Monat, weil die Orte mit den wenigsten Physios es am dringendsten brauchen. [bounceback.at](${links.bounceback})`,
         ),
       ],
     },
     {
-      id: 'outside',
-      title: { en: 'Outside', de: 'Freizeit' },
+      id: 'eigen',
+      title: { en: 'Eigen', de: 'Eigen' },
       blocks: [
         p(
-          `Triathlon ([Ironman Kalmar](${links.ironmanKalmar}), Ironman Tallinn), [marathons](${links.amsterdamMarathon}) and ice hockey for the UCL Yetis. Ski racing as a kid, ski instructor now.`,
-          `Triathlon ([Ironman Kalmar](${links.ironmanKalmar}), Ironman Tallinn), [Marathons](${links.amsterdamMarathon}) und Eishockey für die UCL Yetis. Als Kind Skirennen, heute Skilehrer.`,
-        ),
-        p(
-          'For two years I hosted a Sunday run club in Highbury. That’s where I met Max.',
-          'Zwei Jahre lang habe ich in Highbury einen Sonntagslauf organisiert. Dort habe ich Max kennengelernt.',
+          `In London I hosted a Sunday run club, and one of the people who came along was Max, a robotics engineer from ETH Zurich. Together we first built a Face ID scan for custom CPAP masks. When patents got in the way, we moved the scan to feet, and that became Eigen: a 3D foot scan and a short running video, matched to the shoes that suit how someone runs. I look after the product and the biomechanics. [eigen-running.com](${links.eigen})`,
+          `In London habe ich einen Sonntagslauf organisiert, und einer, der mitkam, war Max, Robotikingenieur von der ETH Zürich. Zusammen haben wir zuerst einen Face-ID-Scan für maßgefertigte CPAP-Masken gebaut. Als Patente dazwischenkamen, haben wir den Scan auf die Füße verlegt, und daraus wurde Eigen: ein 3D-Fußscan und ein kurzes Laufvideo, abgeglichen mit den Schuhen, die zum Laufstil passen. Ich kümmere mich um das Produkt und die Biomechanik. [eigen-running.com](${links.eigen})`,
         ),
         { kind: 'photo', photo: photos.nightRun },
-        p('I film most things and dance whenever there’s music.', 'Ich filme fast alles und tanze, sobald Musik läuft.'),
+      ],
+    },
+    {
+      id: 'sport',
+      title: { en: 'Sport', de: 'Sport' },
+      blocks: [
+        p(
+          `Triathlon ([Ironman Kalmar](${links.ironmanKalmar}), Ironman Tallinn), [marathons](${links.amsterdamMarathon}) and ice hockey for the UCL Yetis. I raced skis as a kid and teach as a ski instructor today.`,
+          `Triathlon ([Ironman Kalmar](${links.ironmanKalmar}), Ironman Tallinn), [Marathons](${links.amsterdamMarathon}) und Eishockey für die UCL Yetis. Als Kind bin ich Skirennen gefahren, heute bin ich Skilehrer.`,
+        ),
         { kind: 'strip', photos: [photos.swim, photos.ski, photos.hockey, photos.run, photos.sister, photos.summer] },
       ],
     },
