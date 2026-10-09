@@ -42,12 +42,14 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
   let one sentence lead into the next. Plain section titles (Bounceback, Medicine). Where Till
   has his own wording for something (the `till-voice` skill holds his product sentences), use it.
   When Till pushes back, change what he pointed at, proportionally; don't swing to the opposite.
-- State facts, never prove them (no test results, no "lab-level", no counts as a flex). No
-  sentence under the name. Never call Till an engineer. "Dad", not "father". German says
+- The page starts with Till, not his job: one short line about him under the name (where he grew
+  up, what he studied, where he lives), then medicine, then what he does now, then outside. Explain
+  as little as possible: one line per company, and the link explains the rest. State facts, never
+  prove them (no test results, no "lab-level", no counts as a flex). Never call Till an engineer. "Dad", not "father". German says
   "Physios" and "Patienten", no ":innen" forms.
 - A personal page, not a CV or a keynote: name, place and buttons beside a medium portrait
   (never full-bleed), then short sections, with their list beside them on a wide screen. About
-  300 words in all. No cards: experiences, schooling and hobbies are told in the text, and the
+  150 words in all. No cards: experiences, schooling and hobbies are told in the text, and the
   detail that does not fit goes in `facts`. Leave out tools, placements and dates wherever they
   are not needed.
 - Photos sit inside the sections with no visible captions; the alt text is for screen readers

@@ -1,5 +1,5 @@
 ---
-// The whole page, in one language: name, place and a portrait, then short sections with photos
+// The whole page, in one language: name, a line about Till and a portrait, then short sections with photos
 // set beside and between the paragraphs, and contact at the end. On a wide screen a list of the
 // sections stays beside the text and marks how far the reader has got.
 // /index.astro and /de/index.astro both render this.
@@ -41,7 +41,7 @@ const number = (i: number) => String(i + 1).padStart(2, '0');
     <header class="intro">
       <div class="text">
         <h1>{person.name}</h1>
-        <p class="place">{page.place[lang]}</p>
+        <p class="lede">{page.intro[lang]}</p>
         <div class="buttons">
           <a class="button primary" href={links.bounceback} rel="noopener">Bounceback <span aria-hidden="true">↗</span></a>
           <a class="button" href={links.eigen} rel="noopener">Eigen <span aria-hidden="true">↗</span></a>
@@ -308,9 +308,12 @@ const number = (i: number) => String(i + 1).padStart(2, '0');
     line-height: 1;
   }
 
-  .place {
-    margin-top: 0.75rem;
-    color: var(--muted);
+  .lede {
+    max-width: 26em;
+    margin-top: 1.25rem;
+    color: var(--body);
+    font-size: var(--text-lg);
+    line-height: 1.55;
   }
 
 

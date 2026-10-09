@@ -4,9 +4,9 @@ The personal website of Till Findl: a small one-page site built with [Astro](htt
 hosted on GitHub Pages at [tillfindl.com](https://tillfindl.com). The domain is registered on
 Cloudflare.
 
-A short personal page in English (`/`) and German (`/de/`): name, portrait and buttons, then a
-few plain sections (Bounceback, Eigen, medicine, before medicine, a run club, other things) with
-photos set into the text, and contact at the end. On a wide screen a list of the sections stays
+A short personal page in English (`/`) and German (`/de/`): name, one line about Till, portrait
+and buttons, then three plain sections (medicine, now, outside) with photos set into the text,
+and contact at the end. On a wide screen a list of the sections stays
 beside the text and marks how far the reader has got. The fuller facts go to search engines
 (JSON-LD) and AI assistants (`/llms.txt`, which also carries the page text), generated from the
 same file.

@@ -1,11 +1,11 @@
 /*
  * Everything the site says about Till, in English and German.
  *
- * `page` is what the page shows: name and place, then short sections with photos set into the
- * text. `facts` is the fuller record for machines (JSON-LD for search engines, /llms.txt for AI
+ * `page` is what the page shows: name and a short line about Till, then short sections (medicine,
+ * now, outside) with photos set into the text. `facts` is the fuller record for machines (JSON-LD for search engines, /llms.txt for AI
  * assistants).
  *
- * Voice: say what the thing is and the detail that is interesting in itself, then stop. No
+ * Voice: as little explaining as possible; the links explain the companies. Short sentences, no
  * lessons, no rhetorical questions, no story arc. Facts, never proof. Never call Till an
  * engineer; "dad", not "father". No em dashes, no race times, nothing private.
  *
@@ -100,71 +100,55 @@ export const page = {
     alt: { en: 'Till Findl on the Isle of Harris, Scotland', de: 'Till Findl auf der Isle of Harris, Schottland' },
   } satisfies Photo,
   place: { en: 'Vienna', de: 'Wien' },
+  intro: {
+    en: 'Grew up in Vienna, building drones and taking photos. Studied medicine in London, now back home.',
+    de: 'In Wien aufgewachsen, mit selbstgebauten Drohnen und einer Kamera. Medizin in London studiert, jetzt wieder zu Hause.',
+  },
   chaptersLabel: { en: 'On this page', de: 'Auf dieser Seite' },
   chapters: [
-    {
-      id: 'bounceback',
-      title: { en: 'Bounceback', de: 'Bounceback' },
-      blocks: [
-        p(
-          'With my team in Vienna I developed Bounceback, all-in-one software for physiotherapy practices, on the market since June 2026. At its heart is the patient app: home exercises as video, and feedback from the physio between appointments too. Our AI writes the notes from the conversation during treatment, and payment happens on the phone. In low- and middle-income countries it costs €1 per physio per month. [bounceback.at](https://bounceback.at/)',
-          'Mit meinem Team in Wien habe ich Bounceback entwickelt, eine All-in-one-Software für Physiotherapiepraxen, seit Juni 2026 am Markt. Herzstück ist die Patienten-App mit den Heimübungen als Video und Feedback vom Physio, auch zwischen den Terminen. Die Dokumentation schreibt unsere KI aus dem Gespräch während der Behandlung, bezahlt wird direkt am Handy. In Ländern mit niedrigem und mittlerem Einkommen kostet Bounceback €1 pro Physio und Monat. [bounceback.at](https://bounceback.at/)',
-        ),
-      ],
-    },
-    {
-      id: 'eigen',
-      title: { en: 'Eigen', de: 'Eigen' },
-      blocks: [
-        p(
-          'Eigen recommends running shoes from a 3D scan of the feet and a short running video. I started it in Zurich with Max, a robotics engineer from ETH, and look after the product and the biomechanics. It began as a Face ID scan for custom CPAP masks, until patents got in the way. [eigen-running.com](https://www.eigen-running.com)',
-          'Eigen empfiehlt Laufschuhe anhand eines 3D-Scans der Füße und eines kurzen Laufvideos. Gegründet habe ich es in Zürich mit Max, einem Robotikingenieur von der ETH, und ich kümmere mich um das Produkt und die Biomechanik. Angefangen hat es als Face-ID-Scan für maßgefertigte CPAP-Masken, bis Patente dazwischenkamen. [eigen-running.com](https://www.eigen-running.com)',
-        ),
-      ],
-    },
     {
       id: 'medicine',
       title: { en: 'Medicine', de: 'Medizin' },
       blocks: [
-        p('I studied medicine at UCL in London, with a year of Global Health in between.', 'Medizin habe ich am UCL in London studiert, mit einem Jahr Global Health dazwischen.'),
+        p('My dad is an eye surgeon, and filming his operations got me into medicine.', 'Mein Papa ist Augenchirurg, und seine Operationen zu filmen hat mich zur Medizin gebracht.'),
+        { kind: 'photo', photo: photos.dad },
+        p('Studied at UCL in London, with a year of Global Health in between.', 'Studiert habe ich am UCL in London, mit einem Jahr Global Health dazwischen.'),
         { kind: 'pair', photos: [photos.medSchool, photos.portico] },
         p(
-          'In 2026 I did an orthopaedics elective in Kuala Lumpur, and before that I spent four days in two eye hospitals in Bangalore. Several cataract patients were operated on in one theatre, with a tenth of the waste and the same infection rates as in the UK.',
-          '2026 war ich für eine Famulatur in der Orthopädie in Kuala Lumpur und davor vier Tage in zwei Augenkliniken in Bangalore. Dort wurden mehrere Kataraktpatienten in einem OP operiert, mit einem Zehntel des Abfalls und denselben Infektionsraten wie in Großbritannien.',
+          'Orthopaedics elective in Kuala Lumpur, and a few days in two eye hospitals in Bangalore.',
+          'Famulatur in der Orthopädie in Kuala Lumpur und ein paar Tage in zwei Augenkliniken in Bangalore.',
         ),
         { kind: 'photo', photo: photos.theatre },
       ],
     },
     {
-      id: 'before',
-      title: { en: 'Before medicine', de: 'Vor der Medizin' },
+      id: 'now',
+      title: { en: 'Now', de: 'Jetzt' },
       blocks: [
         p(
-          'At thirteen I built FPV drones, before they were common, and crashed most of them. That turned into filming and photography, and by sixteen I was selling landscape prints from Austria and Lofoten. Filming my dad’s eye operations for his patients is what got me into medicine.',
-          'Mit dreizehn habe ich FPV-Drohnen gebaut, als das noch kaum jemand machte, und die meisten davon zu Bruch geflogen. Daraus wurden Filmen und Fotografie, und mit sechzehn habe ich Landschaftsfotos aus Österreich und von den Lofoten verkauft. Die Augenoperationen meines Papas für seine Patienten zu filmen, hat mich zur Medizin gebracht.',
+          `[Bounceback](${links.bounceback}): practice software for physiotherapists, with my team in Vienna.`,
+          `[Bounceback](${links.bounceback}): Praxissoftware für Physios, mit meinem Team in Wien.`,
         ),
-        { kind: 'photo', photo: photos.dad },
+        p(
+          `[Eigen](${links.eigen}): running shoes matched to how someone runs, with Max in Zurich.`,
+          `[Eigen](${links.eigen}): Laufschuhe, die zum Laufstil passen, mit Max in Zürich.`,
+        ),
       ],
     },
     {
-      id: 'run-club',
-      title: { en: 'Run club', de: 'Lauftreff' },
+      id: 'outside',
+      title: { en: 'Outside', de: 'Freizeit' },
       blocks: [
         p(
-          'For two years I hosted a Sunday morning run in Highbury, usually five to eight people, winter included, with a barbecue after. That’s where I met Max.',
-          'Zwei Jahre lang habe ich in Highbury jeden Sonntagmorgen einen Lauf organisiert, meistens fünf bis acht Leute, auch im Winter, und danach wurde gegrillt. Dort habe ich Max kennengelernt.',
+          `Triathlon ([Ironman Kalmar](${links.ironmanKalmar}), Ironman Tallinn), [marathons](${links.amsterdamMarathon}) and ice hockey for the UCL Yetis. Ski racing as a kid, ski instructor now.`,
+          `Triathlon ([Ironman Kalmar](${links.ironmanKalmar}), Ironman Tallinn), [Marathons](${links.amsterdamMarathon}) und Eishockey für die UCL Yetis. Als Kind Skirennen, heute Skilehrer.`,
+        ),
+        p(
+          'For two years I hosted a Sunday run club in Highbury. That’s where I met Max.',
+          'Zwei Jahre lang habe ich in Highbury einen Sonntagslauf organisiert. Dort habe ich Max kennengelernt.',
         ),
         { kind: 'photo', photo: photos.nightRun },
-      ],
-    },
-    {
-      id: 'other',
-      title: { en: 'Other things', de: 'Sonst' },
-      blocks: [
-        p(
-          `Triathlon ([Ironman Kalmar](${links.ironmanKalmar}), Ironman Tallinn), [marathons](${links.amsterdamMarathon}) and ice hockey for the UCL Yetis. I raced skis as a kid, FIS races and Viennese youth champion, and now teach as a ski instructor (LS2). I also film most things and dance whenever there’s music.`,
-          `Triathlon ([Ironman Kalmar](${links.ironmanKalmar}), Ironman Tallinn), [Marathons](${links.amsterdamMarathon}) und Eishockey für die UCL Yetis. Als Kind bin ich Skirennen gefahren, FIS-Rennen und Wiener Jugendmeister, heute bin ich Skilehrer (LS2). Außerdem filme ich fast alles und tanze, sobald Musik läuft.`,
-        ),
+        p('I film most things and dance whenever there’s music.', 'Ich filme fast alles und tanze, sobald Musik läuft.'),
         { kind: 'strip', photos: [photos.swim, photos.ski, photos.hockey, photos.run, photos.sister, photos.summer] },
       ],
     },

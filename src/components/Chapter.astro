@@ -1,7 +1,7 @@
 ---
-// One chapter: a numbered title, then its paragraphs and photos. On a phone everything runs in
+// One section: a numbered title, then its paragraphs and photos. On a phone everything runs in
 // one column. From a tablet up there is a margin beside the text: an upright photo hangs there
-// beside the paragraph before it, while landscape photos, pairs and the strip run across both.
+// beside the paragraphs around it, while landscape photos, pairs and the strip run across both.
 import { Image } from 'astro:assets';
 import type { Block, Chapter, Lang, Photo } from '../content/profile';
 import { photo } from '../content/images';
@@ -21,56 +21,67 @@ const upright = (p: Photo) => {
 };
 
 /*
- * Grid rows, worked out here rather than left to auto-placement: a margin photo starts on the row
- * of the paragraph before it and runs down to the next item that spans the margin too, or to a
- * last, flexible row. That last row soaks up the photo's extra height, so the paragraphs beside
- * it stay evenly spaced instead of being pushed apart.
+ * An upright photo is grouped with the paragraph before it and the paragraphs after it into a
+ * "run". On a phone the run reads in order; from a tablet up the paragraphs stack beside the
+ * photo, and any height the photo has to spare goes below them rather than between them.
  */
-type Placed = { block: Block; side: boolean; row: number; end?: number };
-let row = 2; // Row 1 holds the title.
-const placed: Placed[] = chapter.blocks.map((block) => {
-  const side = block.kind === 'photo' && upright(block.photo);
-  return side ? { block, side, row: row - 1 } : { block, side, row: row++ };
-});
-const spans = (b: Block) => b.kind !== 'p';
-for (const [i, item] of placed.entries()) {
-  if (item.side) item.end = placed.slice(i + 1).find((next) => !next.side && spans(next.block))?.row;
+type Paragraph = Extract<Block, { kind: 'p' }>;
+type Item = { kind: 'block'; block: Block } | { kind: 'run'; before?: Paragraph; photo: Photo; after: Paragraph[] };
+const items: Item[] = [];
+for (let i = 0; i < chapter.blocks.length; i++) {
+  const block = chapter.blocks[i];
+  if (block.kind !== 'photo' || !upright(block.photo)) {
+    items.push({ kind: 'block', block });
+    continue;
+  }
+  const last = items.at(-1);
+  const before = last?.kind === 'block' && last.block.kind === 'p' ? (items.pop(), last.block) : undefined;
+  const after: Paragraph[] = [];
+  while (chapter.blocks[i + 1]?.kind === 'p') after.push(chapter.blocks[++i] as Paragraph);
+  items.push({ kind: 'run', before, photo: block.photo, after });
 }
-const hasSide = placed.some((item) => item.side);
-const rows = hasSide ? `repeat(${row - 1}, auto) 1fr` : undefined;
-const area = (item: Placed) => `--row: ${item.row} / ${item.side ? (item.end ?? -1) : 'span 1'}`;
 
 const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : undefined);
 ---
 
-<section class="chapter" id={chapter.id} aria-labelledby={`${chapter.id}-title`} style={rows && `--rows: ${rows}`}>
+<section class="chapter" id={chapter.id} aria-labelledby={`${chapter.id}-title`}>
   <h2 id={`${chapter.id}-title`}><span class="n">{number}</span>{chapter.title[lang]}</h2>
   {
-    placed.map((item) => {
+    items.map((item) => {
+      if (item.kind === 'run')
+        return (
+          <div class:list={['run', !item.before && 'lead']}>
+            {item.before && <p class="before" set:html={rich(item.before.text[lang])} />}
+            <figure class="side" data-reveal>
+              <Image src={photo(item.photo.file)} alt={item.photo.alt[lang]} widths={[400, 640, 960]} sizes="(min-width: 48rem) 16rem, 78vw" style={position(item.photo)} />
+            </figure>
+            {item.after.length > 0 && (
+              <div class="after">
+                {item.after.map((a) => (
+                  <p set:html={rich(a.text[lang])} />
+                ))}
+              </div>
+            )}
+          </div>
+        );
       const b = item.block;
-      if (b.kind === 'p') return <p style={area(item)} set:html={rich(b.text[lang])} />;
+      if (b.kind === 'p') return <p set:html={rich(b.text[lang])} />;
       if (b.kind === 'photo')
         return (
-          <figure class:list={[item.side ? 'side' : 'wide']} style={area(item)} data-reveal>
-            <Image
-              src={photo(b.photo.file)}
-              alt={b.photo.alt[lang]}
-              widths={item.side ? [400, 640, 960] : [640, 960, 1280, 1600]}
-              sizes={item.side ? '(min-width: 48rem) 16rem, 78vw' : '(min-width: 48rem) 53rem, 100vw'}
-              style={position(b.photo)}
-            />
+          <figure class="wide" data-reveal>
+            <Image src={photo(b.photo.file)} alt={b.photo.alt[lang]} widths={[640, 960, 1280, 1600]} sizes="(min-width: 48rem) 53rem, 100vw" style={position(b.photo)} />
           </figure>
         );
       if (b.kind === 'pair')
         return (
-          <div class="pair" style={area(item)} data-reveal>
+          <div class="pair" data-reveal>
             {b.photos.map((p) => (
               <Image src={photo(p.file)} alt={p.alt[lang]} widths={[400, 640, 960]} sizes="(min-width: 48rem) 20rem, 46vw" style={position(p)} />
             ))}
           </div>
         );
       return (
-        <div class="strip" style={area(item)} data-reveal>
+        <div class="strip" data-reveal>
           {b.photos.map((p) => (
             <Image
               src={photo(p.file)}
@@ -87,10 +98,18 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
 </section>
 
 <style>
+  /* --flow is the space between paragraphs and photos. */
   .chapter {
+    --flow: 1.15rem;
     display: grid;
-    row-gap: 1.15rem;
+    row-gap: var(--flow);
     scroll-margin-top: 2rem;
+  }
+
+  .run,
+  .after {
+    display: grid;
+    row-gap: var(--flow);
   }
 
   h2 {
@@ -215,29 +234,48 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
   }
 
   @media (min-width: 48rem) {
-    .chapter {
+    .chapter,
+    .run {
       grid-template-columns: minmax(0, var(--measure)) minmax(0, var(--aside));
-      grid-template-rows: var(--rows, none);
       column-gap: var(--column-gap);
     }
 
     .chapter > * {
       grid-column: 1;
-      grid-row: var(--row, auto);
-    }
-
-    .chapter > .side {
-      grid-column: 2;
-      align-self: start;
-      justify-self: stretch;
-      width: auto;
-      margin: 0.35rem 0 0;
     }
 
     .chapter > .wide,
     .chapter > .pair,
-    .chapter > .strip {
+    .chapter > .strip,
+    .chapter > .run {
       grid-column: 1 / -1;
+    }
+
+    /* The last row takes the photo's spare height, so the paragraphs beside it stay together. */
+    .run {
+      grid-template-rows: auto 1fr;
+    }
+
+    .before {
+      grid-area: 1 / 1;
+    }
+
+    .after {
+      grid-area: 2 / 1;
+      align-self: start;
+    }
+
+    .lead .after {
+      grid-row: 1;
+    }
+
+    .run > .side {
+      grid-column: 2;
+      grid-row: 1 / 3;
+      align-self: start;
+      justify-self: stretch;
+      width: auto;
+      margin: 0.35rem 0 0;
     }
 
     .strip {
