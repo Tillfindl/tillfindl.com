@@ -78,7 +78,15 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
 - The site works on a phone first: 24px side margins, no horizontal scroll, readable without
   zooming. Light only, and nothing moves.
 - Keep it fast: no third-party trackers or scripts without asking, fonts self-hosted if added,
-  images through `astro:assets`.
+  images through `astro:assets`. The main page has no script libraries; GSAP and Lenis are
+  bundled for the interactive version (`/v2/`) only, never loaded from a CDN.
+- The interactive version (`/v2/`, `components/v2/Experience.astro`, `scripts/experience.ts`)
+  uses the same words from `profile.ts`; only its prop labels live in `page.experience`. Every
+  scene is scrubbed by the scroll, so scrolling back reverses it; animate clip paths with
+  explicit from and to values. Check it by jumping to exact points inside each pinned scene
+  (`window.__xp.lenis.scrollTo(y, { immediate: true })`) and capturing several moments of every
+  transition, on a phone and a desktop, and with reduced motion (it must read as a plain page).
+  Publish it as its own preview (`node tools/preview.mjs --page v2`), separate from the main one.
 - Comments explain intent and the non-obvious, in full sentences, British spelling. Don't narrate.
 - `README.md` stays current in the same commit as the change it describes.
 - `public/CNAME` must keep holding `tillfindl.com`, or the custom domain drops off on deploy.

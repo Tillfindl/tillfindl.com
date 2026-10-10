@@ -226,6 +226,41 @@ export const page = {
     forMachines: { en: 'Summary for AI assistants', de: 'Zusammenfassung für KI-Assistenten' },
     top: { en: 'Back to top', de: 'Nach oben' },
   },
+  /**
+   * Words only the interactive version (/v2/) shows: its hints and the labels on its props (the
+   * hospital wheel, the software windows, the phone). The story itself comes from `chapters`.
+   */
+  experience: {
+    title: { en: 'Till Findl, interactive', de: 'Till Findl, interaktiv' },
+    scroll: { en: 'Scroll', de: 'Scrollen' },
+    drag: { en: 'Drag', de: 'Ziehen' },
+    next: { en: 'Next', de: 'Weiter' },
+    rotations: ['University College Hospital', 'Royal Free', 'Great Ormond Street', 'Queen Square', 'Moorfields', 'Kuala Lumpur'],
+    windows: [
+      { en: 'Imaging', de: 'Bildgebung' },
+      { en: 'Notes', de: 'Notizen' },
+      { en: 'Prescriptions', de: 'Verschreibungen' },
+    ],
+    phone: {
+      programme: { en: 'Today’s programme', de: 'Heutiges Programm' },
+      exercises: [
+        { en: 'Split squats', de: 'Ausfallschritte' },
+        { en: 'Calf raises', de: 'Wadenheben' },
+        { en: 'Side plank', de: 'Seitstütz' },
+      ],
+      sets: { en: '3 × 10', de: '3 × 10' },
+      recording: { en: 'Recording set 2', de: 'Satz 2 wird aufgenommen' },
+      physio: { en: 'Your physio', de: 'Dein Physio' },
+      feedback: { en: 'Nice depth. Keep the knee over your second toe.', de: 'Schöne Tiefe. Das Knie über der zweiten Zehe halten.' },
+      note: { en: 'Session note', de: 'Behandlungsnotiz' },
+      noteLines: [
+        { en: 'Knee pain on stairs, improving.', de: 'Knieschmerz beim Stiegensteigen, besser.' },
+        { en: 'Quadriceps 4/5, full range.', de: 'Quadrizeps 4/5, volle Beweglichkeit.' },
+        { en: 'Progress to single-leg work.', de: 'Weiter mit einbeinigen Übungen.' },
+      ],
+      paid: { en: 'Paid', de: 'Bezahlt' },
+    },
+  },
 };
 
 /** The fuller record, for search engines (JSON-LD) and AI assistants (/llms.txt) only. */

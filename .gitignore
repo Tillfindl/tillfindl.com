@@ -18,3 +18,4 @@ npm-debug.log*
 
 # Self-contained preview (tools/preview.mjs)
 preview/
+preview-*/

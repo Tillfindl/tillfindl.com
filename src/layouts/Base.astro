@@ -14,9 +14,11 @@ interface Props {
   jsonLd?: object;
   /** Whether this page has an English and a German version to point at each other. */
   alternates?: boolean;
+  /** Keep the page out of search results (used by the interactive draft under /v2/). */
+  noindex?: boolean;
 }
 
-const { lang, title, description, jsonLd, alternates = true } = Astro.props;
+const { lang, title, description, jsonLd, alternates = true, noindex = false } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = await getImage({ src: photo(page.portrait.file), width: 1200, height: 630, fit: 'cover', format: 'jpg' });
@@ -31,6 +33,7 @@ const ogImageUrl = new URL(ogImage.src, SITE_URL);
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="author" content="Till Findl" />
+    {noindex && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonical} />
     {
       alternates && (

@@ -12,6 +12,14 @@ label beside a reading column, so the whole page shares two edges. The fuller fa
 (JSON-LD) and AI assistants (`/llms.txt`, which also carries the page text), generated from the
 same file.
 
+### The interactive version
+
+`/v2/` (and `/de/v2/`) is a second, interactive version of the same page to compare against: the
+same words and photos staged as full-screen scenes that play as you scroll (smooth scrolling with
+Lenis, scenes pinned and scrubbed with GSAP ScrollTrigger, a dot morph on a canvas, a stack of
+prints to throw through). It is kept out of search results (`noindex`, not in the sitemap). With
+reduced motion turned on, or without JavaScript, it reads as a plain page.
+
 ## Working on it
 
 Needs Node 22.12 or newer (see `.nvmrc`).
@@ -22,6 +30,8 @@ npm run dev       # local server with live reload at http://localhost:4321
 npm run check     # type-check the .astro and .ts files
 npm run build     # build the static site into dist/
 npm run preview   # serve the built dist/ locally
+node tools/preview.mjs             # self-contained preview of the main page, into preview/
+node tools/preview.mjs --page v2   # the same for the interactive version, into preview-v2/
 ```
 
 ## How it is laid out
@@ -38,6 +48,8 @@ src/
   pages/llms.txt.ts     "/llms.txt": a plain summary for AI assistants, built from the profile
   pages/404.astro       The not-found page
   components/           Page (intro and contact), Chapter (one section's label, text and photos), Footer
+  components/v2/        Experience: the interactive version's scenes (pages/v2, pages/de/v2)
+  scripts/              experience.ts (the interactive version's motion), dots.ts (its dot morph)
   layouts/Base.astro    The HTML shell: <head>, language alternates, social card, JSON-LD
   styles/global.css     Design tokens (colour, type, spacing) and base styles
   assets/photos/        Photos; the build resizes them and strips their metadata
