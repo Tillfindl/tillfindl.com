@@ -1,8 +1,9 @@
 /*
  * The interactive version's motion. Smooth scrolling (Lenis) drives GSAP ScrollTrigger timelines,
  * one per scene: each scene pins while its timeline plays, scrubbed by the scroll position, so
- * scrolling back plays it in reverse. With reduced motion nothing here runs and the page reads as
- * a plain page (see Experience.astro).
+ * scrolling back plays it in reverse. Three gestures carry the page: a Polaroid coming out of the
+ * camera's slot, Polaroids developing from dark film, and ballpoint handwriting being written.
+ * Nothing is rotated. With reduced motion nothing here runs and the page reads as a plain page.
  */
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -14,22 +15,21 @@ import { Dots } from './dots';
 gsap.registerPlugin(ScrollTrigger, SplitText, Draggable);
 
 /** How long each pinned scene lasts, in screen heights of scrolling. */
-const LENGTH = { opening: 1.1, medicine: 4.5, care: 6.5, eigen: 5.5 };
+const LENGTH = { opening: 0.9, medicine: 4.5, care: 5.5, eigen: 5.5 };
 /** How far the scrubbed animation lags behind the scroll, in seconds; the lag is what makes it feel smooth. */
 const SCRUB = 1;
-/** Colours the scenes move between. */
-const PAPER = '#f3f0e8';
-const DARK = '#121110';
-const INK = '#171614';
-/** Unread words in the wards scene, before they turn to ink. */
-const UNREAD = '#c8c2b5';
-
-/*
- * Clip shapes are always animated with explicit start and end values: browsers shorten repeated
- * inset values when reporting them ("inset(30% 34% round 14px)"), which would pair the wrong
- * numbers if GSAP read the start from the page.
+const INK = '#141413';
+/** Unread words in the wards scene, and wheel entries away from the front. */
+const UNREAD = '#c9c8c2';
+const FADED = '#b3b2ac';
+/** The ballpoint blue, as RGB for the dots' canvas. */
+const PEN_RGB = '47 51 148';
+/**
+ * The film's finished look and the flat, dark picture it develops from. Both use the same filter
+ * functions in the same order, so GSAP can blend between them.
  */
-const clip = (t: number, r: number, b: number, l: number, round = 0) => `inset(${t}% ${r}% ${b}% ${l}% round ${round}px)`;
+const FILM = 'contrast(1.04) saturate(0.8) sepia(0.14) brightness(1.03)';
+const RAW = 'contrast(0.5) saturate(0) sepia(0) brightness(0.55)';
 
 const $ = <T extends Element = HTMLElement>(s: string, root: ParentNode = document) => root.querySelector(s) as T;
 const $$ = <T extends Element = HTMLElement>(s: string, root: ParentNode = document) => [...root.querySelectorAll<T>(s)];
@@ -54,7 +54,7 @@ function start() {
   }
 
   cursor();
-  const dots = new Dots($<HTMLCanvasElement>('.dots'), window.innerWidth < 832 ? 900 : 1500);
+  const dots = new Dots($<HTMLCanvasElement>('.dots'), window.innerWidth < 832 ? 900 : 1500, PEN_RGB);
 
   // The pinned scenes differ a little between phone and desktop; they are rebuilt when the layout changes.
   const mm = gsap.matchMedia();
@@ -73,7 +73,44 @@ function start() {
   ScrollTrigger.refresh();
 }
 
-/** The progress line along the top and the scene name in the corner. */
+/* ---------- The three gestures ---------- */
+
+/** Splits handwriting into characters, so it can be written one letter at a time. Words stay whole, so lines wrap naturally. */
+const letters = (el: Element | null) => (el ? SplitText.create(el, { type: 'words,chars' }).chars : []);
+
+/** Splits running text into words for a reveal. Words, not lines: lines would be fixed at the width they were split at. */
+const words = (sel: string) => SplitText.create(sel, { type: 'words' }).words;
+
+/** Writes letters into a timeline between `at` and `at + dur`, one after another, as a pen would. */
+function write(tl: gsap.core.Timeline, chars: Element[], at: number, dur: number) {
+  if (!chars.length) return;
+  const step = dur / (chars.length + 1);
+  tl.fromTo(chars, { opacity: 0 }, { opacity: 1, duration: step * 2, stagger: step, ease: 'none' }, at);
+}
+
+/** Puts a Polaroid back to fresh, undeveloped film. */
+function fresh(pola: Element) {
+  gsap.set($('.chem', pola), { opacity: 1 });
+  gsap.set($('.cast', pola), { opacity: 0 });
+  gsap.set($('img', pola), { filter: RAW });
+}
+
+/**
+ * Develops a Polaroid over `dur`: the dark film clears, the picture comes through flat and cool,
+ * then its colour and contrast arrive. Returns a timeline to play on its own or add to a scene.
+ */
+function develop(pola: Element, dur: number) {
+  return gsap
+    .timeline()
+    .to($('.chem', pola), { opacity: 0, duration: dur * 0.8, ease: 'power2.in' }, 0)
+    .to($('img', pola), { filter: FILM, duration: dur, ease: 'power1.inOut' }, 0)
+    .to($('.cast', pola), { opacity: 0.5, duration: dur * 0.4, ease: 'sine.out' }, dur * 0.1)
+    .to($('.cast', pola), { opacity: 0, duration: dur * 0.5, ease: 'sine.inOut' }, dur * 0.5);
+}
+
+/* ---------- Around every scene ---------- */
+
+/** The progress line along the top, the scene name in the corner, and the name in the corner once the opening has gone. */
 function chrome() {
   const bar = $('.progress');
   ScrollTrigger.create({
@@ -98,9 +135,17 @@ function chrome() {
       },
     });
   }
+  const hudName = $('.hud-name');
+  gsap.set(hudName, { autoAlpha: 0 });
+  ScrollTrigger.create({
+    start: () => window.innerHeight * 0.5,
+    refreshPriority: -2,
+    onEnter: () => gsap.to(hudName, { autoAlpha: 1, duration: 0.4 }),
+    onLeaveBack: () => gsap.to(hudName, { autoAlpha: 0, duration: 0.3 }),
+  });
 }
 
-/** A dot that follows the pointer, grows over links and says "Drag" over the photo stack. */
+/** A ballpoint-blue dot that follows the pointer, grows over links and says "Drag" over the Polaroids. */
 function cursor() {
   if (!window.matchMedia('(pointer: fine)').matches) return;
   const el = $('.cursor');
@@ -115,74 +160,62 @@ function cursor() {
     const drag = t.dataset.cursor === 'drag';
     const size = drag ? 84 : 44;
     t.addEventListener('pointerenter', () => {
-      gsap.to(el, { width: size, height: size, margin: -size / 2, duration: 0.35, ease: 'expo.out' });
+      gsap.to(el, { width: size, height: size, margin: -size / 2, opacity: drag ? 1 : 0.25, duration: 0.35, ease: 'expo.out' });
       gsap.to(label, { opacity: drag ? 1 : 0, duration: 0.2 });
     });
     t.addEventListener('pointerleave', () => {
-      gsap.to(el, { width: 14, height: 14, margin: -7, duration: 0.35, ease: 'expo.out' });
+      gsap.to(el, { width: 14, height: 14, margin: -7, opacity: 1, duration: 0.35, ease: 'expo.out' });
       gsap.to(label, { opacity: 0, duration: 0.2 });
     });
   }
 }
 
-/** 1. The name parts as you scroll, the portrait rises between them; on load the letters slide up. */
+/* ---------- The scenes ---------- */
+
+/** 1. The portrait comes out of the slot and develops while the note is written either side of it. */
 function opening(desktop: boolean) {
   const scene = $('.opening');
-  const chars = $$('.opening .c');
-  const [w1, w2] = $$('.opening .w');
-  const portrait = $('.portrait');
-  gsap.set(portrait, { rotation: -5 });
+  const pola = $('.opening .pola');
+  const slot = $('.slot');
+  const noteA = letters($('.o-pen-a .pen'));
+  const noteB = letters($('.o-pen-b .pen'));
+  const foot = $$('.o-foot > *');
+
+  fresh(pola);
+  gsap.set(pola, { yPercent: -101 });
+  gsap.set(slot, { scaleX: 0 });
+  gsap.set([...noteA, ...noteB], { opacity: 0 });
+  gsap.set(['.logo', ...foot], { opacity: 0, y: 12 });
 
   gsap
-    .timeline({ delay: 0.1 })
-    .from(chars, { yPercent: 120, duration: 1.2, ease: 'expo.out', stagger: 0.045 })
-    .from(portrait, { opacity: 0, scale: 0.6, rotation: -14, duration: 1.4, ease: 'expo.out' }, 0.25)
-    .from('.intro-wrap', { opacity: 0, y: 30, duration: 1, ease: 'expo.out' }, 0.7)
-    .from('.hint', { opacity: 0, duration: 0.8 }, 1);
+    .timeline({ delay: 0.3 })
+    .to(slot, { scaleX: 1, duration: 0.6, ease: 'expo.out' }, 0)
+    .to('.logo', { opacity: 1, y: 0, duration: 0.8, ease: 'expo.out' }, 0.1)
+    // The camera's motor pushes the print out at a steady pace, easing off at the end.
+    .to(pola, { yPercent: 0, duration: 1.5, ease: 'sine.inOut' }, 0.55)
+    .to(slot, { opacity: 0, duration: 0.6 }, 2.2)
+    .add(develop(pola, 4.5), 1.7)
+    .to(noteA, { opacity: 1, duration: 0.12, stagger: 0.045, ease: 'none' }, 2.1)
+    .to(noteB, { opacity: 1, duration: 0.12, stagger: 0.045, ease: 'none' }, '>-0.05')
+    .to(foot, { opacity: 1, y: 0, duration: 0.8, ease: 'expo.out', stagger: 0.1 }, '>-0.3');
 
-  // Letters thicken as the pointer passes over them (Archivo's weight axis).
-  const name = $('.opening .name');
-  const weights = chars.map(() => ({ w: 600 }));
-  const apply = () => chars.forEach((c, i) => (c.style.fontVariationSettings = `'wght' ${weights[i].w.toFixed(0)}`));
-  name.addEventListener('pointermove', (e) => {
-    chars.forEach((c, i) => {
-      const r = c.getBoundingClientRect();
-      const d = Math.hypot(e.clientX - (r.left + r.width / 2), e.clientY - (r.top + r.height / 2));
-      gsap.to(weights[i], { w: 600 + 300 * Math.max(0, 1 - d / 260), duration: 0.4, overwrite: true, onUpdate: apply });
-    });
-  });
-  name.addEventListener('pointerleave', () => {
-    gsap.to(weights, { w: 600, duration: 0.8, ease: 'expo.out', onUpdate: apply });
-  });
-
-  // The portrait tilts towards the pointer.
-  const rx = gsap.quickTo(portrait, 'rotationX', { duration: 0.6, ease: 'power3' });
-  const ry = gsap.quickTo(portrait, 'rotationY', { duration: 0.6, ease: 'power3' });
-  scene.addEventListener('pointermove', (e) => {
-    rx(((e.clientY / window.innerHeight) - 0.5) * -14);
-    ry(((e.clientX / window.innerWidth) - 0.5) * 18);
-  });
-
-  const tl = gsap.timeline({
-    defaults: { ease: 'none' },
-    scrollTrigger: { trigger: scene, start: 'top top', end: `+=${LENGTH.opening * 100}%`, pin: true, scrub: SCRUB },
-  });
-  if (desktop) {
-    tl.to(w1, { x: '-14vw' }, 0).to(w2, { x: '14vw' }, 0);
-  } else {
-    tl.to(w1, { yPercent: -45 }, 0).to(w2, { yPercent: 45 }, 0);
-  }
   // fromTo, so scrolling back to the top restores the resting state, not a frame of the load animation.
-  tl.fromTo(portrait, { scale: 1, rotation: -5 }, { scale: desktop ? 1.35 : 1.15, rotation: 0, ease: 'power2.inOut', immediateRender: false }, 0)
-    .fromTo('.hint', { opacity: 1 }, { opacity: 0, duration: 0.15, immediateRender: false }, 0)
-    .to('.intro-wrap', { y: -40, opacity: 0, duration: 0.3 }, 0.7)
-    .to('.opening .name', { opacity: 0.12, duration: 0.3 }, 0.7);
+  gsap
+    .timeline({
+      defaults: { ease: 'none', immediateRender: false },
+      scrollTrigger: { trigger: scene, start: 'top top', end: `+=${LENGTH.opening * 100}%`, pin: true, scrub: SCRUB },
+    })
+    .fromTo('.o-pen-a', { x: 0, y: 0, opacity: 1 }, { x: desktop ? '-5vw' : 0, y: desktop ? 0 : '-3vh', opacity: 0 }, 0)
+    .fromTo('.o-pen-b', { x: 0, y: 0, opacity: 1 }, { x: desktop ? '5vw' : 0, y: desktop ? 0 : '3vh', opacity: 0 }, 0)
+    // The wrapper inside, not .o-photo: GSAP would take over .o-photo's CSS translate, which centres it.
+    .fromTo('.eject', { scale: 1, y: 0 }, { scale: 0.88, y: '-5vh' }, 0)
+    .fromTo(['.o-head', '.o-foot'], { opacity: 1 }, { opacity: 0, duration: 0.4 }, 0);
 }
 
-/** 2. Medicine: the lead, the wheel of rotations, the theatre photo filling the screen, the prints. */
+/** 2. Medicine: the lead and the wheel of rotations, then three Polaroids are laid down and develop. */
 function medicine() {
   const scene = $('.medicine');
-  const lead = SplitText.create('.med-text .lead', { type: 'lines', mask: 'lines' });
+  const lead = words('.med-text .lead');
   const ul = $('.wheel ul');
   const items = $$('.wheel li');
   const step = 26;
@@ -194,46 +227,38 @@ function medicine() {
     const turn = Number(gsap.getProperty(ul, 'rotationX'));
     items.forEach((li, i) => {
       const angle = ((-i * step + turn) * Math.PI) / 180;
-      const facing = Math.cos(angle);
-      li.style.opacity = String(Math.max(0, facing * 1.6 - 0.6));
-      li.style.color = Math.abs(-i * step + turn) < step / 2 ? INK : '#a8a296';
+      li.style.opacity = String(Math.max(0, Math.cos(angle) * 1.6 - 0.6));
+      li.style.color = Math.abs(-i * step + turn) < step / 2 ? INK : FADED;
     });
   };
   wheel();
 
-  const theatre = $('.theatre');
-  const theatreImg = $('img', theatre);
-  const prints = $$('.prints img');
+  const shots = $$('.medicine .mp');
+  const polas = shots.map((s) => $('.pola', s));
+  const captions = polas.map((p) => letters($('.pen-cap', p)));
+  polas.forEach(fresh);
+  gsap.set(captions.flat(), { opacity: 0 });
 
   const tl = gsap.timeline({
     defaults: { ease: 'none' },
     onUpdate: wheel,
     scrollTrigger: { trigger: scene, start: 'top top', end: `+=${LENGTH.medicine * 100}%`, pin: true, scrub: SCRUB },
   });
-  tl.from('.med-text .label', { opacity: 0, y: 20, duration: 0.05 }, 0)
-    .from(lead.lines, { yPercent: 105, duration: 0.08, stagger: 0.012, ease: 'power3.out' }, 0.01)
+  tl.from('.med-text .label', { opacity: 0, y: 20, duration: 0.04 }, 0)
+    .from(lead, { opacity: 0, y: '0.35em', duration: 0.03, stagger: 0.12 / lead.length, ease: 'power2.out' }, 0.01)
     .from('.wheel', { opacity: 0, duration: 0.05 }, 0.02)
-    .to(ul, { rotationX: (items.length - 1) * step, duration: 0.38, ease: 'power1.inOut' }, 0.04)
-    .to('.bigword', { xPercent: -45, duration: 0.6 }, 0)
-    .fromTo(theatre, { clipPath: clip(50, 50, 50, 50, 14) }, { clipPath: clip(30, 34, 30, 34, 14), duration: 0.05, ease: 'power2.out' }, 0.42)
-    .fromTo(
-      theatre,
-      { clipPath: clip(30, 34, 30, 34, 14) },
-      { clipPath: clip(0, 0, 0, 0, 0), duration: 0.2, ease: 'power2.inOut', immediateRender: false },
-      0.47,
-    )
-    .fromTo(theatreImg, { scale: 1.45 }, { scale: 1.04, duration: 0.45 }, 0.42)
-    .to(['.med-text', '.wheel'], { opacity: 0, y: -60, duration: 0.12 }, 0.47)
-    .fromTo(
-      prints,
-      { y: '-120vh', rotation: (i) => (i ? 34 : -30) },
-      { y: 0, rotation: (i) => (i ? 6 : -7), duration: 0.16, stagger: 0.07, ease: 'power3.out' },
-      0.72,
-    )
-    .to({}, { duration: 0.06 });
+    .to(ul, { rotationX: (items.length - 1) * step, duration: 0.34, ease: 'power1.inOut' }, 0.04)
+    .to(['.med-text', '.wheel'], { opacity: 0, y: -50, duration: 0.08 }, 0.42)
+    // The prints are laid down one by one, still dark, and develop in turn.
+    .from(shots, { y: '75vh', duration: 0.1, stagger: 0.06, ease: 'power3.out' }, 0.44);
+  polas.forEach((p, i) => {
+    tl.add(develop(p, 0.2), 0.5 + i * 0.08);
+    write(tl, captions[i], 0.64 + i * 0.08, 0.06);
+  });
+  tl.to({}, { duration: 0.06 });
 }
 
-/** 3 and 4. Words turn to ink, software windows pile up, fold into a phone, Bounceback plays on it. */
+/** 3 and 4. Words turn to ink, software windows pile up, fold into a phone, and Bounceback plays on it. */
 function care(desktop: boolean) {
   const scene = $('.care');
   const stage = $('.stage', scene);
@@ -243,19 +268,18 @@ function care(desktop: boolean) {
   const phone = $('.phone');
   const screens = $$('.ph');
   const noteLines = $$('.note-line span');
-  const bbLines = SplitText.create('.bb1', { type: 'lines', mask: 'lines' });
-  const bb2Lines = SplitText.create('.bb2', { type: 'lines', mask: 'lines' });
+  const bb1 = words('.bb1');
+  const bb2 = words('.bb2');
 
   gsap.set([...mainWords, ...endWords], { color: UNREAD });
-  gsap.set(wins, { opacity: 0, scale: 0.5, y: 40 });
-  gsap.set(phone, { opacity: 0, scale: 0.12, rotation: -24 });
+  gsap.set(wins, { opacity: 0, scale: 0.6, y: 30 });
+  gsap.set(phone, { opacity: 0, scale: 0.2 });
   gsap.set(screens.slice(1), { opacity: 0, x: 24 });
 
   // Each window flies to the middle of the screen, where the phone appears.
   const toCentre = (axis: 'x' | 'y') => (i: number) => {
-    const w = wins[i];
     const box = stage.getBoundingClientRect();
-    const r = w.getBoundingClientRect();
+    const r = wins[i].getBoundingClientRect();
     return axis === 'x' ? box.left + box.width / 2 - (r.left + r.width / 2) : box.top + box.height / 2 - (r.top + r.height / 2);
   };
 
@@ -264,19 +288,16 @@ function care(desktop: boolean) {
     scrollTrigger: { trigger: scene, start: 'top top', end: `+=${LENGTH.care * 100}%`, pin: true, scrub: SCRUB, invalidateOnRefresh: true },
   });
   tl.to(mainWords, { color: INK, duration: 0.01, stagger: 0.27 / mainWords.length }, 0)
-    .to(wins, { opacity: 1, scale: 1, y: 0, duration: 0.04, stagger: 0.026, ease: 'back.out(2.2)' }, 0.03)
+    .to(wins, { opacity: 1, scale: 1, y: 0, duration: 0.04, stagger: 0.026, ease: 'back.out(2)' }, 0.03)
     .to(endWords, { color: INK, duration: 0.01, stagger: 0.06 / endWords.length }, 0.3)
-    // The clutter folds into one phone, and the room goes dark.
-    .to(wins, { x: toCentre('x'), y: toCentre('y'), scale: 0.12, rotation: 0, opacity: 0, duration: 0.1, stagger: 0.006, ease: 'power3.in' }, 0.39)
+    // The clutter folds into one phone.
+    .to(wins, { x: toCentre('x'), y: toCentre('y'), scale: 0.12, opacity: 0, duration: 0.1, stagger: 0.006, ease: 'power3.in' }, 0.39)
     .to('.wards-text', { opacity: 0, y: -40, duration: 0.06 }, 0.4)
-    // Dark spreads out from the phone in a circle; once it covers the screen the page itself turns dark.
-    .fromTo('.care .wipe', { clipPath: 'circle(0% at 50% 50%)' }, { clipPath: 'circle(75% at 50% 50%)', duration: 0.1, ease: 'power2.in' }, 0.42)
-    .fromTo('.xp-bg', { backgroundColor: PAPER }, { backgroundColor: DARK, duration: 0.001 }, 0.52)
-    .to(phone, { opacity: 1, scale: 1, rotation: 0, duration: 0.09, ease: 'back.out(1.6)' }, 0.45);
+    .to(phone, { opacity: 1, scale: 1, duration: 0.09, ease: 'back.out(1.4)' }, 0.45);
 
   if (desktop) tl.to(phone, { x: '18vw', duration: 0.07, ease: 'power2.inOut' }, 0.55);
   tl.from('.bb-text .label', { opacity: 0, y: 20, duration: 0.04 }, 0.56)
-    .from(bbLines.lines, { yPercent: 105, duration: 0.06, stagger: 0.01, ease: 'power3.out' }, 0.57);
+    .from(bb1, { opacity: 0, y: '0.35em', duration: 0.02, stagger: 0.07 / bb1.length, ease: 'power2.out' }, 0.57);
 
   // The phone's screens, one after another.
   const swap = (from: number, to: number, at: number) =>
@@ -284,33 +305,28 @@ function care(desktop: boolean) {
   swap(0, 1, 0.63);
   swap(1, 2, 0.7);
   if (!desktop) tl.to('.bb1', { opacity: 0, y: -20, duration: 0.03 }, 0.74);
-  tl.from(bb2Lines.lines, { yPercent: 105, duration: 0.06, stagger: 0.01, ease: 'power3.out' }, 0.76);
+  tl.from(bb2, { opacity: 0, y: '0.35em', duration: 0.02, stagger: 0.07 / bb2.length, ease: 'power2.out' }, 0.76);
   swap(2, 3, 0.77);
-  tl.fromTo(noteLines, { clipPath: clip(0, 100, 0, 0) }, { clipPath: clip(0, 0, 0, 0), duration: 0.04, stagger: 0.035 }, 0.8);
+  tl.fromTo(noteLines, { clipPath: 'inset(0% 100% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 0.04, stagger: 0.035 }, 0.8);
   swap(3, 4, 0.92);
   tl.to({}, { duration: 0.05 });
-
-  // The phone tilts towards the pointer.
-  const rx = gsap.quickTo(phone, 'rotationX', { duration: 0.6, ease: 'power3' });
-  const ry = gsap.quickTo(phone, 'rotationY', { duration: 0.6, ease: 'power3' });
-  scene.addEventListener('pointermove', (e) => {
-    rx(((e.clientY / window.innerHeight) - 0.5) * -12);
-    ry(((e.clientX / window.innerWidth) - 0.5) * 22);
-  });
 }
 
-/** 5. Eigen: back to paper, the run photo and its route, then the dots: face, mask versions, footprint. */
+/** 5. Eigen: the run club Polaroid develops while a lap is drawn round it, then the dots: face, mask versions, footprint. */
 function eigen(dots: Dots) {
   const scene = $('.eigen');
   const run = $('.run');
-  const runImg = $('img', run);
+  const pola = $('.run .pola');
+  const caption = letters($('.pen-cap', pola));
   const path = $<SVGPathElement>('.route-path');
   const runner = $<SVGCircleElement>('.runner');
   const len = path.getTotalLength();
-  const e1 = SplitText.create('.e1', { type: 'lines', mask: 'lines' });
-  const e2 = SplitText.create('.e2', { type: 'lines', mask: 'lines' });
-  const e3 = SplitText.create('.e3', { type: 'lines', mask: 'lines' });
+  const e1 = words('.e1');
+  const e2 = words('.e2');
+  const e3 = words('.e3');
 
+  fresh(pola);
+  gsap.set(caption, { opacity: 0 });
   gsap.set(path, { strokeDasharray: `${len} ${len}`, strokeDashoffset: len });
   gsap.set(['.dots', runner], { opacity: 0 });
 
@@ -339,63 +355,68 @@ function eigen(dots: Dots) {
       onToggle: (self) => (self.isActive ? gsap.ticker.add(breathe) : gsap.ticker.remove(breathe)),
     },
   });
+  const reveal = (w: Element[], at: number) =>
+    tl.from(w, { opacity: 0, y: '0.35em', duration: 0.02, stagger: 0.08 / w.length, ease: 'power2.out' }, at);
 
-  // The page turns back to paper under a dark cover, which then shrinks away in a circle. Just
-  // after 0, so building the timeline doesn't repaint the page before anyone gets here.
-  tl.fromTo('.xp-bg', { backgroundColor: DARK }, { backgroundColor: PAPER, duration: 0.001, immediateRender: false }, 0.001)
-    .fromTo('.eigen .wipe', { clipPath: 'circle(75% at 70% 50%)' }, { clipPath: 'circle(0% at 70% 50%)', duration: 0.07, ease: 'power2.inOut' }, 0.001)
-    .fromTo(run, { clipPath: clip(100, 0, 0, 0, 16) }, { clipPath: clip(0, 0, 0, 0, 16), duration: 0.12, ease: 'power3.inOut' }, 0.04)
-    .fromTo(runImg, { yPercent: -12 }, { yPercent: 0, duration: 0.36 }, 0.04)
-    .from('.eigen-text .label', { opacity: 0, y: 20, duration: 0.04 }, 0.06)
-    .from(e1.lines, { yPercent: 105, duration: 0.07, stagger: 0.012, ease: 'power3.out' }, 0.07)
-    .to(runner, { opacity: 1, duration: 0.02 }, 0.12)
+  tl.from(run, { y: '70vh', duration: 0.1, ease: 'power3.out' }, 0.02)
+    .add(develop(pola, 0.22), 0.08)
+    .from('.eigen-text .label', { opacity: 0, y: 20, duration: 0.04 }, 0.04);
+  reveal(e1, 0.05);
+  write(tl, caption, 0.26, 0.05);
+  tl.to(runner, { opacity: 1, duration: 0.02 }, 0.12)
     .to(path, { strokeDashoffset: 0, duration: 0.22 }, 0.12)
     .to(state, { route: 1, duration: 0.22 }, 0.12)
     // The run gives way to the dots.
-    .fromTo(
-      run,
-      { clipPath: clip(0, 0, 0, 0, 16) },
-      { clipPath: clip(0, 0, 100, 0, 16), duration: 0.08, ease: 'power3.in', immediateRender: false },
-      0.36,
-    )
-    .to(['.route', runner], { opacity: 0, duration: 0.05 }, 0.36)
-    .to(e1.lines, { yPercent: -105, duration: 0.05, stagger: 0.006, ease: 'power3.in' }, 0.37)
-    .to('.dots', { opacity: 1, duration: 0.04 }, 0.38)
-    .to(state, { gather: 1, duration: 0.12, ease: 'power2.out' }, 0.38)
-    .from(e2.lines, { yPercent: 105, duration: 0.06, stagger: 0.012, ease: 'power3.out' }, 0.44)
-    // Quick iterations: the mask flicks through its versions.
-    .to(state, { variant: 3, duration: 0.16 }, 0.5)
-    // The pivot: the face streams into a footprint.
-    .to(e2.lines, { yPercent: -105, duration: 0.05, stagger: 0.006, ease: 'power3.in' }, 0.66)
-    .to(state, { morph: 1, duration: 0.2, ease: 'power1.inOut' }, 0.67)
-    .from(e3.lines, { yPercent: 105, duration: 0.07, stagger: 0.012, ease: 'power3.out' }, 0.72)
-    .to({}, { duration: 0.1 });
+    .to(run, { y: '-130vh', duration: 0.1, ease: 'power3.in' }, 0.38)
+    .to(e1, { opacity: 0, duration: 0.04 }, 0.37)
+    .to('.dots', { opacity: 1, duration: 0.04 }, 0.4)
+    .to(state, { gather: 1, duration: 0.12, ease: 'power2.out' }, 0.4);
+  reveal(e2, 0.46);
+  // Quick iterations: the mask flicks through its versions. Then the pivot: the face streams into a footprint.
+  tl.to(state, { variant: 3, duration: 0.16 }, 0.5)
+    .to(e2, { opacity: 0, duration: 0.04 }, 0.66)
+    .to(state, { morph: 1, duration: 0.2, ease: 'power1.inOut' }, 0.67);
+  reveal(e3, 0.72);
+  tl.to({}, { duration: 0.1 });
   draw();
 }
 
-/** 6. Personal: throw the top print away to reveal the next one; the stack cycles. */
+/** 6. Personal: throw the top Polaroid away to reveal the next; each develops when it first reaches the top. */
 function personal() {
   const cards = $$('.card');
+  const polas = cards.map((c) => $('.pola', c));
+  const titles = polas.map((p) => letters($('.pen-cap', p)));
   const caps = $$('.cap');
   const now = $('.count .now');
   const n = cards.length;
   /** Front to back: indexes into `cards`. */
   const order = cards.map((_, i) => i);
-  const tilt = [0, -4, 5, -2, 3];
+  const developed = new Set<number>();
   /** A throw needs to travel this far, or move this fast (px per second), to send the print away. */
   const THROW_DISTANCE = 110;
   const THROW_SPEED = 800;
   let busy = false;
   let drag: Draggable | undefined;
 
+  polas.forEach(fresh);
+  gsap.set(titles.flat(), { opacity: 0 });
+
+  const developTop = () => {
+    const i = order[0];
+    if (developed.has(i)) return;
+    developed.add(i);
+    develop(polas[i], 2.4);
+    gsap.to(titles[i], { opacity: 1, duration: 0.12, stagger: 0.05, ease: 'none', delay: 1.4 });
+  };
+
   const layout = (animate = true) => {
     order.forEach((idx, k) => {
       gsap.to(cards[idx], {
         zIndex: n - k,
         x: 0,
-        y: k * 10,
-        rotation: tilt[k % tilt.length],
-        scale: 1 - k * 0.035,
+        y: k * 9,
+        scale: 1 - k * 0.03,
+        opacity: 1,
         duration: animate ? 0.8 : 0,
         ease: 'expo.out',
       });
@@ -415,9 +436,8 @@ function personal() {
     busy = true;
     const card = cards[order[0]];
     gsap.to(card, {
-      x: dir * window.innerWidth * 0.75,
-      y: '+=80',
-      rotation: dir * 32,
+      x: dir * window.innerWidth * 0.7,
+      opacity: 0,
       duration: 0.45,
       ease: 'power2.in',
       onComplete: () => {
@@ -425,6 +445,7 @@ function personal() {
         gsap.set(card, { zIndex: 0 });
         showCaption(order[0]);
         layout();
+        developTop();
         busy = false;
       },
     });
@@ -449,11 +470,10 @@ function personal() {
         speed = ((this.x - lastX) / Math.max(1, t - lastT)) * 1000;
         lastX = this.x;
         lastT = t;
-        gsap.set(card, { rotation: this.x * 0.06 });
       },
       onDragEnd(this: Draggable) {
         if (Math.abs(this.x) > THROW_DISTANCE || Math.abs(speed) > THROW_SPEED) throwCard(Math.sign(this.x || speed));
-        else gsap.to(card, { x: 0, rotation: 0, duration: 0.6, ease: 'elastic.out(1, 0.6)' });
+        else gsap.to(card, { x: 0, duration: 0.6, ease: 'elastic.out(1, 0.6)' });
       },
     });
   };
@@ -468,37 +488,41 @@ function personal() {
     if (e.key === 'ArrowLeft') throwCard(-1);
   });
 
-  // The prints are dealt onto the table as the section comes into view.
+  // The prints are dealt onto the table as the section comes into view, and the top one develops.
   gsap.from(cards, {
-    x: (i) => (i % 2 ? 1 : -1) * window.innerWidth * 0.5,
-    y: (i) => 200 + i * 60,
-    rotation: (i) => (i % 2 ? 40 : -40),
+    y: (i) => 260 + i * 60,
+    opacity: 0,
     duration: 1.1,
     ease: 'expo.out',
     stagger: 0.08,
     scrollTrigger: { trigger: '.personal', start: 'top 70%', toggleActions: 'play none none reverse', refreshPriority: -1 },
   });
-  const lead = SplitText.create('.personal .lead', { type: 'lines', mask: 'lines' });
-  gsap.from([...lead.lines, '.personal .deck-intro .label'], {
-    yPercent: 105,
+  ScrollTrigger.create({ trigger: '.personal', start: 'top 40%', once: true, refreshPriority: -1, onEnter: developTop });
+  const lead = words('.personal .lead');
+  gsap.from([...lead, '.personal .deck-intro .label'], {
     opacity: 0,
-    duration: 0.9,
+    y: '0.35em',
+    duration: 0.7,
     ease: 'expo.out',
-    stagger: 0.06,
+    stagger: 0.025,
     scrollTrigger: { trigger: '.personal', start: 'top 70%', toggleActions: 'play none none reverse', refreshPriority: -1 },
   });
 }
 
-/** 7. Ending: the contact line sets, the name rises as a wordmark along the bottom. */
+/** 7. Ending: the contact line is written in ballpoint, and the name rises as a wordmark along the bottom. */
 function ending() {
-  const words = SplitText.create('.contact-line', { type: 'words', mask: 'words' });
-  gsap.from(words.words, {
-    yPercent: 110,
-    duration: 1,
-    ease: 'expo.out',
-    stagger: 0.03,
-    scrollTrigger: { trigger: '.ending', start: 'top 60%', toggleActions: 'play none none reverse', refreshPriority: -1 },
-  });
+  const chars = letters($('.contact-line'));
+  gsap.fromTo(
+    chars,
+    { opacity: 0 },
+    {
+      opacity: 1,
+      duration: 0.1,
+      stagger: 0.022,
+      ease: 'none',
+      scrollTrigger: { trigger: '.ending', start: 'top 60%', toggleActions: 'play none none reverse', refreshPriority: -1 },
+    },
+  );
   gsap.from('.wordmark .c', {
     yPercent: 100,
     ease: 'none',

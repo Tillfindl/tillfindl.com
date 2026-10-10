@@ -234,6 +234,13 @@ export const page = {
     title: { en: 'Till Findl, interactive', de: 'Till Findl, interaktiv' },
     scroll: { en: 'Scroll', de: 'Scrollen' },
     drag: { en: 'Drag', de: 'Ziehen' },
+    /** Written by hand on the bottom strip of the Polaroids, keyed by photo file. */
+    captions: {
+      'ucl-medical-school.jpg': { en: 'Medical school', de: 'Medical School' },
+      'ucl-portico.jpg': { en: 'UCL', de: 'UCL' },
+      'theatre-kl.jpg': { en: 'Kuala Lumpur', de: 'Kuala Lumpur' },
+      'night-run.jpg': { en: 'London', de: 'London' },
+    } as Record<string, L>,
     next: { en: 'Next', de: 'Weiter' },
     rotations: ['University College Hospital', 'Royal Free', 'Great Ormond Street', 'Queen Square', 'Moorfields', 'Kuala Lumpur'],
     windows: [

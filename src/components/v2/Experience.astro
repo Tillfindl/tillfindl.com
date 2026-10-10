@@ -1,10 +1,13 @@
 ---
 // The interactive version (/v2/ and /de/v2/): the same words and photos as the main page, staged as
-// full-screen scenes that play as you scroll (src/scripts/experience.ts drives them). Without
-// JavaScript, or with reduced motion, it reads as a plain page: the motion layout only applies
-// under `.js` and `prefers-reduced-motion: no-preference`.
-import { getImage, Image } from 'astro:assets';
+// full-screen scenes that play as you scroll (src/scripts/experience.ts drives them). The look is
+// white paper, black type and ballpoint blue handwriting, with every photo a real Polaroid that
+// develops as it arrives. Without JavaScript, or with reduced motion, it reads as a plain page: the
+// staged layout only applies under `.js` and `prefers-reduced-motion: no-preference`.
+import '@fontsource/mynerve/latin-400.css';
+import { getImage } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
+import Polaroid from './Polaroid.astro';
 import { links, meta, page, person, SITE_URL, type Lang, type Photo } from '../../content/profile';
 import { photo } from '../../content/images';
 import { rich } from '../../content/rich';
@@ -29,6 +32,11 @@ const photosIn = (id: string): Photo[] =>
   chapter(id).blocks.flatMap((b) => (b.kind === 'photo' ? [b.photo] : b.kind === 'pair' ? b.photos : []));
 /** Splits a paragraph into sentences, so a scene can bring them in one at a time. */
 const sentences = (text: string) => text.split(/(?<=[.!?])\s+(?=[A-ZÄÖÜ[])/);
+const caption = (p: Photo) => x.captions[p.file]?.[lang];
+
+// The top line, split around the portrait like a note written either side of a photo.
+const [introA, ...introRest] = sentences(page.intro[lang]);
+const introB = introRest.join(' ');
 
 const [medLead, wards] = paragraphs('medicine');
 const [theatre, gradA, gradB] = photosIn('medicine');
@@ -44,21 +52,32 @@ const wardsSentences = sentences(wards);
 const wardsEnd = wardsSentences.pop() ?? '';
 const wardsMain = wardsSentences.join(' ');
 
-/** Where the software windows land as they pile up: left %, top %, tilt in degrees. */
+/** Where the software windows land as they pile up: left % and top % of the screen. */
 const WINDOW_SPOTS = [
-  [6, 12, -4], [62, 8, 3], [34, 58, -2], [72, 54, 5], [14, 62, 3], [48, 18, -5], [80, 26, -3], [24, 30, 4], [56, 70, -4],
+  [6, 12], [62, 8], [34, 58], [72, 54], [14, 62], [48, 18], [80, 26], [24, 30], [56, 70],
 ];
-const windows = WINDOW_SPOTS.map(([left, top, tilt], i) => ({ left, top, tilt, kind: i % 3, label: x.windows[i % 3][lang] }));
+const windows = WINDOW_SPOTS.map(([left, top], i) => ({ left, top, kind: i % 3, label: x.windows[i % 3][lang] }));
 
 const words = (text: string) => text.split(' ');
-const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : undefined);
+
+/** Square crops for the Polaroids, so the person stays in frame. */
+const CROP: Record<string, string> = {
+  'portrait-harris.jpg': '50% 40%',
+  'ucl-medical-school.jpg': '50% 66%',
+  'ucl-portico.jpg': '50% 72%',
+  'theatre-kl.jpg': '72% 50%',
+  'night-run.jpg': '50% 40%',
+  'ironman-swim.jpg': '45% 40%',
+  'ski-gate.jpg': '72% 50%',
+  'hockey-fisheye.jpg': '50% 50%',
+  'summer-austria.jpg': '50% 60%',
+};
 ---
 
 <Base lang={lang} title={x.title[lang]} description={meta.description[lang]} jsonLd={jsonLd} alternates={false} noindex>
   <script is:inline>document.documentElement.classList.add('js');</script>
   <div class="xp">
     <div class="xp-bg" aria-hidden="true"></div>
-    <div class="grain" aria-hidden="true"></div>
     <div class="progress" aria-hidden="true"></div>
     <div class="cursor" aria-hidden="true"><span>{x.drag[lang]}</span></div>
 
@@ -72,31 +91,31 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
     <p class="scene-name" aria-hidden="true"></p>
 
     <main>
-      <!-- 1. Opening: the name parts, the portrait rises between them. -->
+      <!-- 1. Opening: a Polaroid of Till comes out of the slot and develops while the note is written around it. -->
       <section class="scene opening" id="top" data-scene="">
         <div class="stage">
-          <h1 class="name" aria-label={person.name}>
-            <span class="w w1" aria-hidden="true">{[...person.givenName].map((c) => <span class="c">{c}</span>)}</span>
-            <span class="w w2" aria-hidden="true">{[...person.familyName].map((c) => <span class="c">{c}</span>)}</span>
-          </h1>
-          <figure class="portrait">
-            <Image src={photo(page.portrait.file)} alt={page.portrait.alt[lang]} widths={[480, 720, 960]} sizes="(min-width: 52rem) 22vw, 60vw" loading="eager" fetchpriority="high" />
-          </figure>
-          <div class="intro-wrap">
-            <p class="intro">{page.intro[lang]}</p>
+          <div class="o-head"><h1 class="logo">{person.name}</h1></div>
+          <div class="o-pen o-pen-a"><p class="pen">{introA}</p></div>
+          <div class="o-photo">
+            <span class="slot" aria-hidden="true"></span>
+            <div class="eject">
+              <Polaroid photo={page.portrait} lang={lang} position={CROP[page.portrait.file]} sizes="(min-width: 52rem) 21rem, 56vw" eager />
+            </div>
+          </div>
+          <div class="o-pen o-pen-b"><p class="pen">{introB}</p></div>
+          <div class="o-foot">
             <div class="buttons">
               <a class="button primary" href={links.bounceback} rel="noopener" data-cursor>Bounceback</a>
               <a class="button" href={links.eigen} rel="noopener" data-cursor>Eigen</a>
             </div>
+            <p class="hint" aria-hidden="true"><span></span>{x.scroll[lang]}</p>
           </div>
-          <p class="hint" aria-hidden="true"><span></span>{x.scroll[lang]}</p>
         </div>
       </section>
 
-      <!-- 2. Medicine: the rotations turn past on a wheel, then the theatre photo takes the screen. -->
+      <!-- 2. Medicine: the rotations turn past on a wheel, then three Polaroids are laid down and develop. -->
       <section class="scene medicine" data-scene={chapter('medicine').title[lang]}>
         <div class="stage">
-          <p class="bigword" aria-hidden="true">{chapter('medicine').title[lang]}</p>
           <div class="med-text">
             <h2 class="label">{chapter('medicine').title[lang]}</h2>
             <p class="lead" set:html={rich(medLead)} />
@@ -104,23 +123,25 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
           <div class="wheel" aria-hidden="true">
             <ul>{x.rotations.map((r) => <li>{r}</li>)}</ul>
           </div>
-          <figure class="theatre">
-            <Image src={photo(theatre.file)} alt={theatre.alt[lang]} widths={[800, 1200, 1600]} sizes="100vw" style={position(theatre)} />
-          </figure>
-          <div class="prints">
-            {[gradA, gradB].map((p) => <Image src={photo(p.file)} alt={p.alt[lang]} widths={[480, 720, 960]} sizes="(min-width: 52rem) 22vw, 44vw" style={position(p)} />)}
+          <div class="med-photos">
+            {
+              [gradA, gradB, theatre].map((p, i) => (
+                <div class:list={['mp', `mp${i}`]}>
+                  <Polaroid photo={p} lang={lang} caption={caption(p)} position={CROP[p.file]} sizes="(min-width: 52rem) 19rem, 44vw" />
+                </div>
+              ))
+            }
           </div>
         </div>
       </section>
 
-      <!-- 3 and 4. The wards: software windows pile up, fold into one phone, and Bounceback plays on it. -->
+      <!-- 3 and 4. The wards: software windows pile up and fold into one phone, and Bounceback plays on it. -->
       <section class="scene care" data-scene={chapter('bounceback').title[lang]}>
         <div class="stage">
-          <div class="wipe" aria-hidden="true"></div>
           <div class="windows" aria-hidden="true">
             {
               windows.map((w) => (
-                <div class:list={['win', `k${w.kind}`]} style={`left:${w.left}%;top:${w.top}%;--tilt:${w.tilt}deg`}>
+                <div class:list={['win', `k${w.kind}`]} style={`left:${w.left}%;top:${w.top}%`}>
                   <div class="bar"><i></i><i></i><i></i><b>{w.label}</b></div>
                   <div class="body">
                     {w.kind === 0 && <span class="scan"></span>}
@@ -199,17 +220,23 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
         </div>
       </section>
 
-      <!-- 5. Eigen: the run club, then dots form a face with a mask and stream into a footprint. -->
+      <!-- 5. Eigen: the run club Polaroid with a lap drawn round it, then dots form a face with a mask and stream into a footprint. -->
       <section class="scene eigen" data-scene={chapter('eigen').title[lang]}>
         <div class="stage">
-          <div class="wipe" aria-hidden="true"></div>
-          <figure class="run">
-            <Image src={photo(nightRun.file)} alt={nightRun.alt[lang]} widths={[640, 960, 1067]} sizes="(min-width: 52rem) 40vw, 90vw" style={position(nightRun)} />
-          </figure>
-          <svg class="route" viewBox="0 0 400 300" aria-hidden="true">
-            <path class="route-path" d="M70 238 C34 170 70 76 168 58 C262 40 352 92 346 162 C340 232 262 266 196 252 C140 240 122 200 150 172 C176 146 232 152 240 184"></path>
-            <circle class="runner" r="7" cx="70" cy="238"></circle>
-          </svg>
+          <div class="run">
+            <svg class="route" viewBox="0 0 500 486" aria-hidden="true">
+              <filter id="wobble">
+                <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="4"></feTurbulence>
+                <feDisplacementMap in="SourceGraphic" scale="7"></feDisplacementMap>
+              </filter>
+              <path
+                class="route-path"
+                d="M74 372 C18 262 40 118 152 58 C262 2 424 30 472 150 C522 272 452 424 322 458 C200 490 78 452 50 330 C40 288 48 250 66 218"
+              ></path>
+              <circle class="runner" r="7" cx="74" cy="372"></circle>
+            </svg>
+            <Polaroid photo={nightRun} lang={lang} caption={caption(nightRun)} position={CROP[nightRun.file]} sizes="(min-width: 52rem) 22rem, 56vw" />
+          </div>
           <canvas class="dots" aria-hidden="true"></canvas>
           <div class="eigen-text">
             <h2 class="label">{chapter('eigen').title[lang]}</h2>
@@ -222,7 +249,7 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
         </div>
       </section>
 
-      <!-- 6. Personal: a stack of prints to throw through. -->
+      <!-- 6. Personal: a stack of Polaroids to throw through; each one develops when it reaches the top. -->
       <section class="scene personal" data-scene={personal.title[lang]}>
         <div class="deck">
           <div class="deck-intro">
@@ -231,15 +258,15 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
           </div>
           {
             items.map((it, i) => (
-              <figure class="card" style={`--row:${2 * Math.floor(i / 2) + 2};--col:${(i % 2) + 1}`} data-cursor="drag">
-                <Image src={photo(it.photo.file)} alt={it.photo.alt[lang]} widths={[480, 720, 960]} sizes="(min-width: 52rem) 28rem, 80vw" style={position(it.photo)} draggable="false" />
-              </figure>
+              <div class="card" style={`--row:${2 * Math.floor(i / 2) + 2};--col:${(i % 2) + 1}`} data-cursor="drag">
+                <Polaroid photo={it.photo} lang={lang} caption={it.title[lang]} position={CROP[it.photo.file]} sizes="(min-width: 52rem) 24rem, 72vw" />
+              </div>
             ))
           }
           {
             items.map((it, i) => (
               <div class="cap" style={`--row:${2 * Math.floor(i / 2) + 3};--col:${(i % 2) + 1}`}>
-                <h3>{it.title[lang]}</h3>
+                <h3 class="visually-hidden">{it.title[lang]}</h3>
                 <p set:html={rich(it.text[lang])} />
                 <p class="detail" set:html={rich(it.detail[lang])} />
               </div>
@@ -252,11 +279,11 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
         </div>
       </section>
 
-      <!-- 7. Ending: the contact line, the name as a wordmark. -->
+      <!-- 7. Ending: the contact line written in ballpoint, the name as a wordmark. -->
       <section class="scene ending" data-scene="">
         <div class="end-inner">
           <h2 class="label">{page.contact.title[lang]}</h2>
-          <p class="contact-line">{page.contact.text[lang]}</p>
+          <p class="contact-line pen">{page.contact.text[lang]}</p>
           <div class="end-actions">
             {
               links.linkedin ? (
@@ -274,7 +301,7 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
           <span>© {new Date().getFullYear()} {person.name}</span>
           <a class="machines" href="/llms.txt">{page.footer.forMachines[lang]}</a>
         </footer>
-        <p class="wordmark" aria-hidden="true">{[...person.name].map((c) => <span class="c">{c === ' ' ? '\u00a0' : c}</span>)}</p>
+        <p class="wordmark" aria-hidden="true">{[...person.name].map((c) => <span class="c">{c === ' ' ? ' ' : c}</span>)}</p>
       </section>
     </main>
   </div>
@@ -287,10 +314,15 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
 <style>
   /* ---------- Plain page (no JavaScript, or reduced motion) ---------- */
 
+  /* White paper, black type and ballpoint blue; the global tokens are overridden for this page. */
   .xp {
-    --dark: #121110;
-    --on-dark: #ece8de;
-    --muted-dark: #8f8b82;
+    --bg: #f0f0ed;
+    --ink: #141413;
+    --body: #2a2a28;
+    --muted: #76746e;
+    --line: #d9d8d2;
+    --pen: #2f3394;
+    --pen-font: 'Mynerve', cursive;
     position: relative;
     overflow-x: clip;
     color: var(--ink);
@@ -303,13 +335,21 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
     background: var(--bg);
   }
 
-  .grain,
-  .wipe,
+  /* The paper's grain, still, like a printed poster. */
+  .xp-bg::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    opacity: 0.06;
+    mix-blend-mode: multiply;
+  }
+
   .progress,
   .cursor,
   .scene-name,
+  .slot,
   .hint,
-  .bigword,
   .windows,
   .phone,
   .route,
@@ -319,11 +359,20 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
     display: none;
   }
 
+  .pen {
+    color: var(--pen);
+    font-family: var(--pen-font);
+    font-size: 1.5rem;
+    line-height: 1.25;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
   .hud {
     display: flex;
     justify-content: space-between;
     gap: var(--s-4);
-    max-width: calc(var(--page) + 2 * var(--side));
+    max-width: calc(var(--measure) + 2 * var(--side));
     margin: 0 auto;
     padding: var(--s-6) var(--side);
     font-size: var(--text-sm);
@@ -349,50 +398,22 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
     padding: var(--s-12) var(--side);
   }
 
-  .name {
+  .logo {
     color: var(--ink);
-    font-size: clamp(3rem, 12vw, 6rem);
+    font-size: 2.25rem;
     font-weight: 600;
-    letter-spacing: -0.05em;
-    line-height: 0.95;
+    letter-spacing: -0.035em;
+    line-height: 1.1;
   }
 
-  .name .w {
-    display: inline-block;
-    margin-right: 0.2em;
-  }
-
-  .name .c,
-  .wordmark .c {
-    display: inline-block;
-  }
-
-  figure {
-    margin: 0;
-  }
-
-  .xp :global(img) {
-    display: block;
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-    border-radius: var(--radius);
-  }
-
-  .portrait {
-    width: 12rem;
+  .o-pen,
+  .o-photo,
+  .o-foot {
     margin-top: var(--s-6);
   }
 
-  .portrait :global(img) {
-    aspect-ratio: 4 / 5;
-    object-position: 50% 30%;
-  }
-
-  .intro {
-    margin-top: var(--s-6);
-    font-size: var(--text-lg);
-    line-height: 1.5;
+  .o-photo {
+    width: min(18rem, 70%);
   }
 
   .buttons,
@@ -401,6 +422,9 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
     flex-wrap: wrap;
     align-items: center;
     gap: var(--s-2) var(--s-4);
+  }
+
+  .end-actions {
     margin-top: var(--s-6);
   }
 
@@ -425,24 +449,11 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
     list-style: none;
   }
 
-  .theatre,
-  .prints {
-    margin-top: var(--s-8);
-  }
-
-  .theatre :global(img) {
-    aspect-ratio: 3 / 2;
-  }
-
-  .prints {
+  .med-photos {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: var(--gap);
-  }
-
-  .prints :global(img),
-  .card :global(img) {
-    aspect-ratio: 4 / 5;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-4);
+    margin-top: var(--s-8);
   }
 
   .wards-text .reading {
@@ -461,12 +472,8 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
   }
 
   .run {
+    width: min(16rem, 60%);
     margin-top: var(--s-8);
-    width: calc((100% - var(--gap)) / 2);
-  }
-
-  .run :global(img) {
-    aspect-ratio: 4 / 5;
   }
 
   .xp p :global(a),
@@ -481,7 +488,7 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
   .deck {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--s-3) var(--gap);
+    gap: var(--s-3) var(--s-4);
   }
 
   .deck-intro {
@@ -502,13 +509,7 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
     line-height: 1.5;
   }
 
-  .cap h3 {
-    color: var(--ink);
-    font-size: var(--text-base);
-    font-weight: 500;
-  }
-
-  .cap p {
+  .cap p + p {
     margin-top: var(--s-1);
   }
 
@@ -517,8 +518,7 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
   }
 
   .contact-line {
-    color: var(--ink);
-    font-size: var(--text-lg);
+    font-size: 1.75rem;
   }
 
   .pending {
@@ -545,48 +545,15 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
   @media (prefers-reduced-motion: no-preference) {
     :global(.js) .xp {
       --stage: 100svh;
+      /* The opening Polaroid's width; the note either side is placed against it. */
+      --pw: clamp(14rem, 23vw, 21rem);
     }
 
-    :global(.js) .grain {
-      display: block;
-      position: fixed;
-      inset: -50%;
-      z-index: 50;
-      opacity: 0.09;
-      pointer-events: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-      animation: grain 0.9s steps(5) infinite;
-    }
-
-    @keyframes grain {
-      0% {
-        transform: translate(0, 0);
-      }
-      20% {
-        transform: translate(-4%, 3%);
-      }
-      40% {
-        transform: translate(3%, -5%);
-      }
-      60% {
-        transform: translate(-2%, 6%);
-      }
-      80% {
-        transform: translate(5%, -2%);
-      }
-      100% {
-        transform: translate(0, 0);
-      }
-    }
-
-    /* The interface floats over every scene; `difference` keeps it legible on paper and on ink. */
     :global(.js) .hud,
     :global(.js) .scene-name,
     :global(.js) .progress {
       position: fixed;
       z-index: 40;
-      color: #fff;
-      mix-blend-mode: difference;
     }
 
     :global(.js) .hud {
@@ -596,14 +563,7 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
     }
 
     :global(.js) .hud a {
-      color: #fff;
-      opacity: 0.6;
       pointer-events: auto;
-    }
-
-    :global(.js) .hud a[aria-current],
-    :global(.js) .hud .hud-name {
-      opacity: 1;
     }
 
     :global(.js) .scene-name {
@@ -611,6 +571,7 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       left: var(--side);
       bottom: var(--s-6);
       margin: 0;
+      color: var(--muted);
       font-size: var(--text-sm);
     }
 
@@ -618,7 +579,7 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       display: block;
       inset: 0 0 auto;
       height: 2px;
-      background: #fff;
+      background: var(--pen);
       transform: scaleX(0);
       transform-origin: 0 50%;
     }
@@ -634,69 +595,78 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       overflow: hidden;
     }
 
-    /* Opening */
-    /* The name sits behind the portrait, so the photo lies on the type rather than under it. */
-    :global(.js) .opening .name {
+    :global(.js) .pen {
+      font-size: clamp(1.35rem, 2.05vw, 2.1rem);
+    }
+
+    /* Opening, laid out like a poster: name at the top, the photo in the middle, the note either side. */
+    :global(.js) .o-head {
       position: absolute;
-      inset: 0;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: clamp(5rem, 19vw, 18rem);
-      letter-spacing: -0.06em;
-      line-height: 0.82;
+      top: 9svh;
+      left: 0;
+      right: 0;
+      text-align: center;
     }
 
-    :global(.js) .opening .w {
-      display: inline-flex;
-      margin: 0;
-      overflow: hidden;
-      padding: 0.04em 0.02em 0.08em;
+    :global(.js) .logo {
+      font-size: clamp(1.6rem, 2.4vw, 2.25rem);
     }
 
-    :global(.js) .opening .w1 {
-      margin-right: 0.12em;
-    }
-
-    :global(.js) .opening .c {
-      font-variation-settings: 'wght' 600;
-    }
-
-    :global(.js) .portrait {
+    :global(.js) .o-photo {
       position: absolute;
       left: 50%;
-      top: 50%;
-      z-index: 2;
-      width: clamp(10rem, 21vw, 21rem);
+      top: 52%;
+      width: var(--pw);
       margin: 0;
       translate: -50% -50%;
-      perspective: 800px;
     }
 
-    :global(.js) .portrait :global(img) {
-      box-shadow: 0 40px 80px rgb(23 22 20 / 0.25);
-    }
-
-    :global(.js) .intro-wrap {
+    /* The slot the print comes out of: a dark slit with a little light on its lower lip. */
+    :global(.js) .slot {
+      display: block;
       position: absolute;
-      left: var(--side);
-      right: var(--side);
-      bottom: var(--s-12);
-      z-index: 3;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: space-between;
-      align-items: end;
-      gap: var(--s-6);
+      left: -8%;
+      right: -8%;
+      top: -10px;
+      z-index: 2;
+      height: 9px;
+      border-radius: 5px;
+      background: linear-gradient(#0d0d0c, #262624 70%, #3a3a37);
+      box-shadow: 0 1px 0 rgb(255 255 255 / 0.7);
     }
 
-    :global(.js) .intro {
-      max-width: 24rem;
+    /* Clips the print at the slot while it comes out, with room below for its shadow. */
+    :global(.js) .eject {
+      overflow: hidden;
+      margin: 0 -40px -60px;
+      padding: 0 40px 60px;
+    }
+
+    :global(.js) .o-pen {
+      position: absolute;
+      top: 52%;
+      width: min(21rem, 24vw);
       margin: 0;
+      translate: 0 -50%;
     }
 
-    :global(.js) .buttons {
+    :global(.js) .o-pen-a {
+      right: calc(50% + var(--pw) / 2 + 3.5vw);
+      text-align: right;
+    }
+
+    :global(.js) .o-pen-b {
+      left: calc(50% + var(--pw) / 2 + 3.5vw);
+    }
+
+    :global(.js) .o-foot {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 5svh;
+      display: grid;
+      justify-items: center;
+      gap: var(--s-4);
       margin: 0;
     }
 
@@ -704,19 +674,14 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       display: flex;
       align-items: center;
       gap: var(--s-2);
-      position: absolute;
-      left: 50%;
-      bottom: var(--s-6);
-      z-index: 3;
       margin: 0;
-      translate: -50% 0;
       color: var(--muted);
       font-size: var(--text-sm);
     }
 
     :global(.js) .hint span {
       width: 1px;
-      height: 2rem;
+      height: 1.5rem;
       background: currentColor;
       animation: hint 1.6s ease-in-out infinite;
       transform-origin: 50% 0;
@@ -740,23 +705,6 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
     }
 
     /* Medicine */
-    :global(.js) .bigword {
-      display: block;
-      position: absolute;
-      left: 0;
-      top: 50%;
-      margin: 0;
-      translate: 0 -50%;
-      color: var(--ink);
-      font-size: 32vw;
-      font-weight: 700;
-      letter-spacing: -0.06em;
-      line-height: 1;
-      white-space: nowrap;
-      opacity: 0.045;
-      pointer-events: none;
-    }
-
     :global(.js) .med-text {
       position: absolute;
       z-index: 2;
@@ -801,67 +749,29 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       left: 0;
       right: 0;
       top: 50%;
-      text-align: center;
       height: 1.2em;
       margin-top: -0.6em;
       line-height: 1.2;
+      text-align: center;
       white-space: nowrap;
       backface-visibility: hidden;
     }
 
-    :global(.js) .theatre {
+    :global(.js) .med-photos {
       position: absolute;
       inset: 0;
       z-index: 3;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 3vw;
       margin: 0;
-    }
-
-    :global(.js) .theatre :global(img) {
-      height: 100%;
-      aspect-ratio: auto;
-      border-radius: 0;
-    }
-
-    :global(.js) .prints {
-      position: absolute;
-      inset: 0;
-      z-index: 4;
-      display: block;
-      margin: 0;
+      padding: 0 var(--side);
       pointer-events: none;
     }
 
-    :global(.js) .prints :global(img) {
-      position: absolute;
-      width: clamp(9rem, 20vw, 19rem);
-      border: 0.5rem solid #fbf9f4;
-      border-bottom-width: 2rem;
-      border-radius: 2px;
-      box-shadow: 0 30px 60px rgb(0 0 0 / 0.35);
-    }
-
-    :global(.js) .prints :global(img:first-child) {
-      left: 16%;
-      top: 16%;
-    }
-
-    :global(.js) .prints :global(img:last-child) {
-      right: 14%;
-      top: 26%;
-    }
-
-    /* The dark circle that carries the page from paper to ink (care) and back (Eigen). */
-    :global(.js) .wipe {
-      display: block;
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      background: var(--dark);
-      clip-path: circle(0% at 50% 50%);
-    }
-
-    :global(.js) .eigen .wipe {
-      z-index: 6;
+    :global(.js) .mp {
+      width: clamp(11rem, 21vw, 19rem);
     }
 
     /* Care: the wards, then Bounceback on the phone */
@@ -879,10 +789,9 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       overflow: hidden;
       border: 1px solid var(--line);
       border-radius: 10px;
-      background: #fffdf8;
-      box-shadow: 0 22px 44px rgb(23 22 20 / 0.16);
+      background: #fff;
+      box-shadow: 0 22px 44px rgb(20 20 19 / 0.12);
       font-size: 0.75rem;
-      rotate: var(--tilt);
     }
 
     :global(.js) .win .bar {
@@ -892,7 +801,7 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       height: 28px;
       padding: 0 10px;
       border-bottom: 1px solid var(--line);
-      background: #ece8de;
+      background: #ececea;
       color: var(--muted);
     }
 
@@ -900,7 +809,7 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       width: 9px;
       height: 9px;
       border-radius: 50%;
-      background: #d4cfc3;
+      background: #d2d1cb;
     }
 
     :global(.js) .win .bar i:first-child {
@@ -922,7 +831,7 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       display: block;
       height: 7px;
       border-radius: 4px;
-      background: #e4dfd3;
+      background: #e3e2dd;
     }
 
     :global(.js) .win .body .scan {
@@ -969,7 +878,7 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       border-radius: 2.75rem;
       background: #0b0b0a;
       box-shadow:
-        0 50px 100px rgb(0 0 0 / 0.45),
+        0 40px 80px rgb(0 0 0 / 0.25),
         inset 0 0 0 2px #2c2a27;
     }
 
@@ -978,7 +887,7 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       height: 100%;
       overflow: hidden;
       border-radius: 2.1rem;
-      background: #f7f4ec;
+      background: #f7f7f4;
       color: var(--ink);
       font-size: 0.8rem;
       line-height: 1.35;
@@ -1127,13 +1036,13 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       padding: 10px 12px;
       border-radius: 16px 16px 4px 16px;
       background: var(--ink);
-      color: #f7f4ec;
+      color: #f7f7f4;
     }
 
     :global(.js) .bubble small {
       display: block;
       margin-bottom: 2px;
-      color: #b9b4a8;
+      color: #b9b8b2;
       font-size: 0.68rem;
     }
 
@@ -1200,7 +1109,7 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
     :global(.js) .tap svg {
       width: 2.6rem;
       fill: none;
-      stroke: #f7f4ec;
+      stroke: #f7f7f4;
       stroke-width: 2.4;
       stroke-linecap: round;
       stroke-linejoin: round;
@@ -1213,7 +1122,8 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       letter-spacing: -0.03em;
     }
 
-    :global(.js) .bb-text {
+    :global(.js) .bb-text,
+    :global(.js) .eigen-text {
       position: absolute;
       z-index: 5;
       left: var(--side);
@@ -1221,7 +1131,7 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       width: min(30rem, 40vw);
       margin: 0;
       translate: 0 -50%;
-      color: var(--on-dark);
+      color: var(--ink);
       font-size: clamp(1.1rem, 1.6vw, 1.45rem);
       line-height: 1.4;
       letter-spacing: -0.01em;
@@ -1229,53 +1139,41 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
 
     :global(.js) .bb-text .label,
     :global(.js) .eigen-text .label {
-      color: inherit;
-      opacity: 0.6;
+      color: var(--muted);
     }
 
-    :global(.js) .bb-text p :global(a) {
-      color: inherit;
-      text-decoration-color: currentColor;
-    }
-
-    /* Eigen */
+    /* Eigen: the Polaroid with a lap drawn round it in pen, behind it on the paper. */
     :global(.js) .run {
       position: absolute;
-      z-index: 1;
-      right: var(--side);
-      top: 11svh;
-      width: min(40vw, 34rem);
-      height: 78svh;
+      z-index: 2;
+      left: 66%;
+      top: 50%;
+      width: clamp(13rem, 22vw, 22rem);
       margin: 0;
-      overflow: hidden;
-      border-radius: var(--radius);
-    }
-
-    :global(.js) .run :global(img) {
-      height: 118%;
-      aspect-ratio: auto;
-      border-radius: 0;
+      translate: -50% -50%;
     }
 
     :global(.js) .route {
       display: block;
       position: absolute;
-      z-index: 2;
-      right: calc(var(--side) + 2vw);
-      top: 20svh;
-      width: min(34vw, 28rem);
+      left: -30%;
+      top: -14%;
+      z-index: -1;
+      width: 160%;
+      height: 128%;
       overflow: visible;
     }
 
     :global(.js) .route-path {
       fill: none;
-      stroke: #fbf9f4;
-      stroke-width: 3;
+      stroke: var(--pen);
+      stroke-width: 2.6;
       stroke-linecap: round;
+      filter: url(#wobble);
     }
 
     :global(.js) .runner {
-      fill: #fbf9f4;
+      fill: var(--pen);
     }
 
     :global(.js) .dots {
@@ -1286,19 +1184,6 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       top: 0;
       width: 56%;
       height: 100%;
-    }
-
-    :global(.js) .eigen-text {
-      position: absolute;
-      z-index: 3;
-      left: var(--side);
-      top: 50%;
-      width: min(30rem, 40vw);
-      margin: 0;
-      translate: 0 -50%;
-      font-size: clamp(1.1rem, 1.6vw, 1.45rem);
-      line-height: 1.4;
-      letter-spacing: -0.01em;
     }
 
     :global(.js) .e-groups {
@@ -1336,18 +1221,9 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       grid-area: stack;
       align-self: center;
       justify-self: center;
-      width: min(100%, 27rem);
+      width: min(100%, 24rem);
       cursor: grab;
       touch-action: pan-y;
-      user-select: none;
-    }
-
-    :global(.js) .card :global(img) {
-      border: 0.5rem solid #fbf9f4;
-      border-bottom-width: 2.25rem;
-      border-radius: 3px;
-      box-shadow: 0 30px 60px rgb(23 22 20 / 0.22);
-      pointer-events: none;
     }
 
     :global(.js) .cap {
@@ -1356,15 +1232,19 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       font-size: var(--text-base);
     }
 
-    :global(.js) .cap h3 {
-      font-size: clamp(1.5rem, 2.4vw, 2.25rem);
-      font-weight: 600;
-      letter-spacing: -0.03em;
-    }
-
     :global(.js) .cap p {
       max-width: 26rem;
-      margin-top: var(--s-2);
+    }
+
+    :global(.js) .cap p:first-of-type {
+      color: var(--ink);
+      font-size: clamp(1.25rem, 1.9vw, 1.6rem);
+      line-height: 1.35;
+      letter-spacing: -0.015em;
+    }
+
+    :global(.js) .cap .detail {
+      margin-top: var(--s-3);
     }
 
     :global(.js) .deck-controls {
@@ -1399,19 +1279,25 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       max-width: 76rem;
       width: 100%;
       margin: 0 auto;
-      padding: var(--s-24) var(--side) var(--s-8);
+      padding: var(--s-16) var(--side) var(--s-8);
     }
 
     :global(.js) .contact-line {
-      max-width: 20ch;
-      font-size: clamp(2rem, 5.4vw, 5rem);
-      font-weight: 500;
-      line-height: 1.04;
-      letter-spacing: -0.04em;
+      max-width: 28ch;
+      font-size: clamp(1.9rem, 3.7vw, 3.5rem);
+      line-height: 1.12;
     }
 
     :global(.js) .end-actions {
       margin-top: var(--s-8);
+    }
+
+    :global(.js) .foot {
+      width: 100%;
+      max-width: 76rem;
+      margin: 0 auto var(--s-6);
+      padding: var(--s-4) var(--side) 0;
+      border: 0;
     }
 
     :global(.js) .wordmark {
@@ -1428,15 +1314,8 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
     }
 
     :global(.js) .wordmark .c {
+      display: inline-block;
       will-change: transform;
-    }
-
-    :global(.js) .foot {
-      width: 100%;
-      max-width: 76rem;
-      margin: 0 auto var(--s-6);
-      padding: var(--s-4) var(--side) 0;
-      border: 0;
     }
 
     /* The cursor follows the pointer on devices that have one. */
@@ -1452,11 +1331,10 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
         height: 14px;
         margin: -7px 0 0 -7px;
         border-radius: 50%;
-        background: #fff;
-        color: #000;
+        background: var(--pen);
+        color: #fff;
         font-size: 0.75rem;
         font-weight: 600;
-        mix-blend-mode: difference;
         pointer-events: none;
       }
 
@@ -1467,28 +1345,41 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
 
     /* Phones and narrow tablets: the same scenes, stacked vertically. */
     @media (max-width: 51.99rem) {
-      :global(.js) .opening .name {
-        flex-direction: column;
-        gap: 46vw;
-        padding-bottom: 14svh;
-        font-size: 27vw;
+      :global(.js) .xp {
+        --pw: min(52vw, 15rem);
       }
 
-      :global(.js) .opening .w1 {
-        margin: 0;
+      :global(.js) .o-head {
+        top: 8svh;
       }
 
-      :global(.js) .portrait {
-        top: calc(50% - 7svh);
-        width: 38vw;
+      :global(.js) .o-photo {
+        top: 49%;
       }
 
-      :global(.js) .bigword {
+      :global(.js) .o-pen {
+        left: var(--side);
+        right: var(--side);
+        width: auto;
+        text-align: center;
+        translate: none;
+      }
+
+      :global(.js) .o-pen-a {
+        top: auto;
+        bottom: calc(51% + var(--pw) * 0.608 + 1.25rem);
+      }
+
+      :global(.js) .o-pen-b {
+        top: calc(49% + var(--pw) * 0.608 + 1.25rem);
+      }
+
+      :global(.js) .o-foot {
+        bottom: 4svh;
+      }
+
+      :global(.js) .o-foot .hint {
         display: none;
-      }
-
-      :global(.js) .intro-wrap {
-        bottom: var(--s-16);
       }
 
       :global(.js) .med-text {
@@ -1508,18 +1399,30 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
         font-size: 6.2vw;
       }
 
-      :global(.js) .prints :global(img) {
+      :global(.js) .med-photos {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-areas: 'a b' 'c c';
+        align-content: center;
+        justify-items: center;
+        gap: 4vw;
+      }
+
+      :global(.js) .mp {
         width: 40vw;
       }
 
-      :global(.js) .prints :global(img:first-child) {
-        left: 6%;
-        top: 14%;
+      :global(.js) .mp0 {
+        grid-area: a;
       }
 
-      :global(.js) .prints :global(img:last-child) {
-        right: 6%;
-        top: 40%;
+      :global(.js) .mp1 {
+        grid-area: b;
+      }
+
+      :global(.js) .mp2 {
+        grid-area: c;
+        width: 50vw;
       }
 
       :global(.js) .win {
@@ -1550,18 +1453,9 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       }
 
       :global(.js) .run {
-        top: auto;
-        bottom: 6svh;
-        left: var(--side);
-        width: auto;
-        height: 48svh;
-      }
-
-      :global(.js) .route {
-        top: auto;
-        bottom: 12svh;
-        right: calc(var(--side) + 6vw);
-        width: 70vw;
+        left: 50%;
+        top: 66%;
+        width: 50vw;
       }
 
       :global(.js) .dots {
@@ -1580,7 +1474,7 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
       }
 
       :global(.js) .card {
-        width: 74vw;
+        width: 66vw;
       }
 
       :global(.js) .wordmark {

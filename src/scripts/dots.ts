@@ -23,7 +23,6 @@ const R_BACK = 0.9;
 const R_FRONT = 2.6;
 /** How much of the morph is spent staggering dots from top to bottom, so they stream rather than jump. */
 const STAGGER = 0.45;
-const INK = '23 22 20';
 
 /** The head: an ellipse in unit space (y grows downwards). */
 const HEAD = { cx: 0, cy: 0.02, rx: 0.25, ry: 0.34 };
@@ -110,9 +109,11 @@ export class Dots {
   private h = 0;
   private dpr = 1;
 
+  /** `ink` is the dots' colour as space-separated RGB, e.g. '47 51 148'. */
   constructor(
     private canvas: HTMLCanvasElement,
     count: number,
+    private ink = '23 22 20',
   ) {
     this.ctx = canvas.getContext('2d')!;
     const rnd = random(7);
@@ -179,7 +180,7 @@ export class Dots {
         r *= 1 + 0.5 * showMask;
         alpha = Math.min(1, alpha + 0.3 * showMask);
       }
-      ctx.fillStyle = `rgb(${INK} / ${alpha})`;
+      ctx.fillStyle = `rgb(${this.ink} / ${alpha})`;
       ctx.beginPath();
       ctx.arc(cx + x * size, cy + y * size, Math.max(0.6, r), 0, Math.PI * 2);
       ctx.fill();
@@ -205,7 +206,7 @@ export class Dots {
       else ctx.lineTo(px, py);
     }
     ctx.closePath();
-    ctx.strokeStyle = `rgb(${INK} / ${0.85 * alpha})`;
+    ctx.strokeStyle = `rgb(${this.ink} / ${0.85 * alpha})`;
     ctx.lineWidth = 1.5;
     ctx.stroke();
   }

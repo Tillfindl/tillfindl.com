@@ -81,9 +81,14 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
   images through `astro:assets`. The main page has no script libraries; GSAP and Lenis are
   bundled for the interactive version (`/v2/`) only, never loaded from a CDN.
 - The interactive version (`/v2/`, `components/v2/Experience.astro`, `scripts/experience.ts`)
-  uses the same words from `profile.ts`; only its prop labels live in `page.experience`. Every
-  scene is scrubbed by the scroll, so scrolling back reverses it; animate clip paths with
-  explicit from and to values. Check it by jumping to exact points inside each pinned scene
+  uses the same words from `profile.ts`; only its prop labels and Polaroid captions live in
+  `page.experience`. Its look is white paper, black type and ballpoint blue (`#2f3394`, Mynerve in
+  capitals), with every photo a realistic Polaroid 600 print at true proportions (88 × 107 mm frame,
+  79 mm square image) that develops from dark film. Never rotate photos or cards. Reveal text by
+  words or letters, never by lines (split lines break oddly when the width changes). Every scene is
+  scrubbed by the scroll, so scrolling back reverses it; animate clip paths with explicit from and
+  to values, and don't animate x or y on an element centred with the CSS `translate` property
+  (GSAP takes it over); animate a child instead. Check it by jumping to exact points inside each pinned scene
   (`window.__xp.lenis.scrollTo(y, { immediate: true })`) and capturing several moments of every
   transition, on a phone and a desktop, and with reduced motion (it must read as a plain page).
   Publish it as its own preview (`node tools/preview.mjs --page v2`), separate from the main one.
