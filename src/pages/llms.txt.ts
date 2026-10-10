@@ -13,7 +13,7 @@ const chapters = (lang: Lang) =>
     '',
     ...c.blocks.flatMap((b) => {
       if (b.kind === 'p') return [plain(b.text[lang]), ''];
-      if (b.kind === 'items') return [...b.items.map((i) => `- ${i.title[lang]}: ${plain(i.text[lang])}`), ''];
+      if (b.kind === 'items') return [...b.items.map((i) => `- ${i.title[lang]}: ${plain(i.text[lang])} ${plain(i.detail[lang])}`), ''];
       return [];
     }),
   ]);

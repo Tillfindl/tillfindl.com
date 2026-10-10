@@ -21,7 +21,7 @@ const langs: Lang[] = ['en', 'de'];
 ---
 
 <Base lang={lang} title={meta.title[lang]} description={meta.description[lang]} jsonLd={jsonLd}>
-  <div class="page">
+  <div class="page" id="top">
     <nav class="top" aria-label={lang === 'en' ? 'Language' : 'Sprache'}>
       {
         langs.map((l) => (
@@ -46,9 +46,9 @@ const langs: Lang[] = ['en', 'de'];
         <h1>{person.name}</h1>
         <p class="lede">{page.intro[lang]}</p>
         <div class="buttons">
-          <a class="button primary" href={links.bounceback} rel="noopener">Bounceback <span aria-hidden="true">↗</span></a>
-          <a class="button" href={links.eigen} rel="noopener">Eigen <span aria-hidden="true">↗</span></a>
-          {links.linkedin && <a class="button" href={links.linkedin} rel="me noopener">LinkedIn <span aria-hidden="true">↗</span></a>}
+          <a class="button primary" href={links.bounceback} rel="noopener">Bounceback</a>
+          <a class="button" href={links.eigen} rel="noopener">Eigen</a>
+          {links.linkedin && <a class="button" href={links.linkedin} rel="me noopener">LinkedIn</a>}
         </div>
       </div>
     </header>
@@ -63,7 +63,7 @@ const langs: Lang[] = ['en', 'de'];
           {
             links.linkedin ? (
               <a class="button primary" href={links.linkedin} rel="me noopener">
-                LinkedIn <span aria-hidden="true">↗</span>
+                LinkedIn
               </a>
             ) : (
               <span class="button pending">{page.contact.pending[lang]}</span>

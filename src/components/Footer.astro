@@ -11,7 +11,8 @@ const { lang } = Astro.props;
 
 <footer>
   <span>© {new Date().getFullYear()} {person.name}</span>
-  <a href="/llms.txt">{page.footer.forMachines[lang]}</a>
+  <a class="machines" href="/llms.txt">{page.footer.forMachines[lang]}</a>
+  <a class="top" href="#top">{page.footer.top[lang]}</a>
 </footer>
 
 <style>
@@ -27,8 +28,24 @@ const { lang } = Astro.props;
     font-size: var(--text-sm);
   }
 
-  /* Kept for machines: the same colour as the ground, so people do not notice it. */
-  a {
+  /*
+   * Kept for machines: the same colour as the ground, so people do not notice it. It goes on a
+   * line of its own at the end, so the copyright and "Back to top" share the first line.
+   */
+  .machines {
+    flex-basis: 100%;
+    order: 1;
     color: var(--bg);
+  }
+
+  .top {
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--line);
+    text-underline-offset: 0.22em;
+  }
+
+  .top:hover {
+    text-decoration-color: var(--ink);
   }
 </style>

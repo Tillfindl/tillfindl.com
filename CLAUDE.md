@@ -44,9 +44,9 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
   When Till pushes back, change what he pointed at, proportionally; don't swing to the opposite.
 - Professional, with the why: the line under the name is Till's own wording, so keep it as
   written. Then Medicine (UCL on its own line, the elective separate), Bounceback, Eigen and
-  Personal. What he saw on the wards leads into Bounceback; the Highbury run club leads to Max,
-  the CPAP masks (quick iterations), the pivot and Eigen. Bounceback stays short and technical, and
-  the link does the explaining. Storytelling is fine only while the reader doesn't notice it: no
+  Personal. Medicine names the rotations; what he kept noticing across them leads into
+  Bounceback, which leads with remote rehab (check claims against the `the-why` product facts);
+  the Highbury run club leads to Max, the CPAP masks (quick iterations), the pivot and Eigen. Storytelling is fine only while the reader doesn't notice it: no
   "that's where I met", no set-ups and pay-offs. No dad, no dancing, Global Health not featured. State facts, never prove them (no test results, no "lab-level", no
   counts as a flex). Never call Till an engineer. "Dad", not "father". German says
   "Physios" and "Patienten", no ":innen" forms.
@@ -64,8 +64,12 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
 - Photos sit inside the sections with no visible captions; the alt text is for screen readers
   and search engines only. Two sizes only: landscape fills the text column, upright and pairs
   take half each. Personal is a set of `items` (sports and interests one by one), each with its
-  photo, a short title and one specific line, two to a row (see `Chapter.astro`). One small
+  photo, a short title, one sentence on what Till loves about it, then the proof of level in
+  grey, two to a row (see `Chapter.astro`). No "as a kid", no age-by-age storylines. One small
   corner radius.
+- Each section leads into the next (the wards into "So … I built Bounceback", "Alongside
+  Bounceback there's Eigen", "Outside work …"), and contact closes the page. Links are underlined
+  text, never arrows. Name technology generically ("a 3D face scan on a phone", never "Face ID").
 - Races are named in the text, not listed with dates, and link to their result pages; no race
   times. The /llms.txt link in the footer is the ground colour on purpose. Words Till has ruled
   out: founder (as a label), doctor (as a label for himself), "building".

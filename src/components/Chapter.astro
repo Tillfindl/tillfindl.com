@@ -2,7 +2,7 @@
 // One section: a small label, then its paragraphs and photos in the text column (see `.row` in
 // global.css). Photos come in two sizes only: landscape ones fill the text column, upright ones
 // and pairs take half of it each. Personal items sit two to a row at the same half width, each
-// photo with a short title and one line under it.
+// photo with a short title, a line on what Till loves about it, and the proof.
 import { Image } from 'astro:assets';
 import type { Chapter, Lang, Photo } from '../content/profile';
 import { photo } from '../content/images';
@@ -57,6 +57,7 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
                 <Image src={photo(item.photo.file)} alt={item.photo.alt[lang]} widths={[400, 640, 960]} sizes="(min-width: 52rem) 18rem, 50vw" style={position(item.photo)} />
                 <h3>{item.title[lang]}</h3>
                 <p set:html={rich(item.text[lang])} />
+                <p class="detail" set:html={rich(item.detail[lang])} />
               </li>
             ))}
           </ul>
@@ -99,10 +100,6 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
     text-decoration-color: var(--ink);
   }
 
-  p :global(a span) {
-    color: var(--muted);
-  }
-
   section :global(img) {
     width: 100%;
     height: auto;
@@ -133,7 +130,10 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
     gap: var(--gap);
   }
 
-  /* Personal items: two to a row, 32px between rows; title 12px under the photo, its line 4px under that. */
+  /*
+   * Personal items: two to a row, 32px between rows. The title sits 12px under the photo, then
+   * what Till loves about it in body colour, then the proof in grey, 4px apart.
+   */
   .items {
     row-gap: var(--s-8);
     margin: 0;
@@ -151,8 +151,11 @@ const position = (p: Photo) => (p.position ? `object-position: ${p.position}` : 
 
   li p {
     margin-top: var(--s-1);
-    color: var(--muted);
     font-size: var(--text-sm);
     line-height: 1.5;
+  }
+
+  li .detail {
+    color: var(--muted);
   }
 </style>

@@ -44,10 +44,11 @@ export interface Photo {
   position?: string;
 }
 
-/** One thing in the personal section: a photo, a short title and one line. */
+/** One thing in the personal section: a photo, a short title, what Till loves about it, and the proof. */
 export interface Item {
   title: L;
   text: L;
+  detail: L;
   photo: Photo;
 }
 
@@ -119,17 +120,16 @@ export const page = {
       id: 'medicine',
       title: { en: 'Medicine', de: 'Medizin' },
       blocks: [
-        p('Six years of medicine at UCL in London.', 'Sechs Jahre Medizin am UCL in London.'),
-        { kind: 'pair', photos: [photos.medSchool, photos.portico] },
         p(
-          'An orthopaedics elective in Kuala Lumpur, and a few days in two eye hospitals in Bangalore.',
-          'Eine Famulatur in der Orthopädie in Kuala Lumpur und ein paar Tage in zwei Augenkliniken in Bangalore.',
+          'Six years of medicine at UCL, with clinical rotations at University College Hospital, the Royal Free, Great Ormond Street, Queen Square and Moorfields, and a final elective in orthopaedics in Kuala Lumpur.',
+          'Sechs Jahre Medizin am UCL, mit klinischen Rotationen am University College Hospital, Royal Free, Great Ormond Street, Queen Square und Moorfields und einer abschließenden Famulatur in der Orthopädie in Kuala Lumpur.',
         ),
         { kind: 'photo', photo: photos.theatre },
         p(
-          'On the wards, a lot of the day went into software instead of patients: one program for imaging, another for notes, another for prescriptions. And once patients went home, they were mostly on their own.',
-          'Auf Station verbrachte man einen großen Teil des Tages mit Software statt mit Patienten: ein Programm für die Bildgebung, eines für die Notizen, eines für Verschreibungen. Und sobald Patienten nach Hause gingen, waren sie meistens auf sich allein gestellt.',
+          'Across those rotations, the same thing kept bothering me: a lot of the day went into software instead of patients, with one program for imaging, another for notes and another for prescriptions. And once patients went home, they were mostly on their own.',
+          'Auf all diesen Rotationen hat mich dasselbe gestört. Man verbrachte einen großen Teil des Tages mit Software statt mit Patienten: ein Programm für die Bildgebung, eines für die Notizen, eines für Verschreibungen. Und sobald Patienten nach Hause gingen, waren sie meistens auf sich allein gestellt.',
         ),
+        { kind: 'pair', photos: [photos.medSchool, photos.portico] },
       ],
     },
     {
@@ -137,8 +137,8 @@ export const page = {
       title: { en: 'Bounceback', de: 'Bounceback' },
       blocks: [
         p(
-          `So with my team in Vienna I built Bounceback, one system for the whole physiotherapy practice. Its AI writes the notes during treatment and helps physios answer their patients’ exercise videos between appointments, learning their corrections as it goes. Booking and payments sit in the same app, and all of it runs on a phone. [bounceback.at](${links.bounceback})`,
-          `Also habe ich mit meinem Team in Wien Bounceback gebaut, ein System für die ganze Physiotherapiepraxis. Die KI schreibt die Dokumentation während der Behandlung und hilft Physios, die Übungsvideos ihrer Patienten zwischen den Terminen zu beantworten, und lernt dabei ihre Korrekturen. Terminbuchung und Bezahlung laufen in derselben App, alles auf einem Handy. [bounceback.at](${links.bounceback})`,
+          `So with my team in Vienna I built Bounceback, with remote rehab at its core: patients follow their programme in an app, film their sets at home and get feedback from their physio between appointments. The rest of the practice runs on it too, from notes that write themselves during the session to booking and payments, all from one phone, with the AI running on our own hardware in Germany. [bounceback.at](${links.bounceback})`,
+          `Also habe ich mit meinem Team in Wien Bounceback gebaut, mit Remote-Reha im Kern: Patienten folgen ihrem Programm in einer App, filmen ihre Übungen zu Hause und bekommen zwischen den Terminen Feedback von ihrem Physio. Auch der Rest der Praxis läuft darüber, von Notizen, die sich während der Behandlung selbst schreiben, bis zu Terminbuchung und Bezahlung, alles von einem Handy aus und mit der KI auf unserer eigenen Hardware in Deutschland. [bounceback.at](${links.bounceback})`,
         ),
       ],
     },
@@ -147,8 +147,8 @@ export const page = {
       title: { en: 'Eigen', de: 'Eigen' },
       blocks: [
         p(
-          `During my time in London I hosted a Sunday run club in Highbury for two years. Some of my best friends came from it, and so did Max, a robotics engineer from ETH Zurich. Our first project together was a Face ID scan for custom CPAP masks, built in quick iterations. Then we pivoted to running, and that became Eigen: a 3D foot scan and a short running video, matched to the shoes that suit how someone runs. I look after the product and the biomechanics. [eigen-running.com](${links.eigen})`,
-          `In meiner Zeit in London habe ich zwei Jahre lang einen Sonntagslauf in Highbury organisiert. Einige meiner besten Freunde kommen von dort, und auch Max, Robotikingenieur von der ETH Zürich. Unser erstes gemeinsames Projekt war ein Face-ID-Scan für maßgefertigte CPAP-Masken, in schnellen Iterationen gebaut. Dann haben wir auf Laufen umgeschwenkt, und daraus wurde Eigen: ein 3D-Fußscan und ein kurzes Laufvideo, abgeglichen mit den Schuhen, die zum Laufstil passen. Ich kümmere mich um das Produkt und die Biomechanik. [eigen-running.com](${links.eigen})`,
+          `Alongside Bounceback there’s Eigen, which goes back to London. For two years I hosted a Sunday run club in Highbury. Some of my best friends came from it, and so did Max, a robotics engineer from ETH Zurich. Our first project together was custom CPAP masks made from a 3D face scan on a phone, built in quick iterations. Then we pivoted to running, and that became Eigen: a 3D foot scan and a short running video, matched to the shoes that suit how someone runs. I look after the product and the biomechanics. [eigen-running.com](${links.eigen})`,
+          `Neben Bounceback gibt es Eigen, und das geht auf London zurück. Zwei Jahre lang habe ich in Highbury einen Sonntagslauf organisiert. Einige meiner besten Freunde kommen von dort, und auch Max, Robotikingenieur von der ETH Zürich. Unser erstes gemeinsames Projekt waren maßgefertigte CPAP-Masken aus einem 3D-Gesichtsscan mit dem Handy, in schnellen Iterationen gebaut. Dann haben wir auf Laufen umgeschwenkt, und daraus wurde Eigen: ein 3D-Fußscan und ein kurzes Laufvideo, abgeglichen mit den Schuhen, die zum Laufstil passen. Ich kümmere mich um das Produkt und die Biomechanik. [eigen-running.com](${links.eigen})`,
         ),
         { kind: 'photo', photo: photos.nightRun },
       ],
@@ -157,28 +157,41 @@ export const page = {
       id: 'personal',
       title: { en: 'Personal', de: 'Privat' },
       blocks: [
+        p('Outside work, it’s mostly sport and film.', 'Abseits der Arbeit dreht sich das meiste um Sport und Film.'),
         {
           kind: 'items',
           items: [
             {
               title: { en: 'Triathlon', de: 'Triathlon' },
               text: {
-                en: `[Ironman Kalmar](${links.ironmanKalmar}) and Ironman Tallinn, with [marathons](${links.amsterdamMarathon}) in between.`,
-                de: `[Ironman Kalmar](${links.ironmanKalmar}) und Ironman Tallinn, dazwischen [Marathons](${links.amsterdamMarathon}).`,
+                en: 'Long swims, rides and runs are how I switch off.',
+                de: 'Lange Schwimm-, Rad- und Laufeinheiten sind meine Art abzuschalten.',
+              },
+              detail: {
+                en: `[Ironman Kalmar](${links.ironmanKalmar}) and Ironman Tallinn, and marathons including [Amsterdam](${links.amsterdamMarathon}).`,
+                de: `[Ironman Kalmar](${links.ironmanKalmar}) und Ironman Tallinn, dazu Marathons, darunter [Amsterdam](${links.amsterdamMarathon}).`,
               },
               photo: photos.swim,
             },
             {
               title: { en: 'Skiing', de: 'Skifahren' },
               text: {
-                en: 'FIS races and Viennese youth champion as a kid. Ski instructor (LS2) today.',
-                de: 'Als Kind FIS-Rennen und Wiener Jugendmeister. Heute Skilehrer (LS2).',
+                en: 'I grew up on skis, and a race course is still my favourite place on a mountain.',
+                de: 'Ich bin auf Skiern aufgewachsen, und eine Rennstrecke ist immer noch mein liebster Platz am Berg.',
+              },
+              detail: {
+                en: 'FIS races and Viennese youth champion; now a qualified ski instructor (LS2).',
+                de: 'FIS-Rennen und Wiener Jugendmeister; heute ausgebildeter Skilehrer (LS2).',
               },
               photo: photos.ski,
             },
             {
               title: { en: 'Ice hockey', de: 'Eishockey' },
               text: {
+                en: 'I love the speed of it, and the team in the locker room.',
+                de: 'Ich liebe das Tempo und das Team in der Kabine.',
+              },
+              detail: {
                 en: 'Played for the UCL Yetis in BUIHA Division 1.',
                 de: 'Für die UCL Yetis in der BUIHA Division 1 gespielt.',
               },
@@ -187,8 +200,12 @@ export const page = {
             {
               title: { en: 'Photography and film', de: 'Fotografie und Film' },
               text: {
-                en: 'FPV drones at thirteen, landscape prints at sixteen. Now mostly short films of trips with friends.',
-                de: 'Mit dreizehn FPV-Drohnen, mit sechzehn Landschaftsdrucke. Heute vor allem kurze Filme von Reisen mit Freunden.',
+                en: 'I like capturing places and the people I’m there with.',
+                de: 'Ich halte gern Orte fest und die Menschen, mit denen ich dort bin.',
+              },
+              detail: {
+                en: 'Sold landscape prints from Austria and Lofoten; now mostly short films of trips with friends.',
+                de: 'Landschaftsdrucke aus Österreich und von den Lofoten verkauft; heute vor allem kurze Filme von Reisen mit Freunden.',
               },
               photo: photos.summer,
             },
@@ -199,11 +216,15 @@ export const page = {
   ] satisfies Chapter[],
   contact: {
     title: { en: 'Contact', de: 'Kontakt' },
-    text: { en: 'LinkedIn is the easiest way to reach me.', de: 'Am einfachsten erreichst du mich über LinkedIn.' },
+    text: {
+      en: 'If you’d like to talk about any of this, LinkedIn is the easiest way to reach me.',
+      de: 'Wenn du über etwas davon reden möchtest, erreichst du mich am einfachsten über LinkedIn.',
+    },
     pending: { en: 'Link coming soon', de: 'Link folgt' },
   },
   footer: {
     forMachines: { en: 'Summary for AI assistants', de: 'Zusammenfassung für KI-Assistenten' },
+    top: { en: 'Back to top', de: 'Nach oben' },
   },
 };
 
