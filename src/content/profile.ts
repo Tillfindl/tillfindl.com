@@ -102,6 +102,21 @@ const photos = {
     file: 'summer-austria.jpg',
     alt: { en: 'Till and a friend in lederhosen in the Austrian mountains', de: 'Till und ein Freund in Lederhosen in den österreichischen Bergen' },
   },
+  bike: { file: 'bike-sunset.jpg', alt: { en: 'A road bike on a lane in an Alpine valley at sunset', de: 'Ein Rennrad auf einem Weg in einem Alpental bei Sonnenuntergang' } },
+  skiPowder: { file: 'ski-powder.jpg', alt: { en: 'A skier in a yellow jacket in deep snow below a rock face', de: 'Ein Skifahrer in gelber Jacke im Tiefschnee unter einer Felswand' } },
+  skiPodium: { file: 'ski-podium.jpg', alt: { en: 'Till on top of the podium at a ski race in falling snow', de: 'Till ganz oben am Podest eines Skirennens im Schneefall' } },
+  skiDuo: { file: 'ski-duo.jpg', alt: { en: 'Two skiers in yellow jackets posing on a piste', de: 'Zwei Skifahrer in gelben Jacken posieren auf der Piste' } },
+  skiSelfie: { file: 'ski-summit-selfie.jpg', alt: { en: 'A ski selfie in a yellow jacket and mirrored goggles', de: 'Ein Ski-Selfie in gelber Jacke und verspiegelter Brille' } },
+  lofotenCabins: {
+    file: 'lofoten-cabins.jpg',
+    alt: { en: 'Red fishing cabins below a snowy peak in the Lofoten Islands', de: 'Rote Fischerhütten unter einem verschneiten Gipfel auf den Lofoten' },
+  },
+  lofotenAurora: { file: 'lofoten-aurora.jpg', alt: { en: 'Northern lights over a snowy peak in the Lofoten Islands', de: 'Nordlicht über einem verschneiten Gipfel auf den Lofoten' } },
+  hallstatt: { file: 'hallstatt.jpg', alt: { en: 'Hallstatt in falling snow, with boathouses on the lake', de: 'Hallstatt im Schneefall, mit Bootshäusern am See' } },
+  defender: { file: 'defender-river.jpg', alt: { en: 'A white Defender crossing a river below green mountains', de: 'Ein weißer Defender durchquert einen Fluss vor grünen Bergen' } },
+  reindeer: { file: 'reindeer.jpg', alt: { en: 'A white reindeer in the snow', de: 'Ein weißes Rentier im Schnee' } },
+  dolomites: { file: 'dolomites.jpg', alt: { en: 'Till carrying a friend on his shoulders in a meadow in the Dolomites', de: 'Till trägt einen Freund auf den Schultern, auf einer Wiese in den Dolomiten' } },
+  nashville: { file: 'nashville.jpg', alt: { en: 'Till and a friend on Broadway in Nashville at night', de: 'Till und ein Freund nachts auf dem Broadway in Nashville' } },
 } satisfies Record<string, Photo>;
 
 export const page = {
@@ -147,8 +162,8 @@ export const page = {
       title: { en: 'Eigen', de: 'Eigen' },
       blocks: [
         p(
-          `Alongside Bounceback there’s Eigen, which goes back to London. For two years I hosted a Sunday run club in Highbury. Some of my best friends came from it, and so did Max, a robotics engineer from ETH Zurich. Our first project together was custom CPAP masks made from a 3D face scan on a phone, built in quick iterations. Then we pivoted to running, and that became Eigen: a 3D foot scan and a short running video, matched to the shoes that suit how someone runs. I look after the product and the biomechanics. [eigen-running.com](${links.eigen})`,
-          `Neben Bounceback gibt es Eigen, und das geht auf London zurück. Zwei Jahre lang habe ich in Highbury einen Sonntagslauf organisiert. Einige meiner besten Freunde kommen von dort, und auch Max, Robotikingenieur von der ETH Zürich. Unser erstes gemeinsames Projekt waren maßgefertigte CPAP-Masken aus einem 3D-Gesichtsscan mit dem Handy, in schnellen Iterationen gebaut. Dann haben wir auf Laufen umgeschwenkt, und daraus wurde Eigen: ein 3D-Fußscan und ein kurzes Laufvideo, abgeglichen mit den Schuhen, die zum Laufstil passen. Ich kümmere mich um das Produkt und die Biomechanik. [eigen-running.com](${links.eigen})`,
+          `Alongside Bounceback there’s Eigen, which goes back to London. For two years I hosted a Sunday run club in Highbury. Some of my best friends came from it, and so did Max, a robotics engineer from ETH Zurich. Our first project together was custom 3D-printed CPAP masks from smartphone face scans, built in quick iterations. Then we pivoted to running, and that became Eigen: a 3D foot scan and a short running video, matched to the shoes that suit how someone runs. I look after the product and the biomechanics. [eigen-running.com](${links.eigen})`,
+          `Neben Bounceback gibt es Eigen, und das geht auf London zurück. Zwei Jahre lang habe ich in Highbury einen Sonntagslauf organisiert. Einige meiner besten Freunde kommen von dort, und auch Max, Robotikingenieur von der ETH Zürich. Unser erstes gemeinsames Projekt waren maßgefertigte, 3D-gedruckte CPAP-Masken aus Smartphone-Gesichtsscans, in schnellen Iterationen gebaut. Dann haben wir auf Laufen umgeschwenkt, und daraus wurde Eigen: ein 3D-Fußscan und ein kurzes Laufvideo, abgeglichen mit den Schuhen, die zum Laufstil passen. Ich kümmere mich um das Produkt und die Biomechanik. [eigen-running.com](${links.eigen})`,
         ),
         { kind: 'photo', photo: photos.nightRun },
       ],
@@ -207,7 +222,7 @@ export const page = {
                 en: 'Sold landscape prints from Austria and Lofoten; now mostly short films of trips with friends.',
                 de: 'Landschaftsdrucke aus Österreich und von den Lofoten verkauft; heute vor allem kurze Filme von Reisen mit Freunden.',
               },
-              photo: photos.summer,
+              photo: photos.lofotenCabins,
             },
           ],
         },
@@ -227,22 +242,35 @@ export const page = {
     top: { en: 'Back to top', de: 'Nach oben' },
   },
   /**
-   * Words only the interactive version (/v2/) shows: its hints and the labels on its props (the
-   * hospital wheel, the software windows, the phone). The story itself comes from `chapters`.
+   * Words and photos only the interactive version (/v2/) shows: its hint, the Polaroid captions,
+   * the prints for each personal item, and the labels in its drawings. The story itself comes
+   * from `chapters`.
    */
   experience: {
     title: { en: 'Till Findl, interactive', de: 'Till Findl, interaktiv' },
     scroll: { en: 'Scroll', de: 'Scrollen' },
-    drag: { en: 'Drag', de: 'Ziehen' },
-    /** Written by hand on the bottom strip of the Polaroids, keyed by photo file. */
+    /**
+     * Written by hand on the bottom strip of the Polaroids, keyed by photo file. Only places we
+     * are sure of; a print without an entry stays blank.
+     */
     captions: {
       'ucl-medical-school.jpg': { en: 'Medical school', de: 'Medical School' },
-      'ucl-portico.jpg': { en: 'UCL', de: 'UCL' },
+      'ucl-portico.jpg': { en: 'Graduation ’26', de: 'Abschluss ’26' },
       'theatre-kl.jpg': { en: 'Kuala Lumpur', de: 'Kuala Lumpur' },
       'night-run.jpg': { en: 'London', de: 'London' },
+      'lofoten-cabins.jpg': { en: 'Lofoten', de: 'Lofoten' },
+      'lofoten-aurora.jpg': { en: 'Lofoten', de: 'Lofoten' },
+      'hallstatt.jpg': { en: 'Hallstatt', de: 'Hallstatt' },
+      'dolomites.jpg': { en: 'Dolomites', de: 'Dolomiten' },
+      'nashville.jpg': { en: 'Nashville', de: 'Nashville' },
     } as Record<string, L>,
-    next: { en: 'Next', de: 'Weiter' },
-    rotations: ['University College Hospital', 'Royal Free', 'Great Ormond Street', 'Queen Square', 'Moorfields', 'Kuala Lumpur'],
+    /** The prints for each personal item, in the order of the items in `chapters`. */
+    gallery: [
+      [photos.swim, photos.run, photos.bike],
+      [photos.skiPowder, photos.skiPodium, photos.ski, photos.skiDuo, photos.skiSelfie],
+      [photos.hockey, photos.sister],
+      [photos.lofotenCabins, photos.lofotenAurora, photos.hallstatt, photos.defender, photos.reindeer, photos.dolomites, photos.nashville, photos.summer],
+    ] as Photo[][],
     windows: [
       { en: 'Imaging', de: 'Bildgebung' },
       { en: 'Notes', de: 'Notizen' },
@@ -302,12 +330,13 @@ export const facts = {
       country: 'CH',
       since: 2025,
       about:
-        'Recommends running shoes from a phone video and a 3D scan of the feet, grounded in more than 200 peer-reviewed studies. Grew out of a custom CPAP mask prototype using the iPhone Face ID camera. Till developed the core gait and foot biomechanics. Built with engineers at ETH Zurich; backed by an ETH Zurich jFund grant.',
+        'Software combining 2D human pose estimation and 3D point-cloud foot scans to infer gait and foot biomechanics from smartphone data. First application: a personalised iOS running shoe recommendation platform, grounded in evidence from over 200 peer-reviewed studies, to reduce footwear-related injury risk, improve fit and minimise returns. Till developed the core biomechanical algorithms that infer three-dimensional gait mechanics from 2D data (ViTPose), including perspective correction, detection of ground contact and gait phases, and sub-frame kinematic interpolation. Built with engineers at ETH Zurich; backed by an ETH Zurich jFund grant.',
     },
   ],
   background: [
-    'MBBS Medicine, University College London, 2020 to 2026. Clinical placements at University College Hospital and the Royal Free, with specialist time at Queen Square (neurology), Great Ormond Street (paediatrics) and Moorfields (ophthalmology).',
+    'MBBS Medicine, University College London, September 2020 to July 2026: a six-year degree with three years of pre-clinical training and three years of full-time clinical rotations across all core specialties. Clinical placements at University College Hospital and the Royal Free, with specialist time at Queen Square (neurology), Great Ormond Street (paediatrics) and Moorfields (ophthalmology).',
     'Orthopaedics elective in Kuala Lumpur, spring and summer 2026, after four days at two eye hospitals in Bangalore.',
+    'Custom CPAP mask project, London, 2024 to 2025, as project leader: custom 3D-printed CPAP masks from smartphone 3D facial scans, using an automated scan-to-mask shaping pipeline. The precursor to Eigen.',
     'Intercalated BSc Medical Sciences with Global Health, UCL, 2022 to 2023. Thesis: Economic evaluations of diabetic retinopathy screening models in the era of digital medicine and AI, a scoping review.',
     'Civil service as a paramedic with the Red Cross in Vienna, 2019 to 2020.',
     'International Baccalaureate, Vienna International School, 2019.',

@@ -1,0 +1,277 @@
+---
+// The wards and Bounceback scenes as one ballpoint drawing: a doctor and a patient joined by a
+// glowing pen line, software windows that pile up around the doctor at different depths, and the
+// phone they are swept into, whose screens are pen sketches too. Every stroke has pathLength 1, so
+// scripts/experience.ts can draw it on with stroke-dashoffset. All coordinates are in the
+// 560 × 520 viewBox.
+import { page, type Lang } from '../../content/profile';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const x = page.experience;
+const up = (s: string) => s.toUpperCase();
+
+/** Software windows: position, size, depth (nearer is larger and darker) and kind. */
+const WINDOWS = [
+  { x: 24, y: 58, w: 120, h: 78, d: 1.0, k: 0 },
+  { x: 214, y: 36, w: 128, h: 70, d: 0.8, k: 1 },
+  { x: 52, y: 252, w: 110, h: 72, d: 1.15, k: 2 },
+  { x: 250, y: 150, w: 100, h: 66, d: 0.7, k: 0 },
+  { x: 8, y: 166, w: 96, h: 64, d: 0.65, k: 1 },
+  { x: 112, y: 78, w: 112, h: 70, d: 1.2, k: 1 },
+  { x: 318, y: 62, w: 92, h: 60, d: 0.6, k: 2 },
+  { x: 16, y: 352, w: 120, h: 70, d: 0.9, k: 0 },
+  { x: 232, y: 210, w: 104, h: 68, d: 1.05, k: 2 },
+  { x: 124, y: 14, w: 100, h: 62, d: 0.75, k: 2 },
+];
+const windows = WINDOWS.map((w) => ({
+  ...w,
+  label: up(x.windows[w.k][lang]),
+  opacity: (0.45 + 0.55 * Math.min(1, Math.max(0, (w.d - 0.6) / 0.6))).toFixed(2),
+  cx: w.x + (w.w * w.d) / 2,
+  cy: w.y + (w.h * w.d) / 2,
+}));
+
+/** Breaks text into lines of at most `max` characters, for the small writing on the phone. */
+function wrap(text: string, max: number) {
+  const lines: string[] = [];
+  let line = '';
+  for (const word of up(text).split(' ')) {
+    if (line && (line + ' ' + word).length > max) {
+      lines.push(line);
+      line = word;
+    } else line = line ? `${line} ${word}` : word;
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+const ph = x.phone;
+const feedback = wrap(ph.feedback[lang], 18);
+const noteLines = ph.noteLines.map((l) => wrap(l[lang], 22));
+/** Where each row of the note sits: rows 16 apart, with a little more space between entries. */
+let noteRow = 0;
+const noteY = (entry: number) => 180 + noteRow++ * 16 + entry * 10;
+---
+
+<svg class="drawing" viewBox="0 0 560 520" aria-hidden="true">
+  <defs>
+    <filter id="pen-wobble" x="-5%" y="-5%" width="110%" height="110%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7"></feTurbulence>
+      <feDisplacementMap in="SourceGraphic" scale="2.6"></feDisplacementMap>
+    </filter>
+    <filter id="pen-glow" x="-20%" y="-60%" width="140%" height="220%">
+      <feGaussianBlur stdDeviation="5"></feGaussianBlur>
+    </filter>
+  </defs>
+
+  <!-- The connection, behind everything: a soft glow and the pen line itself. -->
+  <g class="link">
+    <path class="link-glow" pathLength="1" d="M236 318 C268 296 302 296 334 318"></path>
+    <path class="ink link-line" pathLength="1" d="M236 318 C268 296 302 296 334 318"></path>
+  </g>
+
+  <g class="doctor ink">
+    <circle class="draw" pathLength="1" cx="180" cy="196" r="25"></circle>
+    <path class="draw" pathLength="1" d="M157 190 Q158 166 180 164 Q203 164 205 188 Q197 176 182 178 Q167 178 157 190"></path>
+    <path class="draw" pathLength="1" d="M173 221 L172 236 M187 221 L188 236"></path>
+    <path class="draw paper" pathLength="1" d="M140 250 Q180 230 220 250 L234 392 L126 392 Z"></path>
+    <path class="draw" pathLength="1" d="M167 238 L180 278 L193 238"></path>
+    <path class="draw" pathLength="1" d="M180 278 L180 392"></path>
+    <path class="draw" pathLength="1" d="M165 242 Q157 292 180 302 Q203 292 195 242 M180 302 L180 316"></path>
+    <circle class="draw" pathLength="1" cx="180" cy="322" r="6"></circle>
+    <path class="draw" pathLength="1" d="M197 336 h22"></path>
+    <path class="draw" pathLength="1" d="M142 256 Q124 302 130 356 M218 256 Q236 302 232 356"></path>
+    <path class="draw" pathLength="1" d="M158 392 L154 470 L140 472 M202 392 L206 470 L220 472"></path>
+  </g>
+
+  <g class="patient">
+    <g class="ink">
+      <circle class="draw" pathLength="1" cx="380" cy="206" r="23"></circle>
+      <path class="draw" pathLength="1" d="M358 200 Q361 182 380 181 Q399 182 402 199"></path>
+      <path class="draw paper" pathLength="1" d="M346 254 Q380 238 414 254 L420 370 L340 370 Z"></path>
+      <path class="draw" pathLength="1" d="M346 256 L331 292 L336 352 M414 256 L429 292 L424 352"></path>
+      <path class="draw" pathLength="1" d="M360 370 L356 466 L342 468 M400 370 L404 466 L418 468"></path>
+      <path class="draw" pathLength="1" d="M394 404 h17 v18 h-17 Z"></path>
+    </g>
+  </g>
+
+  {
+    windows.map((w) => (
+      <g class="win" data-cx={w.cx} data-cy={w.cy} data-d={w.d} style={`opacity:${w.opacity}`}>
+        <g transform={`translate(${w.x} ${w.y}) scale(${w.d})`}>
+          <g class="ink">
+            <rect class="draw paper" pathLength="1" x="0" y="0" width={w.w} height={w.h} rx="5"></rect>
+            <path class="draw" pathLength="1" d={`M0 18 H${w.w}`}></path>
+            <circle class="draw" pathLength="1" cx="8" cy="9" r="2.2"></circle>
+            <circle class="draw" pathLength="1" cx="15" cy="9" r="2.2"></circle>
+            <circle class="draw" pathLength="1" cx="22" cy="9" r="2.2"></circle>
+            {w.k === 0 && (
+              <>
+                <circle class="draw" pathLength="1" cx={w.w / 2} cy={18 + (w.h - 18) / 2} r={(w.h - 18) * 0.32}></circle>
+                <path class="draw" pathLength="1" d={`M${w.w / 2 - 8} ${18 + (w.h - 18) / 2 - 4} q8 -6 16 0 M${w.w / 2 - 6} ${18 + (w.h - 18) / 2 + 5} q6 4 12 0`}></path>
+              </>
+            )}
+            {w.k === 1 && (
+              <path class="draw" pathLength="1" d={`M10 30 H${w.w - 18} M10 42 H${w.w - 34} M10 54 H${w.w - 24}`}></path>
+            )}
+            {w.k === 2 && <path class="draw" pathLength="1" d={`M30 32 H${w.w - 14} M30 46 H${w.w - 30} M10 30 l6 0 m-6 0 v14 m0 -7 h5 q4 0 4 -3.5 q0 -3.5 -4 -3.5 m-1 7 l6 7`}></path>}
+          </g>
+          <text class="label" x="30" y="12.5">{w.label}</text>
+        </g>
+      </g>
+    ))
+  }
+
+  <!-- The phone the windows are swept into, with its screens drawn in pen. -->
+  <g class="phone">
+    <g class="ink">
+      <rect class="draw paper" pathLength="1" x="205" y="104" width="150" height="304" rx="24"></rect>
+      <rect class="draw" pathLength="1" x="258" y="113" width="44" height="11" rx="5.5"></rect>
+      <path class="draw" pathLength="1" d="M266 397 h28"></path>
+    </g>
+
+    <g class="ph ph1">
+      <text class="t-title" x="222" y="150">{up(ph.programme[lang])}</text>
+      {
+        ph.exercises.map((e, i) => (
+          <g transform={`translate(0 ${i * 44})`}>
+            <g class="ink">
+              <rect pathLength="1" x="222" y="166" width="36" height="28" rx="4"></rect>
+              <path pathLength="1" d="M236 173 l10 7 l-10 7 Z"></path>
+            </g>
+            <text class="t-row" x="266" y="178">{up(e[lang])}</text>
+            <text class="t-small" x="266" y="191">{ph.sets[lang]}</text>
+          </g>
+        ))
+      }
+    </g>
+
+    <g class="ph ph2">
+      <g class="ink">
+        <rect pathLength="1" x="220" y="134" width="120" height="216" rx="8"></rect>
+        <g class="squat">
+          <circle pathLength="1" cx="280" cy="214" r="10"></circle>
+          <path pathLength="1" d="M280 224 L276 268 M278 236 L300 250 M278 236 L298 256 M276 268 L262 288 L268 318 M276 268 L292 290 L286 318"></path>
+        </g>
+      </g>
+      <circle class="rec" cx="232" cy="149" r="3.2"></circle>
+      <text class="t-small" x="240" y="152">REC</text>
+      <text class="t-row center" x="280" y="372">{up(ph.recording[lang])}</text>
+    </g>
+
+    <g class="ph ph3">
+      <g class="ink">
+        <rect pathLength="1" x="220" y="134" width="120" height="82" rx="8"></rect>
+        <path pathLength="1" d="M280 160 l-3 24 M279 170 l14 8 M277 184 l-8 14 M277 184 l10 14"></path>
+        <circle pathLength="1" cx="281" cy="153" r="6"></circle>
+        <path pathLength="1" d={`M232 252 h100 q8 0 8 8 v${feedback.length * 13 + 8} q0 8 -8 8 h-84 l-12 12 v-12 h-4 q-8 0 -8 -8 v-${feedback.length * 13 + 8} q0 -8 8 -8 Z`}></path>
+      </g>
+      <text class="t-small" x="226" y="242">{up(ph.physio[lang])}</text>
+      {
+        feedback.map((l, i) => (
+          <text class="t-row" x="234" y={272 + i * 13}>
+            {l}
+          </text>
+        ))
+      }
+    </g>
+
+    <g class="ph ph4">
+      <text class="t-title" x="222" y="150">{up(ph.note[lang])}</text>
+      {
+        noteLines.map((rows, entry) => (
+          <g class="note-line">
+            {rows.map((r) => (
+              <text class="t-row" x="222" y={noteY(entry)}>
+                {r}
+              </text>
+            ))}
+          </g>
+        ))
+      }
+    </g>
+
+    <g class="ph ph5">
+      <g class="ink">
+        <circle pathLength="1" cx="280" cy="226" r="34"></circle>
+        <path pathLength="1" d="M264 228 l11 11 l22 -24"></path>
+      </g>
+      <text class="t-big center" x="280" y="296">€80</text>
+      <text class="t-row center" x="280" y="318">{up(ph.paid[lang])}</text>
+    </g>
+  </g>
+</svg>
+
+<style>
+  .drawing {
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+
+  .ink,
+  .ink :global(*) {
+    fill: none;
+    stroke: var(--pen);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .ink {
+    filter: url(#pen-wobble);
+  }
+
+  /* Shapes filled with paper, so what lies behind them is hidden, as on a page. */
+  .ink :global(.paper) {
+    fill: var(--bg);
+  }
+
+  .link-glow {
+    fill: none;
+    stroke: var(--pen);
+    stroke-width: 9;
+    stroke-linecap: round;
+    opacity: 0.45;
+    filter: url(#pen-glow);
+  }
+
+  text {
+    fill: var(--pen);
+    font-family: var(--pen-font);
+    letter-spacing: 0.02em;
+  }
+
+  .label {
+    font-size: 9px;
+  }
+
+  .t-title {
+    font-size: 11px;
+  }
+
+  .t-row {
+    font-size: 8.6px;
+  }
+
+  .t-small {
+    font-size: 7.6px;
+  }
+
+  .t-big {
+    font-size: 20px;
+  }
+
+  .center {
+    text-anchor: middle;
+  }
+
+  .rec {
+    fill: var(--pen);
+  }
+</style>

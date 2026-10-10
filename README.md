@@ -16,11 +16,15 @@ same file.
 
 `/v2/` (and `/de/v2/`) is a second, interactive version of the same page to compare against: the
 same words and photos staged as full-screen scenes that play as you scroll, on white paper with
-ballpoint-blue handwriting (Mynerve). Every photo is a realistic Polaroid 600 print
-(`components/v2/Polaroid.astro`) that comes out of the camera or is laid down dark and develops;
-handwriting is written letter by letter. Smooth scrolling with Lenis, scenes pinned and scrubbed
-with GSAP ScrollTrigger, a dot morph on a canvas, a stack of Polaroids to throw through. It is kept out of search results (`noindex`, not in the sitemap). With
-reduced motion turned on, or without JavaScript, it reads as a plain page.
+everything written in ballpoint blue (Mynerve, in capitals), apart from the name and the one
+button. Every photo is a realistic Polaroid 600 print (`components/v2/Polaroid.astro`) that comes
+out of a pen-sketched camera or is laid down dark and develops. The wards and Bounceback are one pen
+drawing (`components/v2/WardsDrawing.astro`): a doctor swamped by software windows, a patient who
+walks off, and the phone the windows are swept into. Eigen is a dot morph on a canvas, and Personal
+a row of prints that moves sideways. The opening plays on CSS alone, so it starts before the
+script arrives; after that, smooth scrolling with Lenis, scenes pinned and scrubbed with GSAP
+ScrollTrigger. It is kept out of search results (`noindex`, not in the sitemap). With reduced
+motion turned on, or without JavaScript, it reads as a plain page.
 
 ## Working on it
 
@@ -50,7 +54,8 @@ src/
   pages/llms.txt.ts     "/llms.txt": a plain summary for AI assistants, built from the profile
   pages/404.astro       The not-found page
   components/           Page (intro and contact), Chapter (one section's label, text and photos), Footer
-  components/v2/        Experience (the interactive version's scenes, pages/v2 and pages/de/v2), Polaroid
+  components/v2/        Experience (the interactive version's scenes, pages/v2 and pages/de/v2), Polaroid,
+                        WardsDrawing (the pen drawing), Letters (text split into letters at build time)
   scripts/              experience.ts (the interactive version's motion), dots.ts (its dot morph)
   layouts/Base.astro    The HTML shell: <head>, language alternates, social card, JSON-LD
   styles/global.css     Design tokens (colour, type, spacing) and base styles

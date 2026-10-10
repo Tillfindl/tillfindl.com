@@ -20,9 +20,10 @@ const PAGE = pageFlag >= 0 ? args.splice(pageFlag, 2)[1] : '';
 const out = resolve(args[0] ?? join(DIST, '..', PAGE ? `preview-${PAGE}` : 'preview'));
 /**
  * The photo width inlined for each <img>: sharp on a phone, small enough to keep the file light.
- * The interactive version shows photos full screen, so it carries bigger ones.
+ * The interactive version only shows photos as Polaroid prints, never wider than about 20rem, so it
+ * carries smaller ones and the file opens faster.
  */
-const PHOTO_WIDTH = PAGE ? 1600 : 1080;
+const PHOTO_WIDTH = PAGE ? 800 : 1080;
 
 const mime = { woff2: 'font/woff2', webp: 'image/webp', jpg: 'image/jpeg', png: 'image/png', svg: 'image/svg+xml' };
 const dataUri = (path) => `data:${mime[path.split('.').pop()]};base64,${readFileSync(join(DIST, path)).toString('base64')}`;

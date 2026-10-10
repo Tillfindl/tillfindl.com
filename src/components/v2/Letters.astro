@@ -1,0 +1,15 @@
+---
+// Handwriting split into letters at build time, so it can be written one letter at a time
+// without waiting for a script. Each letter carries its index (--i) for a CSS delay; words stay
+// whole so lines only break between them. The template stays on one line on purpose: any
+// whitespace between the spans would show as gaps between letters.
+interface Props {
+  text: string;
+}
+
+const { text } = Astro.props;
+let i = 0;
+const words = text.split(' ').map((w) => [...w].map((c) => ({ c, i: i++ })));
+---
+
+{words.map((w, n) => <>{n > 0 && ' '}<span class="wd">{w.map(({ c, i }) => <span class="ch" style={`--i:${i}`}>{c}</span>)}</span></>)}

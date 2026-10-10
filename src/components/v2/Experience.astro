@@ -1,13 +1,17 @@
 ---
 // The interactive version (/v2/ and /de/v2/): the same words and photos as the main page, staged as
 // full-screen scenes that play as you scroll (src/scripts/experience.ts drives them). The look is
-// white paper, black type and ballpoint blue handwriting, with every photo a real Polaroid that
-// develops as it arrives. Without JavaScript, or with reduced motion, it reads as a plain page: the
-// staged layout only applies under `.js` and `prefers-reduced-motion: no-preference`.
+// white paper with everything written in ballpoint blue, apart from the name and the one button;
+// every photo is a real Polaroid that develops as it arrives, and the wards and Bounceback are a
+// pen drawing (WardsDrawing). The hero plays on CSS alone, so it starts before the script loads.
+// Without JavaScript, or with reduced motion, it reads as a plain page: the staged layout only
+// applies under `.js` and `prefers-reduced-motion: no-preference`.
 import '@fontsource/mynerve/latin-400.css';
 import { getImage } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import Polaroid from './Polaroid.astro';
+import Letters from './Letters.astro';
+import WardsDrawing from './WardsDrawing.astro';
 import { links, meta, page, person, SITE_URL, type Lang, type Photo } from '../../content/profile';
 import { photo } from '../../content/images';
 import { rich } from '../../content/rich';
@@ -34,7 +38,7 @@ const photosIn = (id: string): Photo[] =>
 const sentences = (text: string) => text.split(/(?<=[.!?])\s+(?=[A-ZÄÖÜ[])/);
 const caption = (p: Photo) => x.captions[p.file]?.[lang];
 
-// The top line, split around the portrait like a note written either side of a photo.
+// The top line, written either side of the portrait like a note beside a photo.
 const [introA, ...introRest] = sentences(page.intro[lang]);
 const introB = introRest.join(' ');
 
@@ -51,13 +55,6 @@ const items = personal.blocks.flatMap((b) => (b.kind === 'items' ? b.items : [])
 const wardsSentences = sentences(wards);
 const wardsEnd = wardsSentences.pop() ?? '';
 const wardsMain = wardsSentences.join(' ');
-
-/** Where the software windows land as they pile up: left % and top % of the screen. */
-const WINDOW_SPOTS = [
-  [6, 12], [62, 8], [34, 58], [72, 54], [14, 62], [48, 18], [80, 26], [24, 30], [56, 70],
-];
-const windows = WINDOW_SPOTS.map(([left, top], i) => ({ left, top, kind: i % 3, label: x.windows[i % 3][lang] }));
-
 const words = (text: string) => text.split(' ');
 
 /** Square crops for the Polaroids, so the person stays in frame. */
@@ -69,8 +66,18 @@ const CROP: Record<string, string> = {
   'night-run.jpg': '50% 40%',
   'ironman-swim.jpg': '45% 40%',
   'ski-gate.jpg': '72% 50%',
+  'ski-powder.jpg': '50% 72%',
+  'ski-podium.jpg': '50% 30%',
+  'ski-duo.jpg': '55% 60%',
+  'ski-summit-selfie.jpg': '50% 40%',
+  'bike-sunset.jpg': '50% 60%',
   'hockey-fisheye.jpg': '50% 50%',
   'summer-austria.jpg': '50% 60%',
+  'lofoten-cabins.jpg': '50% 45%',
+  'defender-river.jpg': '45% 50%',
+  'dolomites.jpg': '50% 62%',
+  'nashville.jpg': '45% 55%',
+  'hallstatt.jpg': '50% 50%',
 };
 ---
 
@@ -79,55 +86,58 @@ const CROP: Record<string, string> = {
   <div class="xp">
     <div class="xp-bg" aria-hidden="true"></div>
     <div class="progress" aria-hidden="true"></div>
-    <div class="cursor" aria-hidden="true"><span>{x.drag[lang]}</span></div>
 
     <header class="hud">
-      <a href="#top" class="hud-name" data-cursor>{person.name}</a>
+      <a href="#top" class="hud-name">{person.name}</a>
       <nav aria-label={lang === 'en' ? 'Language' : 'Sprache'}>
-        <a href="/v2/" hreflang="en" lang="en" aria-current={lang === 'en' ? 'page' : undefined} data-cursor>EN</a>
-        <a href="/de/v2/" hreflang="de" lang="de" aria-current={lang === 'de' ? 'page' : undefined} data-cursor>DE</a>
+        <a href="/v2/" hreflang="en" lang="en" aria-current={lang === 'en' ? 'page' : undefined}>EN</a>
+        <a href="/de/v2/" hreflang="de" lang="de" aria-current={lang === 'de' ? 'page' : undefined}>DE</a>
       </nav>
     </header>
     <p class="scene-name" aria-hidden="true"></p>
 
     <main>
-      <!-- 1. Opening: a Polaroid of Till comes out of the slot and develops while the note is written around it. -->
-      <section class="scene opening" id="top" data-scene="">
+      <!-- 1. Opening: the portrait comes out of a camera and develops while the note is written beside it. -->
+      <section class="scene opening" id="top" data-scene="" style={`--na: ${[...introA].length}`}>
         <div class="stage">
           <div class="o-head"><h1 class="logo">{person.name}</h1></div>
-          <div class="o-pen o-pen-a"><p class="pen">{introA}</p></div>
+          <div class="o-pen o-pen-a"><p><Letters text={introA} /></p></div>
           <div class="o-photo">
-            <span class="slot" aria-hidden="true"></span>
+            <svg class="camera" viewBox="0 0 300 190" aria-hidden="true">
+              <rect pathLength="1" x="6" y="6" width="288" height="178" rx="24"></rect>
+              <path pathLength="1" d="M6 62 H98 M202 62 H294"></path>
+              <rect pathLength="1" x="30" y="24" width="46" height="28" rx="6"></rect>
+              <rect pathLength="1" x="222" y="22" width="50" height="26" rx="4"></rect>
+              <path pathLength="1" d="M230 30 h34 M230 37 h34 M230 44 h34"></path>
+              <circle pathLength="1" cx="150" cy="96" r="50"></circle>
+              <circle pathLength="1" cx="150" cy="96" r="33"></circle>
+              <circle pathLength="1" cx="150" cy="96" r="13"></circle>
+              <circle pathLength="1" cx="58" cy="116" r="10"></circle>
+              <rect pathLength="1" x="34" y="166" width="232" height="12" rx="6"></rect>
+            </svg>
             <div class="eject">
-              <Polaroid photo={page.portrait} lang={lang} position={CROP[page.portrait.file]} sizes="(min-width: 52rem) 21rem, 56vw" eager />
+              <div class="print">
+                <Polaroid photo={page.portrait} lang={lang} position={CROP[page.portrait.file]} sizes="(min-width: 52rem) 19rem, 52vw" eager film="auto" />
+              </div>
             </div>
           </div>
-          <div class="o-pen o-pen-b"><p class="pen">{introB}</p></div>
-          <div class="o-foot">
-            <div class="buttons">
-              <a class="button primary" href={links.bounceback} rel="noopener" data-cursor>Bounceback</a>
-              <a class="button" href={links.eigen} rel="noopener" data-cursor>Eigen</a>
-            </div>
-            <p class="hint" aria-hidden="true"><span></span>{x.scroll[lang]}</p>
-          </div>
+          <div class="o-pen o-pen-b"><p><Letters text={introB} /></p></div>
+          <p class="hint" aria-hidden="true"><span>{x.scroll[lang]}</span></p>
         </div>
       </section>
 
-      <!-- 2. Medicine: the rotations turn past on a wheel, then three Polaroids are laid down and develop. -->
+      <!-- 2. Medicine: the paragraph, and three prints laid down that develop as you scroll. -->
       <section class="scene medicine" data-scene={chapter('medicine').title[lang]}>
         <div class="stage">
           <div class="med-text">
             <h2 class="label">{chapter('medicine').title[lang]}</h2>
             <p class="lead" set:html={rich(medLead)} />
           </div>
-          <div class="wheel" aria-hidden="true">
-            <ul>{x.rotations.map((r) => <li>{r}</li>)}</ul>
-          </div>
           <div class="med-photos">
             {
               [gradA, gradB, theatre].map((p, i) => (
                 <div class:list={['mp', `mp${i}`]}>
-                  <Polaroid photo={p} lang={lang} caption={caption(p)} position={CROP[p.file]} sizes="(min-width: 52rem) 19rem, 44vw" />
+                  <Polaroid photo={p} lang={lang} caption={caption(p)} position={CROP[p.file]} sizes="(min-width: 52rem) 17rem, 44vw" film="latent" />
                 </div>
               ))
             }
@@ -135,107 +145,46 @@ const CROP: Record<string, string> = {
         </div>
       </section>
 
-      <!-- 3 and 4. The wards: software windows pile up and fold into one phone, and Bounceback plays on it. -->
+      <!-- 3 and 4. The wards and Bounceback: one pen drawing, with the words beside it. -->
       <section class="scene care" data-scene={chapter('bounceback').title[lang]}>
         <div class="stage">
-          <div class="windows" aria-hidden="true">
-            {
-              windows.map((w) => (
-                <div class:list={['win', `k${w.kind}`]} style={`left:${w.left}%;top:${w.top}%`}>
-                  <div class="bar"><i></i><i></i><i></i><b>{w.label}</b></div>
-                  <div class="body">
-                    {w.kind === 0 && <span class="scan"></span>}
-                    <span style="width:86%"></span>
-                    <span style="width:64%"></span>
-                    {w.kind !== 0 && <span style="width:92%"></span>}
-                    <span style="width:48%"></span>
-                  </div>
-                </div>
-              ))
-            }
-          </div>
-          <div class="wards-text">
-            <p class="reading">
-              <span class="main">{words(wardsMain).map((w) => <span class="word">{w} </span>)}</span>
-              <span class="end">{words(wardsEnd).map((w) => <span class="word">{w} </span>)}</span>
-            </p>
-          </div>
-
-          <div class="phone" aria-hidden="true">
-            <div class="screen">
-              <span class="island"></span>
-              <div class="ph ph1">
-                <p class="ph-title">{x.phone.programme[lang]}</p>
-                {
-                  x.phone.exercises.map((e) => (
-                    <div class="ex">
-                      <span class="thumb"><i></i></span>
-                      <span><b>{e[lang]}</b><small>{x.phone.sets[lang]}</small></span>
-                    </div>
-                  ))
-                }
-              </div>
-              <div class="ph ph2">
-                <div class="video">
-                  <svg viewBox="0 0 100 120" class="figure">
-                    <g class="squat">
-                      <circle cx="50" cy="24" r="8"></circle>
-                      <path d="M50 32 L50 62 M50 40 L34 52 M50 40 L66 52 M50 62 L38 84 L40 104 M50 62 L62 84 L60 104"></path>
-                    </g>
-                  </svg>
-                  <span class="rec"><i></i>REC</span>
-                </div>
-                <p class="ph-sub">{x.phone.recording[lang]}</p>
-              </div>
-              <div class="ph ph3">
-                <div class="video small"></div>
-                <div class="bubble">
-                  <small>{x.phone.physio[lang]}</small>
-                  <p>{x.phone.feedback[lang]}</p>
-                </div>
-              </div>
-              <div class="ph ph4">
-                <p class="ph-title">{x.phone.note[lang]}</p>
-                {x.phone.noteLines.map((l) => <p class="note-line"><span>{l[lang]}</span></p>)}
-                <span class="caret"></span>
-              </div>
-              <div class="ph ph5">
-                <div class="tap">
-                  <i></i><i></i><i></i>
-                  <svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
-                </div>
-                <p class="amount">€80</p>
-                <p class="ph-sub">{x.phone.paid[lang]}</p>
+          <div class="care-text">
+            <div class="wards-text">
+              <p class="reading">
+                <span class="main">{words(wardsMain).map((w) => <span class="word">{w} </span>)}</span>
+                <span class="end">{words(wardsEnd).map((w) => <span class="word">{w} </span>)}</span>
+              </p>
+            </div>
+            <div class="bb-text">
+              <h2 class="label">{chapter('bounceback').title[lang]}</h2>
+              <div class="bb-groups">
+                <p class="bb1" set:html={rich(bb[0])} />
+                <p class="bb2" set:html={rich(bb.slice(1).join(' '))} />
               </div>
             </div>
           </div>
-
-          <div class="bb-text">
-            <h2 class="label">{chapter('bounceback').title[lang]}</h2>
-            <div class="bb-groups">
-              <p class="bb1" set:html={rich(bb[0])} />
-              <p class="bb2" set:html={rich(bb.slice(1).join(' '))} />
-            </div>
-          </div>
+          <div class="draw-wrap"><WardsDrawing lang={lang} /></div>
         </div>
       </section>
 
-      <!-- 5. Eigen: the run club Polaroid with a lap drawn round it, then dots form a face with a mask and stream into a footprint. -->
+      <!-- 5. Eigen: the run club print with a lap drawn round it, then dots form a face with a mask and stream into a footprint. -->
       <section class="scene eigen" data-scene={chapter('eigen').title[lang]}>
         <div class="stage">
           <div class="run">
-            <svg class="route" viewBox="0 0 500 486" aria-hidden="true">
-              <filter id="wobble">
-                <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="4"></feTurbulence>
-                <feDisplacementMap in="SourceGraphic" scale="7"></feDisplacementMap>
-              </filter>
-              <path
-                class="route-path"
-                d="M74 372 C18 262 40 118 152 58 C262 2 424 30 472 150 C522 272 452 424 322 458 C200 490 78 452 50 330 C40 288 48 250 66 218"
-              ></path>
-              <circle class="runner" r="7" cx="74" cy="372"></circle>
-            </svg>
-            <Polaroid photo={nightRun} lang={lang} caption={caption(nightRun)} position={CROP[nightRun.file]} sizes="(min-width: 52rem) 22rem, 56vw" />
+            <div class="run-in">
+              <svg class="route" viewBox="0 0 500 486" aria-hidden="true">
+                <filter id="wobble">
+                  <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="4"></feTurbulence>
+                  <feDisplacementMap in="SourceGraphic" scale="7"></feDisplacementMap>
+                </filter>
+                <path
+                  class="route-path"
+                  d="M74 372 C18 262 40 118 152 58 C262 2 424 30 472 150 C522 272 452 424 322 458 C200 490 78 452 50 330 C40 288 48 250 66 218"
+                ></path>
+                <circle class="runner" r="7" cx="74" cy="372"></circle>
+              </svg>
+              <Polaroid photo={nightRun} lang={lang} caption={caption(nightRun)} position={CROP[nightRun.file]} sizes="(min-width: 52rem) 20rem, 50vw" film="latent" />
+            </div>
           </div>
           <canvas class="dots" aria-hidden="true"></canvas>
           <div class="eigen-text">
@@ -249,32 +198,32 @@ const CROP: Record<string, string> = {
         </div>
       </section>
 
-      <!-- 6. Personal: a stack of Polaroids to throw through; each one develops when it reaches the top. -->
+      <!-- 6. Personal: a row of prints that moves sideways as you scroll; each develops as it arrives. -->
       <section class="scene personal" data-scene={personal.title[lang]}>
-        <div class="deck">
-          <div class="deck-intro">
-            <h2 class="label">{personal.title[lang]}</h2>
-            <p class="lead">{personalLead}</p>
-          </div>
-          {
-            items.map((it, i) => (
-              <div class="card" style={`--row:${2 * Math.floor(i / 2) + 2};--col:${(i % 2) + 1}`} data-cursor="drag">
-                <Polaroid photo={it.photo} lang={lang} caption={it.title[lang]} position={CROP[it.photo.file]} sizes="(min-width: 52rem) 24rem, 72vw" />
-              </div>
-            ))
-          }
-          {
-            items.map((it, i) => (
-              <div class="cap" style={`--row:${2 * Math.floor(i / 2) + 3};--col:${(i % 2) + 1}`}>
-                <h3 class="visually-hidden">{it.title[lang]}</h3>
-                <p set:html={rich(it.text[lang])} />
-                <p class="detail" set:html={rich(it.detail[lang])} />
-              </div>
-            ))
-          }
-          <div class="deck-controls">
-            <button type="button" class="button next" data-cursor>{x.next[lang]}</button>
-            <span class="count"><span class="now">1</span> / {items.length}</span>
+        <div class="row-stage">
+          <div class="track">
+            <div class="p-intro">
+              <h2 class="label">{personal.title[lang]}</h2>
+              <p class="lead">{personalLead}</p>
+            </div>
+            {
+              items.map((it, i) => (
+                <div class="group">
+                  <div class="g-text">
+                    <h3>{it.title[lang]}</h3>
+                    <p set:html={rich(it.text[lang])} />
+                    <p class="detail" set:html={rich(it.detail[lang])} />
+                  </div>
+                  <div class="g-prints">
+                    {(x.gallery[i] ?? []).map((p) => (
+                      <div class="gp">
+                        <Polaroid photo={p} lang={lang} caption={caption(p)} position={CROP[p.file]} sizes="(min-width: 52rem) 19rem, 62vw" film="latent" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))
+            }
           </div>
         </div>
       </section>
@@ -283,25 +232,27 @@ const CROP: Record<string, string> = {
       <section class="scene ending" data-scene="">
         <div class="end-inner">
           <h2 class="label">{page.contact.title[lang]}</h2>
-          <p class="contact-line pen">{page.contact.text[lang]}</p>
+          <p class="contact-line"><Letters text={page.contact.text[lang]} /></p>
           <div class="end-actions">
             {
               links.linkedin ? (
-                <a class="button primary" href={links.linkedin} rel="me noopener" data-cursor>
+                <a class="button primary" href={links.linkedin} rel="me noopener">
                   LinkedIn
                 </a>
               ) : (
                 <span class="button pending">{page.contact.pending[lang]}</span>
               )
             }
-            <a class="top-link" href="#top" data-cursor>{page.footer.top[lang]}</a>
+            <a class="top-link" href="#top">{page.footer.top[lang]}</a>
           </div>
         </div>
         <footer class="foot">
           <span>© {new Date().getFullYear()} {person.name}</span>
           <a class="machines" href="/llms.txt">{page.footer.forMachines[lang]}</a>
         </footer>
-        <p class="wordmark" aria-hidden="true">{[...person.name].map((c) => <span class="c">{c === ' ' ? ' ' : c}</span>)}</p>
+        <div class="end-mark" aria-hidden="true">
+          <p class="wordmark">{[...person.name].map((c) => <span class="c">{c === ' ' ? ' ' : c}</span>)}</p>
+        </div>
       </section>
     </main>
   </div>
@@ -314,18 +265,34 @@ const CROP: Record<string, string> = {
 <style>
   /* ---------- Plain page (no JavaScript, or reduced motion) ---------- */
 
-  /* White paper, black type and ballpoint blue; the global tokens are overridden for this page. */
+  /*
+   * White paper, and every word in ballpoint blue capitals like the ads. The name, the wordmark
+   * and the one button stay in the page's typeface.
+   */
   .xp {
     --bg: #f0f0ed;
     --ink: #141413;
-    --body: #2a2a28;
     --muted: #76746e;
     --line: #d9d8d2;
     --pen: #2f3394;
     --pen-font: 'Mynerve', cursive;
     position: relative;
     overflow-x: clip;
-    color: var(--ink);
+    color: var(--pen);
+    font-family: var(--pen-font);
+    font-size: 1.15rem;
+    line-height: 1.32;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+
+  .logo,
+  .hud-name,
+  .wordmark,
+  .button {
+    font-family: var(--font-sans);
+    letter-spacing: normal;
+    text-transform: none;
   }
 
   .xp-bg {
@@ -346,36 +313,25 @@ const CROP: Record<string, string> = {
   }
 
   .progress,
-  .cursor,
   .scene-name,
-  .slot,
+  .camera,
   .hint,
-  .windows,
-  .phone,
+  .draw-wrap,
   .route,
   .dots,
-  .deck-controls,
   .wordmark {
     display: none;
-  }
-
-  .pen {
-    color: var(--pen);
-    font-family: var(--pen-font);
-    font-size: 1.5rem;
-    line-height: 1.25;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
   }
 
   .hud {
     display: flex;
     justify-content: space-between;
+    align-items: baseline;
     gap: var(--s-4);
     max-width: calc(var(--measure) + 2 * var(--side));
     margin: 0 auto;
     padding: var(--s-6) var(--side);
-    font-size: var(--text-sm);
+    font-size: 0.95rem;
   }
 
   .hud nav {
@@ -384,12 +340,16 @@ const CROP: Record<string, string> = {
   }
 
   .hud a {
-    color: var(--muted);
+    opacity: 0.55;
   }
 
-  .hud a[aria-current],
+  .hud a[aria-current] {
+    opacity: 1;
+  }
+
   .hud .hud-name {
     color: var(--ink);
+    opacity: 1;
   }
 
   .scene {
@@ -407,8 +367,7 @@ const CROP: Record<string, string> = {
   }
 
   .o-pen,
-  .o-photo,
-  .o-foot {
+  .o-photo {
     margin-top: var(--s-6);
   }
 
@@ -416,49 +375,30 @@ const CROP: Record<string, string> = {
     width: min(18rem, 70%);
   }
 
-  .buttons,
-  .end-actions {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--s-2) var(--s-4);
-  }
-
-  .end-actions {
-    margin-top: var(--s-6);
+  /* Letters.astro's spans, so scoped styles reach them only through :global. */
+  .xp :global(.wd) {
+    white-space: nowrap;
   }
 
   .label {
     margin-bottom: var(--s-3);
+    font-size: 0.95rem;
+    font-weight: 400;
+    opacity: 0.6;
   }
 
-  .lead {
-    color: var(--ink);
-    font-size: var(--text-lg);
-    line-height: 1.5;
+  h3 {
+    margin: 0;
+    font-size: 1.6rem;
+    font-weight: 400;
   }
 
-  .wheel ul {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--s-1) var(--s-4);
-    margin: var(--s-4) 0 0;
-    padding: 0;
-    color: var(--muted);
-    font-size: var(--text-sm);
-    list-style: none;
-  }
-
-  .med-photos {
+  .med-photos,
+  .g-prints {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--s-4);
     margin-top: var(--s-8);
-  }
-
-  .wards-text .reading {
-    font-size: var(--text-lg);
-    line-height: 1.5;
   }
 
   .bb-text,
@@ -467,8 +407,9 @@ const CROP: Record<string, string> = {
   }
 
   .bb-text p + p,
-  .e-groups p + p {
-    margin-top: var(--s-4);
+  .e-groups p + p,
+  .g-text p + p {
+    margin-top: var(--s-3);
   }
 
   .run {
@@ -476,49 +417,32 @@ const CROP: Record<string, string> = {
     margin-top: var(--s-8);
   }
 
+  .group {
+    margin-top: var(--s-12);
+  }
+
+  .g-text .detail {
+    opacity: 0.7;
+  }
+
   .xp p :global(a),
   .top-link {
-    color: var(--ink);
+    color: inherit;
     text-decoration: underline;
-    text-decoration-color: var(--line);
-    text-decoration-thickness: 1px;
-    text-underline-offset: 0.22em;
-  }
-
-  .deck {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--s-3) var(--s-4);
-  }
-
-  .deck-intro {
-    grid-column: 1 / -1;
-    margin-bottom: var(--s-4);
-  }
-
-  .card {
-    grid-row: var(--row);
-    grid-column: var(--col);
-  }
-
-  .cap {
-    grid-row: var(--row);
-    grid-column: var(--col);
-    margin-bottom: var(--s-6);
-    font-size: var(--text-sm);
-    line-height: 1.5;
-  }
-
-  .cap p + p {
-    margin-top: var(--s-1);
-  }
-
-  .cap .detail {
-    color: var(--muted);
+    text-decoration-thickness: 1.5px;
+    text-underline-offset: 0.16em;
   }
 
   .contact-line {
-    font-size: 1.75rem;
+    font-size: 1.6rem;
+  }
+
+  .end-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--s-2) var(--s-6);
+    margin-top: var(--s-6);
   }
 
   .pending {
@@ -532,8 +456,8 @@ const CROP: Record<string, string> = {
     margin-top: var(--s-16);
     padding-top: var(--s-6);
     border-top: 1px solid var(--line);
-    color: var(--muted);
-    font-size: var(--text-sm);
+    font-size: 0.9rem;
+    opacity: 0.75;
   }
 
   .machines {
@@ -545,8 +469,12 @@ const CROP: Record<string, string> = {
   @media (prefers-reduced-motion: no-preference) {
     :global(.js) .xp {
       --stage: 100svh;
-      /* The opening Polaroid's width; the note either side is placed against it. */
-      --pw: clamp(14rem, 23vw, 21rem);
+      /* The opening print's width; the camera and the note either side are placed against it. */
+      --pw: clamp(13rem, 21vw, 19rem);
+      /* When the note starts being written, and how long each letter takes. */
+      --w0: 0.95s;
+      --per: 13ms;
+      font-size: clamp(1.1rem, 1.5vw, 1.45rem);
     }
 
     :global(.js) .hud,
@@ -571,8 +499,8 @@ const CROP: Record<string, string> = {
       left: var(--side);
       bottom: var(--s-6);
       margin: 0;
-      color: var(--muted);
-      font-size: var(--text-sm);
+      font-size: 0.95rem;
+      opacity: 0.6;
     }
 
     :global(.js) .progress {
@@ -589,27 +517,43 @@ const CROP: Record<string, string> = {
       padding: 0;
     }
 
+    /* Not clipped: while a scene glides in or out, its content may lie over the next one's. */
     :global(.js) .stage {
       position: relative;
       height: var(--stage);
-      overflow: hidden;
     }
 
-    :global(.js) .pen {
-      font-size: clamp(1.35rem, 2.05vw, 2.1rem);
+    /* ----- Opening: plays on CSS, from the moment the page starts arriving ----- */
+
+    /* It holds for --hold screens of scrolling while the script clears it, then scrolls away. */
+    :global(.js) .opening {
+      --hold: 0.6;
+      height: calc(var(--stage) * (1 + var(--hold)));
     }
 
-    /* Opening, laid out like a poster: name at the top, the photo in the middle, the note either side. */
+    :global(.js) .opening .stage {
+      position: sticky;
+      top: 0;
+    }
+
+    /* The name in the corner waits until the opening has gone (the script shows it). */
+    :global(.js) .hud-name {
+      visibility: hidden;
+      opacity: 0;
+    }
+
     :global(.js) .o-head {
       position: absolute;
       top: 9svh;
       left: 0;
       right: 0;
+      z-index: 3;
       text-align: center;
     }
 
     :global(.js) .logo {
       font-size: clamp(1.6rem, 2.4vw, 2.25rem);
+      animation: rise 0.6s ease-out 1.4s both;
     }
 
     :global(.js) .o-photo {
@@ -621,18 +565,32 @@ const CROP: Record<string, string> = {
       translate: -50% -50%;
     }
 
-    /* The slot the print comes out of: a dark slit with a little light on its lower lip. */
-    :global(.js) .slot {
+    /* A pen sketch of the camera's front; its slot lies along the top edge of the print. */
+    :global(.js) .camera {
       display: block;
       position: absolute;
-      left: -8%;
-      right: -8%;
-      top: -10px;
+      left: -18%;
+      top: 0;
       z-index: 2;
-      height: 9px;
-      border-radius: 5px;
-      background: linear-gradient(#0d0d0c, #262624 70%, #3a3a37);
-      box-shadow: 0 1px 0 rgb(255 255 255 / 0.7);
+      width: 136%;
+      overflow: visible;
+      transform: translateY(-91%);
+      fill: var(--bg);
+      stroke: var(--pen);
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      animation: camera-away 0.3s ease-in 1.1s both;
+    }
+
+    /* The gap is twice the stroke, so no dash starts at a stroke's end and leaves a dot there. */
+    :global(.js) .camera > * {
+      stroke-dasharray: 1 2;
+      animation: draw 0.4s ease-out both;
+    }
+
+    :global(.js) .camera rect:last-child {
+      fill: #1b1b1a;
     }
 
     /* Clips the print at the slot while it comes out, with room below for its shadow. */
@@ -642,12 +600,19 @@ const CROP: Record<string, string> = {
       padding: 0 40px 60px;
     }
 
+    /* Pushed out by the camera's motor: a steady pace with small hitches, and an abrupt stop. */
+    :global(.js) .print {
+      animation: eject 0.9s linear 0.2s both;
+    }
+
     :global(.js) .o-pen {
       position: absolute;
       top: 52%;
-      width: min(21rem, 24vw);
+      width: min(19rem, 24vw);
       margin: 0;
       translate: 0 -50%;
+      font-size: clamp(1.35rem, 2.05vw, 2.1rem);
+      line-height: 1.25;
     }
 
     :global(.js) .o-pen-a {
@@ -659,470 +624,149 @@ const CROP: Record<string, string> = {
       left: calc(50% + var(--pw) / 2 + 3.5vw);
     }
 
-    :global(.js) .o-foot {
+    /* Written one letter at a time: the left note first, then the right one. */
+    :global(.js) .o-pen :global(.ch) {
+      animation: ink 0.06s linear both;
+      animation-delay: calc(var(--w0) + var(--i) * var(--per));
+    }
+
+    :global(.js) .o-pen-b :global(.ch) {
+      animation-delay: calc(var(--w0) + (var(--na) + 4 + var(--i)) * var(--per));
+    }
+
+    :global(.js) .hint {
+      display: block;
       position: absolute;
       left: 0;
       right: 0;
       bottom: 5svh;
-      display: grid;
-      justify-items: center;
-      gap: var(--s-4);
       margin: 0;
+      font-size: 0.95rem;
+      text-align: center;
+      opacity: 0.6;
+      animation: rise 0.6s ease-out 1.7s both;
     }
 
-    :global(.js) .hint {
-      display: flex;
-      align-items: center;
-      gap: var(--s-2);
-      margin: 0;
-      color: var(--muted);
-      font-size: var(--text-sm);
+    @keyframes ink {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
     }
 
-    :global(.js) .hint span {
-      width: 1px;
-      height: 1.5rem;
-      background: currentColor;
-      animation: hint 1.6s ease-in-out infinite;
-      transform-origin: 50% 0;
+    @keyframes rise {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
     }
 
-    @keyframes hint {
+    @keyframes draw {
+      from {
+        stroke-dashoffset: 1;
+      }
+      to {
+        stroke-dashoffset: 0;
+      }
+    }
+
+    @keyframes camera-away {
+      to {
+        opacity: 0;
+        transform: translateY(-96%);
+      }
+    }
+
+    @keyframes eject {
       0% {
-        transform: scaleY(0);
+        transform: translateY(-101%);
       }
-      50% {
-        transform: scaleY(1);
-        transform-origin: 50% 0;
+      28% {
+        transform: translateY(-72%) translateX(0.3px);
       }
-      51% {
-        transform-origin: 50% 100%;
+      31% {
+        transform: translateY(-70%) translateX(-0.3px);
+      }
+      62% {
+        transform: translateY(-39%) translateX(0.3px);
+      }
+      65% {
+        transform: translateY(-37%);
+      }
+      96% {
+        transform: translateY(0.6%);
       }
       100% {
-        transform: scaleY(0);
-        transform-origin: 50% 100%;
+        transform: translateY(0);
       }
     }
 
-    /* Medicine */
+    /* ----- Medicine ----- */
+
     :global(.js) .med-text {
       position: absolute;
       z-index: 2;
       left: var(--side);
       top: 50%;
-      width: min(30rem, 42vw);
+      width: min(30rem, 40vw);
       translate: 0 -50%;
-    }
-
-    :global(.js) .med-text .lead,
-    :global(.js) .personal .lead {
-      font-size: clamp(1.25rem, 1.9vw, 1.75rem);
-      line-height: 1.35;
-      letter-spacing: -0.015em;
-    }
-
-    :global(.js) .wheel {
-      position: absolute;
-      z-index: 2;
-      left: 46%;
-      right: var(--side);
-      top: 15svh;
-      height: 70svh;
-      perspective: 1000px;
-    }
-
-    :global(.js) .wheel ul {
-      position: absolute;
-      inset: 0;
-      display: block;
-      margin: 0;
-      color: var(--ink);
-      font-size: clamp(1.5rem, 2.9vw, 3rem);
-      font-weight: 600;
-      letter-spacing: -0.035em;
-      transform-style: preserve-3d;
-    }
-
-    /* Centred on the wheel's axis, so the perspective doesn't skew the names sideways. */
-    :global(.js) .wheel li {
-      position: absolute;
-      left: 0;
-      right: 0;
-      top: 50%;
-      height: 1.2em;
-      margin-top: -0.6em;
-      line-height: 1.2;
-      text-align: center;
-      white-space: nowrap;
-      backface-visibility: hidden;
     }
 
     :global(.js) .med-photos {
       position: absolute;
-      inset: 0;
+      top: 50%;
+      right: var(--side);
+      left: 46%;
       z-index: 3;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
-      gap: 3vw;
+      gap: 2vw;
       margin: 0;
-      padding: 0 var(--side);
-      pointer-events: none;
+      translate: 0 -50%;
     }
 
     :global(.js) .mp {
-      width: clamp(11rem, 21vw, 19rem);
+      width: clamp(10rem, 15vw, 17rem);
     }
 
-    /* Care: the wards, then Bounceback on the phone */
-    :global(.js) .windows {
-      display: block;
+    :global(.js) .mp1 {
+      margin-top: 6svh;
+    }
+
+    /* ----- Care: the wards and Bounceback ----- */
+
+    :global(.js) .care-text {
       position: absolute;
-      inset: 0;
-      z-index: 2;
-      pointer-events: none;
-    }
-
-    :global(.js) .win {
-      position: absolute;
-      width: clamp(10rem, 19vw, 16rem);
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: 10px;
-      background: #fff;
-      box-shadow: 0 22px 44px rgb(20 20 19 / 0.12);
-      font-size: 0.75rem;
-    }
-
-    :global(.js) .win .bar {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      height: 28px;
-      padding: 0 10px;
-      border-bottom: 1px solid var(--line);
-      background: #ececea;
-      color: var(--muted);
-    }
-
-    :global(.js) .win .bar i {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: #d2d1cb;
-    }
-
-    :global(.js) .win .bar i:first-child {
-      background: #e2786c;
-    }
-
-    :global(.js) .win .bar b {
-      margin-left: 6px;
-      font-weight: 500;
-    }
-
-    :global(.js) .win .body {
-      display: grid;
-      gap: 7px;
-      padding: 12px;
-    }
-
-    :global(.js) .win .body span {
-      display: block;
-      height: 7px;
-      border-radius: 4px;
-      background: #e3e2dd;
-    }
-
-    :global(.js) .win .body .scan {
-      height: 4.5rem;
-      border-radius: 6px;
-      background:
-        radial-gradient(ellipse 30% 42% at 50% 52%, rgb(255 255 255 / 0.55), transparent 70%),
-        radial-gradient(circle at 50% 50%, #3a3833, #151412);
-    }
-
-    :global(.js) .wards-text {
-      position: absolute;
-      inset: 0;
       z-index: 3;
-      display: grid;
-      place-items: center;
-      padding: 0 var(--side);
-    }
-
-    :global(.js) .wards-text .reading {
-      max-width: 50rem;
-      color: var(--ink);
-      font-size: clamp(1.5rem, 3.1vw, 2.75rem);
-      font-weight: 500;
-      line-height: 1.22;
-      letter-spacing: -0.025em;
-    }
-
-    :global(.js) .wards-text .end {
-      display: block;
-      margin-top: 0.6em;
-    }
-
-    :global(.js) .phone {
-      display: block;
-      position: absolute;
-      left: 50%;
+      left: var(--side);
       top: 50%;
-      z-index: 4;
-      width: clamp(14rem, 21vw, 18.5rem);
-      aspect-ratio: 9 / 19;
-      padding: 10px;
-      translate: -50% -50%;
-      border-radius: 2.75rem;
-      background: #0b0b0a;
-      box-shadow:
-        0 40px 80px rgb(0 0 0 / 0.25),
-        inset 0 0 0 2px #2c2a27;
-    }
-
-    :global(.js) .screen {
-      position: relative;
-      height: 100%;
-      overflow: hidden;
-      border-radius: 2.1rem;
-      background: #f7f7f4;
-      color: var(--ink);
-      font-size: 0.8rem;
-      line-height: 1.35;
-    }
-
-    :global(.js) .island {
-      position: absolute;
-      top: 10px;
-      left: 50%;
-      z-index: 3;
-      width: 34%;
-      height: 22px;
-      translate: -50% 0;
-      border-radius: 12px;
-      background: #0b0b0a;
-    }
-
-    :global(.js) .ph {
-      position: absolute;
-      inset: 0;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 52px 14px 16px;
-    }
-
-    :global(.js) .ph-title {
-      font-size: 1.05rem;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-    }
-
-    :global(.js) .ph-sub {
-      color: var(--muted);
-      text-align: center;
-    }
-
-    :global(.js) .ex {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      padding: 8px;
-      border-radius: 12px;
-      background: #fff;
-      box-shadow: 0 1px 0 var(--line);
-    }
-
-    :global(.js) .ex b {
-      display: block;
-      font-weight: 500;
-    }
-
-    :global(.js) .ex small {
-      color: var(--muted);
-    }
-
-    :global(.js) .thumb {
+      width: min(30rem, 40vw);
+      translate: 0 -50%;
       display: grid;
-      place-items: center;
-      flex: none;
-      width: 52px;
-      height: 40px;
-      border-radius: 8px;
-      background: linear-gradient(135deg, #3b3934, #171614);
     }
 
-    :global(.js) .thumb i {
-      width: 0;
-      height: 0;
-      border-left: 9px solid #fff;
-      border-top: 6px solid transparent;
-      border-bottom: 6px solid transparent;
+    :global(.js) .wards-text,
+    :global(.js) .bb-text {
+      grid-area: 1 / 1;
+      align-self: center;
+      margin: 0;
     }
 
-    :global(.js) .video {
-      position: relative;
-      flex: 1;
-      border-radius: 16px;
-      background: linear-gradient(160deg, #2e2c28, #12110f);
-      overflow: hidden;
-    }
-
-    :global(.js) .video.small {
-      flex: 0 0 40%;
-    }
-
-    :global(.js) .figure {
-      position: absolute;
-      left: 50%;
-      bottom: 6%;
-      width: 58%;
-      translate: -50% 0;
-      fill: none;
-      stroke: #f2efe7;
-      stroke-width: 5;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    :global(.js) .figure circle {
-      fill: #f2efe7;
-      stroke: none;
-    }
-
-    :global(.js) .squat {
-      animation: squat 1.8s ease-in-out infinite;
-      transform-origin: 50% 100%;
-    }
-
-    @keyframes squat {
-      50% {
-        transform: scaleY(0.82);
-      }
-    }
-
-    :global(.js) .rec {
-      position: absolute;
-      top: 12px;
-      left: 12px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      color: #fff;
-      font-size: 0.7rem;
-      font-weight: 600;
-      letter-spacing: 0.08em;
-    }
-
-    :global(.js) .rec i {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: #ff4d3d;
-      animation: rec 1.1s ease-in-out infinite;
-    }
-
-    @keyframes rec {
-      50% {
-        opacity: 0.25;
-      }
-    }
-
-    :global(.js) .bubble {
-      align-self: flex-end;
-      max-width: 88%;
-      padding: 10px 12px;
-      border-radius: 16px 16px 4px 16px;
-      background: var(--ink);
-      color: #f7f7f4;
-    }
-
-    :global(.js) .bubble small {
+    :global(.js) .draw-wrap {
       display: block;
-      margin-bottom: 2px;
-      color: #b9b8b2;
-      font-size: 0.68rem;
-    }
-
-    :global(.js) .note-line {
-      overflow: hidden;
-      padding-bottom: 6px;
-      border-bottom: 1px solid var(--line);
-      white-space: nowrap;
-    }
-
-    :global(.js) .note-line span {
-      display: inline-block;
-    }
-
-    :global(.js) .caret {
-      width: 2px;
-      height: 1rem;
-      background: var(--ink);
-      animation: rec 0.9s steps(1) infinite;
-    }
-
-    :global(.js) .ph5 {
-      align-items: center;
-      justify-content: center;
-    }
-
-    :global(.js) .tap {
-      position: relative;
-      display: grid;
-      place-items: center;
-      width: 6rem;
-      height: 6rem;
-      border-radius: 50%;
-      background: var(--ink);
-    }
-
-    :global(.js) .tap i {
       position: absolute;
-      inset: 0;
-      border: 2px solid var(--ink);
-      border-radius: 50%;
-      animation: ripple 2.2s ease-out infinite;
+      z-index: 2;
+      right: var(--side);
+      top: 50%;
+      width: min(50vw, 44rem);
+      translate: 0 -50%;
     }
 
-    :global(.js) .tap i:nth-child(2) {
-      animation-delay: 0.7s;
-    }
+    /* ----- Eigen ----- */
 
-    :global(.js) .tap i:nth-child(3) {
-      animation-delay: 1.4s;
-    }
-
-    @keyframes ripple {
-      from {
-        transform: scale(1);
-        opacity: 0.6;
-      }
-      to {
-        transform: scale(2.2);
-        opacity: 0;
-      }
-    }
-
-    :global(.js) .tap svg {
-      width: 2.6rem;
-      fill: none;
-      stroke: #f7f7f4;
-      stroke-width: 2.4;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-
-    :global(.js) .amount {
-      margin-top: 22px;
-      font-size: 1.8rem;
-      font-weight: 600;
-      letter-spacing: -0.03em;
-    }
-
-    :global(.js) .bb-text,
     :global(.js) .eigen-text {
       position: absolute;
       z-index: 5;
@@ -1131,26 +775,37 @@ const CROP: Record<string, string> = {
       width: min(30rem, 40vw);
       margin: 0;
       translate: 0 -50%;
-      color: var(--ink);
-      font-size: clamp(1.1rem, 1.6vw, 1.45rem);
-      line-height: 1.4;
-      letter-spacing: -0.01em;
     }
 
-    :global(.js) .bb-text .label,
-    :global(.js) .eigen-text .label {
-      color: var(--muted);
+    :global(.js) .e-groups,
+    :global(.js) .bb-groups {
+      display: grid;
     }
 
-    /* Eigen: the Polaroid with a lap drawn round it in pen, behind it on the paper. */
+    :global(.js) .e-groups p,
+    :global(.js) .bb-groups p {
+      grid-area: 1 / 1;
+      margin: 0;
+    }
+
+    :global(.js) .bb-groups .bb2 {
+      grid-area: auto;
+      margin-top: var(--s-3);
+    }
+
     :global(.js) .run {
       position: absolute;
       z-index: 2;
-      left: 66%;
+      left: 68%;
       top: 50%;
-      width: clamp(13rem, 22vw, 22rem);
+      width: clamp(12rem, 20vw, 20rem);
       margin: 0;
       translate: -50% -50%;
+    }
+
+    /* The script moves this wrapper, not .run, whose CSS translate centres it. */
+    :global(.js) .run-in {
+      position: relative;
     }
 
     :global(.js) .route {
@@ -1186,89 +841,89 @@ const CROP: Record<string, string> = {
       height: 100%;
     }
 
-    :global(.js) .e-groups {
-      display: grid;
+    /* ----- Personal: one long row, moved sideways by the script ----- */
+
+    :global(.js) .personal {
+      max-width: none;
+      padding: 0;
     }
 
-    :global(.js) .e-groups p {
-      grid-area: 1 / 1;
-      margin: 0;
-    }
-
-    /* Personal */
-    :global(.js) .personal .deck {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
-      grid-template-rows: auto auto 1fr;
-      grid-template-areas:
-        'intro stack'
-        'caps stack'
-        'ctrl stack';
-      align-items: start;
-      gap: var(--s-8) clamp(var(--s-8), 6vw, var(--s-24));
-      max-width: 76rem;
-      min-height: var(--stage);
-      margin: 0 auto;
-      padding: var(--s-24) var(--side);
-    }
-
-    :global(.js) .deck-intro {
-      grid-area: intro;
-      align-self: end;
-      margin: 0;
-    }
-
-    :global(.js) .card {
-      grid-area: stack;
-      align-self: center;
-      justify-self: center;
-      width: min(100%, 24rem);
-      cursor: grab;
-      touch-action: pan-y;
-    }
-
-    :global(.js) .cap {
-      grid-area: caps;
-      margin: 0;
-      font-size: var(--text-base);
-    }
-
-    :global(.js) .cap p {
-      max-width: 26rem;
-    }
-
-    :global(.js) .cap p:first-of-type {
-      color: var(--ink);
-      font-size: clamp(1.25rem, 1.9vw, 1.6rem);
-      line-height: 1.35;
-      letter-spacing: -0.015em;
-    }
-
-    :global(.js) .cap .detail {
-      margin-top: var(--s-3);
-    }
-
-    :global(.js) .deck-controls {
-      grid-area: ctrl;
+    :global(.js) .row-stage {
       display: flex;
       align-items: center;
-      gap: var(--s-4);
-      color: var(--muted);
-      font-size: var(--text-sm);
+      height: var(--stage);
+      overflow: hidden;
     }
 
-    :global(.js) .next {
-      background: none;
-      font-family: inherit;
-      cursor: pointer;
+    :global(.js) .track {
+      display: flex;
+      align-items: center;
+      gap: 9vw;
+      width: max-content;
+      padding: 0 18vw 0 var(--side);
     }
 
-    /* Ending */
+    :global(.js) .p-intro {
+      flex: none;
+      width: min(26rem, 78vw);
+    }
+
+    :global(.js) .p-intro .lead {
+      font-size: clamp(1.6rem, 2.6vw, 2.4rem);
+      line-height: 1.2;
+    }
+
+    :global(.js) .group {
+      display: flex;
+      align-items: center;
+      gap: 3.5vw;
+      margin: 0;
+    }
+
+    :global(.js) .g-text {
+      flex: none;
+      width: min(21rem, 70vw);
+    }
+
+    :global(.js) .g-text h3 {
+      font-size: clamp(1.8rem, 3vw, 2.8rem);
+      line-height: 1.1;
+      margin-bottom: var(--s-3);
+    }
+
+    :global(.js) .g-prints {
+      display: flex;
+      align-items: center;
+      margin: 0;
+      gap: 0;
+    }
+
+    /* Prints overlap a little and sit at slightly different heights, as if laid on a table. */
+    :global(.js) .gp {
+      --gw: calc(46svh * 88 / 107);
+      flex: none;
+      width: var(--gw);
+    }
+
+    :global(.js) .gp + .gp {
+      margin-left: calc(var(--gw) * -0.2);
+    }
+
+    :global(.js) .gp:nth-child(even) {
+      transform: translateY(5svh);
+    }
+
+    :global(.js) .gp:nth-child(odd) {
+      transform: translateY(-3svh);
+    }
+
+    /* ----- Ending ----- */
+
     :global(.js) .ending {
       position: relative;
       display: flex;
       flex-direction: column;
       min-height: var(--stage);
-      overflow: hidden;
     }
 
     :global(.js) .end-inner {
@@ -1300,6 +955,17 @@ const CROP: Record<string, string> = {
       border: 0;
     }
 
+    /*
+     * Clips the wordmark along the bottom of the page, where it is cut off and its letters rise from.
+     * Only the wordmark: the contact line glides in from above and must not be clipped. The padding,
+     * taken back by the margin, keeps the tops of the letters inside.
+     */
+    :global(.js) .end-mark {
+      overflow: hidden;
+      margin-top: -8vw;
+      padding-top: 8vw;
+    }
+
     :global(.js) .wordmark {
       display: block;
       margin: 0;
@@ -1318,35 +984,14 @@ const CROP: Record<string, string> = {
       will-change: transform;
     }
 
-    /* The cursor follows the pointer on devices that have one. */
-    @media (pointer: fine) {
-      :global(.js) .cursor {
-        display: grid;
-        place-items: center;
-        position: fixed;
-        left: 0;
-        top: 0;
-        z-index: 60;
-        width: 14px;
-        height: 14px;
-        margin: -7px 0 0 -7px;
-        border-radius: 50%;
-        background: var(--pen);
-        color: #fff;
-        font-size: 0.75rem;
-        font-weight: 600;
-        pointer-events: none;
-      }
+    /* ----- Phones and narrow tablets: the same scenes, stacked vertically ----- */
 
-      :global(.js) .cursor span {
-        opacity: 0;
-      }
-    }
-
-    /* Phones and narrow tablets: the same scenes, stacked vertically. */
     @media (max-width: 51.99rem) {
       :global(.js) .xp {
         --pw: min(52vw, 15rem);
+        --w0: 1.3s;
+        /* Phone size, growing on a tablet held upright. */
+        font-size: clamp(1.05rem, 2.6vw, 1.4rem);
       }
 
       :global(.js) .o-head {
@@ -1363,6 +1008,7 @@ const CROP: Record<string, string> = {
         width: auto;
         text-align: center;
         translate: none;
+        font-size: 1.35rem;
       }
 
       :global(.js) .o-pen-a {
@@ -1374,42 +1020,33 @@ const CROP: Record<string, string> = {
         top: calc(49% + var(--pw) * 0.608 + 1.25rem);
       }
 
-      :global(.js) .o-foot {
-        bottom: 4svh;
-      }
-
-      :global(.js) .o-foot .hint {
+      :global(.js) .hint {
         display: none;
       }
 
-      :global(.js) .med-text {
-        top: 14svh;
-        width: auto;
+      :global(.js) .med-text,
+      :global(.js) .care-text,
+      :global(.js) .eigen-text {
+        top: 11svh;
         right: var(--side);
+        width: auto;
         translate: none;
       }
 
-      :global(.js) .wheel {
-        left: var(--side);
-        top: 46svh;
-        height: 40svh;
-      }
-
-      :global(.js) .wheel ul {
-        font-size: 6.2vw;
-      }
-
       :global(.js) .med-photos {
+        top: auto;
+        bottom: 6svh;
+        left: var(--side);
+        translate: none;
         display: grid;
         grid-template-columns: 1fr 1fr;
         grid-template-areas: 'a b' 'c c';
-        align-content: center;
         justify-items: center;
-        gap: 4vw;
+        gap: 3vw 4vw;
       }
 
       :global(.js) .mp {
-        width: 40vw;
+        width: 37vw;
       }
 
       :global(.js) .mp0 {
@@ -1418,36 +1055,40 @@ const CROP: Record<string, string> = {
 
       :global(.js) .mp1 {
         grid-area: b;
+        margin-top: 0;
       }
 
       :global(.js) .mp2 {
         grid-area: c;
-        width: 50vw;
       }
 
-      :global(.js) .win {
-        width: 44vw;
+      /* The words at the top, and the drawing in the middle of whatever space they leave. */
+      :global(.js) .care .stage {
+        display: flex;
+        flex-direction: column;
+        padding: 11svh var(--side) 3svh;
       }
 
-      :global(.js) .phone {
-        top: 62%;
-        width: 52vw;
+      :global(.js) .care-text {
+        position: relative;
+        top: auto;
+        left: auto;
+        right: auto;
       }
 
-      :global(.js) .bb-text,
-      :global(.js) .eigen-text {
-        top: 11svh;
-        right: var(--side);
+      :global(.js) .draw-wrap {
+        position: relative;
+        top: auto;
+        right: auto;
+        flex: 1;
+        min-height: 0;
+        display: flex;
+        align-items: center;
         width: auto;
         translate: none;
-        font-size: 1.05rem;
       }
 
-      :global(.js) .bb-groups {
-        display: grid;
-      }
-
-      :global(.js) .bb-groups p {
+      :global(.js) .bb-groups .bb2 {
         grid-area: 1 / 1;
         margin: 0;
       }
@@ -1465,16 +1106,16 @@ const CROP: Record<string, string> = {
         height: 60svh;
       }
 
-      :global(.js) .personal .deck {
-        grid-template-columns: minmax(0, 1fr);
-        grid-template-rows: auto auto auto auto;
-        grid-template-areas: 'intro' 'stack' 'caps' 'ctrl';
-        gap: var(--s-6);
-        padding: var(--s-16) var(--side);
+      :global(.js) .track {
+        gap: 14vw;
       }
 
-      :global(.js) .card {
-        width: 66vw;
+      :global(.js) .group {
+        gap: 8vw;
+      }
+
+      :global(.js) .gp {
+        --gw: 62vw;
       }
 
       :global(.js) .wordmark {

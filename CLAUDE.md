@@ -81,17 +81,30 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
   images through `astro:assets`. The main page has no script libraries; GSAP and Lenis are
   bundled for the interactive version (`/v2/`) only, never loaded from a CDN.
 - The interactive version (`/v2/`, `components/v2/Experience.astro`, `scripts/experience.ts`)
-  uses the same words from `profile.ts`; only its prop labels and Polaroid captions live in
-  `page.experience`. Its look is white paper, black type and ballpoint blue (`#2f3394`, Mynerve in
-  capitals), with every photo a realistic Polaroid 600 print at true proportions (88 × 107 mm frame,
-  79 mm square image) that develops from dark film. Never rotate photos or cards. Reveal text by
-  words or letters, never by lines (split lines break oddly when the width changes). Every scene is
-  scrubbed by the scroll, so scrolling back reverses it; animate clip paths with explicit from and
-  to values, and don't animate x or y on an element centred with the CSS `translate` property
-  (GSAP takes it over); animate a child instead. Check it by jumping to exact points inside each pinned scene
+  uses the same words from `profile.ts`; only its drawing labels, Polaroid captions and photo rows
+  live in `page.experience`. Its look is white paper and ballpoint blue (`#2f3394`, Mynerve in
+  capitals): all text is in the pen, apart from "Till Findl" and the button, and illustrations are
+  pen drawings (`WardsDrawing.astro`), never pop-ups or cards. Every photo is a realistic Polaroid
+  600 print at true proportions (88 × 107 mm frame, 79 mm square image) that develops from dark
+  film. Never rotate photos, no cursor effects, no buttons in the hero. Captions name a place only
+  when it is certain. Reveal text by words or letters, never by lines (split lines break oddly when
+  the width changes).
+- Motion in `/v2/`: every scene is scrubbed by the scroll, so scrolling back reverses it. No blank
+  screens: nothing fades out at the end of a pin, and on desktop content glides in early and out
+  late (`GLIDE`). The opening plays on CSS so it starts before the script; it holds with a sticky
+  stage, not a pin, because a pin re-wraps the element and restarts its CSS animations. Animate
+  clip paths with explicit from and to values; don't animate x or y on an element centred with the
+  CSS `translate` property (GSAP takes it over), and don't animate opacity on an element with a CSS
+  animation (its fill wins); animate a wrapper instead. Letters.astro's spans are another
+  component's, so styles reach them only through `:global`. Pen strokes that draw on use
+  `pathLength="1"` and a gap longer than the stroke, so no round cap leaves a dot at the end.
+- Check `/v2/` by jumping to exact points inside each pinned scene
   (`window.__xp.lenis.scrollTo(y, { immediate: true })`) and capturing several moments of every
-  transition, on a phone and a desktop, and with reduced motion (it must read as a plain page).
-  Publish it as its own preview (`node tools/preview.mjs --page v2`), separate from the main one.
+  transition, on a phone, a small phone and a desktop, in both languages, and with reduced motion
+  (it must read as a plain page). Scan for blank frames: step every quarter screen through the page
+  and measure how much of each frame differs from the paper; look at the emptiest ones. Time the
+  opening from the self-contained preview too (it should settle in about two seconds and play only
+  once). Publish it as its own preview (`node tools/preview.mjs --page v2`), separate from the main one.
 - Comments explain intent and the non-obvious, in full sentences, British spelling. Don't narrate.
 - `README.md` stays current in the same commit as the change it describes.
 - `public/CNAME` must keep holding `tillfindl.com`, or the custom domain drops off on deploy.
