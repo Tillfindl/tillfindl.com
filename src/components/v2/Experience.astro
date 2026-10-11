@@ -6,8 +6,11 @@
 //
 // Each scene is a picture that stays in place (a sticky `.visual`) and the scene's words as short
 // handwritten phrases (`.script`) that scroll past it in the normal page flow, so the words move
-// exactly with the reader's finger and each phrase sets the picture moving as it passes. The
-// phrases come from `page.experience.script` and must say what the main page says (checked below).
+// exactly with the reader's finger and each phrase sets the picture moving as it passes. On a wide
+// screen the phrases pass to the left of the picture. On a phone the picture is a panel in the top
+// half of the screen and the phrases come up below it and slip under its soft lower edge, so words
+// and pictures never overlap; the next scene's panel then pushes it away. The phrases come from
+// `page.experience.script` and must say what the main page says (checked below).
 // The hero plays on CSS alone, so it starts before the script loads. Without JavaScript, or with
 // reduced motion, it reads as a plain page built from the main page's paragraphs (`.plain`): the
 // staged layout only applies under `.js` and `prefers-reduced-motion: no-preference`.
@@ -153,7 +156,7 @@ const CROP: Record<string, string> = {
               {
                 [gradA, gradB, theatre].map((p, i) => (
                   <div class:list={['mp', `mp${i}`]}>
-                    <Polaroid photo={p} lang={lang} caption={caption(p)} position={CROP[p.file]} sizes="(min-width: 52rem) 17rem, 33vw" film="latent" />
+                    <Polaroid photo={p} lang={lang} caption={caption(p)} position={CROP[p.file]} sizes="(min-width: 52rem) 17rem, 52vw" film="latent" />
                   </div>
                 ))
               }
@@ -214,10 +217,6 @@ const CROP: Record<string, string> = {
             <div class="run">
               <div class="run-in">
                 <svg class="route" viewBox="0 0 500 486" aria-hidden="true">
-                  <filter id="wobble">
-                    <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="4"></feTurbulence>
-                    <feDisplacementMap in="SourceGraphic" scale="7"></feDisplacementMap>
-                  </filter>
                   <path
                     class="route-path"
                     d="M74 372 C18 262 40 118 152 58 C262 2 424 30 472 150 C522 272 452 424 322 458 C200 490 78 452 50 330 C40 288 48 250 66 218"
@@ -229,14 +228,14 @@ const CROP: Record<string, string> = {
                   lang={lang}
                   caption={caption(x.eigenPrints.run)}
                   position={CROP[x.eigenPrints.run.file]}
-                  sizes="(min-width: 52rem) 19rem, 42vw"
+                  sizes="(min-width: 52rem) 19rem, 50vw"
                   film="latent"
                 />
               </div>
             </div>
             <div class="work">
               <div class="work-in">
-                <Polaroid photo={x.eigenPrints.workshop} lang={lang} position={CROP[x.eigenPrints.workshop.file]} sizes="(min-width: 52rem) 14rem, 32vw" film="latent" />
+                <Polaroid photo={x.eigenPrints.workshop} lang={lang} position={CROP[x.eigenPrints.workshop.file]} sizes="(min-width: 52rem) 14rem, 40vw" film="latent" />
               </div>
             </div>
             <canvas class="dots" aria-hidden="true"></canvas>
@@ -369,21 +368,13 @@ const CROP: Record<string, string> = {
 
   /*
    * The page under the paper is the same colour, so nothing else can show if the fixed paper is a
-   * frame late during a fast scroll. These styles only load on the interactive version's pages.
+   * frame late during a fast scroll. `html body` outranks the site's own `body` colour (warmer, and
+   * painted over the fixed paper) whichever stylesheet comes first. These styles only load on the
+   * interactive version's pages.
    */
   :global(html),
-  :global(body) {
+  :global(html body) {
     background: #f0f0ed;
-  }
-
-  /* The paper's grain, still, like a printed poster. */
-  .xp-bg::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-    opacity: 0.06;
-    mix-blend-mode: multiply;
   }
 
   .fx {
@@ -610,7 +601,7 @@ const CROP: Record<string, string> = {
       display: none;
     }
 
-    /* Not clipped: while a scene glides in or out, its picture may lie over the next one's. */
+    /* The picture stays on screen while its phrases pass, then leaves with the page as the next arrives. */
     :global(.js) .visual {
       position: sticky;
       top: 0;
@@ -701,9 +692,13 @@ const CROP: Record<string, string> = {
 
     /* ----- Opening: plays on CSS, from the moment the page starts arriving ----- */
 
-    /* It holds for --hold screens of scrolling while the script clears it, then scrolls away. */
+    /*
+     * It holds for --hold screens of scrolling while the script clears it, then scrolls away. It
+     * holds with a sticky stage, not a pin: a pin wraps the scene in a new element, and moving it
+     * restarts its CSS animations, so on a slow load the print would come out twice.
+     */
     :global(.js) .opening {
-      --hold: 0.6;
+      --hold: 0.3;
       height: calc(var(--stage) * (1 + var(--hold)));
     }
 
@@ -945,7 +940,6 @@ const CROP: Record<string, string> = {
       stroke: var(--pen);
       stroke-width: 2.6;
       stroke-linecap: round;
-      filter: url(#wobble);
     }
 
     :global(.js) .runner {
@@ -961,9 +955,19 @@ const CROP: Record<string, string> = {
       height: 100%;
     }
 
-    /* ----- Personal: one long row, moved sideways by the script ----- */
+    /*
+     * ----- Personal: one long row, moved sideways by the script -----
+     * The section is as much taller than the screen as the row is wider than it (--row, set by the
+     * script), and the row stays on screen (sticky) while scrolling through it moves the row along.
+     */
+
+    :global(.js) .personal {
+      height: calc(var(--stage) + var(--row, 0px));
+    }
 
     :global(.js) .row-stage {
+      position: sticky;
+      top: 0;
       display: flex;
       align-items: center;
       height: var(--stage);
@@ -1091,8 +1095,7 @@ const CROP: Record<string, string> = {
 
     /*
      * Clips the wordmark along the bottom of the page, where it is cut off and its letters rise from.
-     * Only the wordmark: the contact line glides in from above and must not be clipped. The padding,
-     * taken back by the margin, keeps the tops of the letters inside.
+     * The padding, taken back by the margin, keeps the tops of the letters inside.
      */
     :global(.js) .end-mark {
       display: block;
@@ -1121,20 +1124,36 @@ const CROP: Record<string, string> = {
 
     /*
      * ----- Phones and narrow tablets -----
-     * The picture sits in the top half of the screen and the phrases come up from the bottom into
-     * the lower half, fading out before they reach it.
+     * The picture is a panel in the top half of the screen, on paper, with a soft lower edge. The
+     * phrases come up from the bottom of the screen below it and slip under that edge, so words and
+     * pictures never overlap. When a scene's last phrase has gone, the next scene's panel comes up
+     * behind it and pushes it away, both moving with the page.
      */
 
     @media (max-width: 51.99rem) {
       :global(.js) .xp {
+        --side: 20px;
         --pw: min(52vw, 15rem);
         --w0: 1.3s;
-        --phr-size: clamp(1.25rem, 5.4vw, 1.6rem);
-        --p-top: 56svh;
-        --phr-gap: 15svh;
-        --p-bottom: 10svh;
+        /* The picture panel: its height, where its pictures start (clear of the corner links), and its soft edge. */
+        --panel: 50svh;
+        --panel-top: 3.25rem;
+        --skirt: 7svh;
+        /*
+         * The phrases: big enough to read at arm's length. The first one in a scene is near the
+         * bottom of the screen when its panel arrives, so it sets the picture moving only after.
+         */
+        --phr-size: clamp(1.6rem, 7vw, 2rem);
+        --p-top: 34svh;
+        --phr-gap: 11svh;
+        --p-bottom: 6svh;
+        --big: 1.45;
         /* Phone size, growing on a tablet held upright. */
-        font-size: clamp(1.05rem, 2.6vw, 1.4rem);
+        font-size: clamp(1.125rem, 2.8vw, 1.4rem);
+      }
+
+      :global(.js) .hud {
+        padding: var(--s-4) var(--side);
       }
 
       :global(.js) .o-head {
@@ -1163,76 +1182,153 @@ const CROP: Record<string, string> = {
         top: calc(49% + var(--pw) * 0.608 + 1.25rem);
       }
 
+      :global(.js) .visual {
+        z-index: 2;
+        height: var(--panel);
+        background: var(--bg);
+      }
+
+      :global(.js) .visual::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        height: var(--skirt);
+        background: linear-gradient(var(--bg), rgb(240 240 237 / 0));
+        pointer-events: none;
+      }
+
+      :global(.js) .v-in {
+        overflow: hidden;
+      }
+
+      /* In the flow below the panel, under its soft edge. */
       :global(.js) .script {
+        z-index: 1;
         width: auto;
-        margin-right: var(--side);
+        margin: 0 var(--side);
       }
 
       :global(.js) .phr[data-at='i'] {
-        padding-left: 8%;
+        padding-left: 6%;
+      }
+
+      :global(.js) .script .label {
+        margin-bottom: var(--s-4);
+        font-size: 1.125rem;
+      }
+
+      :global(.js) .xp :global(.sm) {
+        font-size: 0.72em;
+      }
+
+      /*
+       * Medicine: the three prints lie on top of one another, each a little higher and further right
+       * than the one before, so every caption stays readable. --mw is a print's width (as wide as the
+       * panel allows) and --dy how much higher each lies; the three together are 1.678 widths tall.
+       */
+      :global(.js) .medicine {
+        --mw: min(52vw, (var(--panel) - var(--panel-top) - 1rem) * 0.596);
+        --dy: calc(var(--mw) * 0.231);
       }
 
       :global(.js) .med-photos {
-        top: 9svh;
+        display: block;
+        top: calc(var(--panel-top) + (var(--panel) - var(--panel-top) - var(--mw) * 1.678) / 2);
         left: var(--side);
+        right: var(--side);
+        height: calc(var(--mw) * 1.678);
         translate: none;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        grid-template-areas: 'a b' 'c c';
-        justify-items: center;
-        gap: 3vw 4vw;
       }
 
       :global(.js) .mp {
-        width: min(33vw, 17svh);
+        position: absolute;
+        width: var(--mw);
       }
 
       :global(.js) .mp0 {
-        grid-area: a;
+        left: 0;
+        top: calc(2 * var(--dy));
       }
 
       :global(.js) .mp1 {
-        grid-area: b;
+        left: calc(50% - var(--mw) / 2);
+        top: var(--dy);
         margin-top: 0;
       }
 
       :global(.js) .mp2 {
-        grid-area: c;
+        right: 0;
+        top: 0;
       }
 
+      /* The drawing fills the panel's width, or its height if that is shorter, and sits in its middle. */
       :global(.js) .draw-wrap {
-        top: 8svh;
-        left: 50%;
+        --dw: min(100vw - 2 * var(--side), (var(--panel) - var(--panel-top) - 0.5rem) * 560 / 520);
+        top: calc(var(--panel-top) + (var(--panel) - var(--panel-top) - var(--dw) * 520 / 560) / 2);
+        left: calc(50% - var(--dw) / 2);
         right: auto;
-        width: min(calc(100vw - 2 * var(--side)), 46svh * 560 / 520);
-        translate: -50% 0;
+        width: var(--dw);
+        translate: none;
+      }
+
+      /*
+       * Eigen: the run club print in the middle of the panel with its lap round it (the lap is 1.556
+       * print widths tall), the workshop print laid over its upper corner, clear of the caption.
+       */
+      :global(.js) .eigen {
+        --rw: min(50vw, (var(--panel) - var(--panel-top) - 1rem) / 1.556);
+        --rc: calc(var(--panel-top) + (var(--panel) - var(--panel-top)) / 2);
       }
 
       :global(.js) .run {
-        left: 36%;
-        top: 29svh;
-        width: min(42vw, 30svh);
+        left: 50%;
+        top: var(--rc);
+        width: var(--rw);
       }
 
       :global(.js) .work {
-        left: 74%;
-        top: 33svh;
-        width: min(32vw, 23svh);
+        left: calc(50% + var(--rw) * 0.5);
+        top: calc(var(--rc) - var(--rw) * 0.16);
+        width: calc(var(--rw) * 0.78);
       }
 
       :global(.js) .dots {
         left: 0;
-        top: 6svh;
+        top: var(--panel-top);
         width: 100%;
-        height: 44svh;
+        height: calc(100% - var(--panel-top));
       }
 
       :global(.js) .track {
         gap: 14vw;
       }
 
+      :global(.js) .p-intro .lead {
+        font-size: clamp(1.9rem, 8vw, 2.4rem);
+      }
+
       :global(.js) .group {
         gap: 8vw;
+      }
+
+      :global(.js) .g-text {
+        width: 78vw;
+      }
+
+      /* As large as the longest single word ("Photography") allows on the narrowest phones. */
+      :global(.js) .g-text h3 {
+        font-size: clamp(2rem, 10vw, 2.4rem);
+      }
+
+      :global(.js) .g-text .love {
+        font-size: 1.35rem;
+        line-height: 1.2;
+      }
+
+      :global(.js) .g-text .detail {
+        font-size: 1.125rem;
       }
 
       :global(.js) .gp {
@@ -1243,12 +1339,24 @@ const CROP: Record<string, string> = {
         --gw: 86vw;
       }
 
+      :global(.js) .p-intro .label,
+      :global(.js) .end-inner .label {
+        font-size: 1.125rem;
+      }
+
       :global(.js) .contact-line {
-        font-size: clamp(1.4rem, 6.4vw, 1.9rem);
+        font-size: clamp(1.6rem, 7vw, 2.1rem);
       }
 
       :global(.js) .wordmark {
         font-size: 26vw;
+      }
+    }
+
+    /* On the narrowest phones the big words are a little less big, so the longest one still fits. */
+    @media (max-width: 22.5rem) {
+      :global(.js) .xp {
+        --big: 1.3;
       }
     }
   }

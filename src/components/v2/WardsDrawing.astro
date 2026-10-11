@@ -3,8 +3,10 @@
 // glowing pen line, software windows that pile up around the doctor at different depths, and the
 // phone they are swept into, whose screens are pen sketches too. Every stroke has pathLength 1, so
 // scripts/experience.ts can draw it on with stroke-dashoffset. Each window says which phrase draws
-// it in (data-cue), and floats inside its own `.drift` group, so floating and being swept into the
-// phone never move the same element. All coordinates are in the 560 × 520 viewBox.
+// it in (data-cue). All coordinates are in the 560 × 520 viewBox.
+//
+// Nothing here uses an SVG filter: a live filter is redrawn on every frame the drawing moves, which
+// is what made scrolling past it stutter on a phone. The glow is two wide, faint strokes instead.
 import { page, type Lang } from '../../content/profile';
 
 interface Props {
@@ -40,8 +42,20 @@ const windows = WINDOWS.map((w) => ({
   cy: w.y + (w.h * w.d) / 2,
 }));
 
-/** Breaks text into lines of at most `max` characters, for the small writing on the phone. */
-function wrap(text: string, max: number) {
+/**
+ * The phone's screens are read zoomed in on a phone, so their writing is set large for the screen:
+ * sizes in drawing units, and the width the writing may take.
+ */
+const SIZE = { title: 14, row: 11, small: 9.5, big: 26 };
+/** The screen's writable width, and the speech bubble's. */
+const SCREEN_W = 120;
+const BUBBLE_W = 102;
+/** Mynerve's capitals are about this wide, as a fraction of the font size. */
+const CHAR_W = 0.67;
+
+/** Breaks text into lines that fit `width` at `size`, for the writing on the phone. */
+function wrap(text: string, size: number, width = SCREEN_W) {
+  const max = Math.floor(width / (size * CHAR_W));
   const lines: string[] = [];
   let line = '';
   for (const word of up(text).split(' ')) {
@@ -54,27 +68,30 @@ function wrap(text: string, max: number) {
   return lines;
 }
 
+/** A title's lines, each with a size small enough for a long single word to fit the screen. */
+const title = (text: string) =>
+  wrap(text, SIZE.title).map((t) => ({ t, size: Math.min(SIZE.title, +(SCREEN_W / (t.length * CHAR_W)).toFixed(1)) }));
+
 const ph = x.phone;
-const feedback = wrap(ph.feedback[lang], 18);
-const noteLines = ph.noteLines.map((l) => wrap(l[lang], 22));
-/** Where each row of the note sits: rows 16 apart, with a little more space between entries. */
+const programme = title(ph.programme[lang]);
+/** Where the exercises start, below the title, and how far apart they are. */
+const exTop = 146 + (programme.length - 1) * 16 + 24;
+const EX_STEP = 56;
+const recording = wrap(ph.recording[lang], SIZE.row);
+const feedback = wrap(ph.feedback[lang], SIZE.row, BUBBLE_W);
+const bubble = feedback.length * 14 + 6;
+const note = title(ph.note[lang]);
+const noteLines = ph.noteLines.map((l) => wrap(l[lang], SIZE.row));
+/** Where each row of the note sits: rows 14 apart, with a little more space between entries. */
 let noteRow = 0;
-const noteY = (entry: number) => 180 + noteRow++ * 16 + entry * 10;
+const noteTop = 146 + (note.length - 1) * 16 + 26;
+const noteY = (entry: number) => noteTop + noteRow++ * 14 + entry * 8;
 ---
 
 <svg class="drawing" viewBox="0 0 560 520" aria-hidden="true">
-  <defs>
-    <filter id="pen-wobble" x="-5%" y="-5%" width="110%" height="110%">
-      <feTurbulence type="fractalNoise" baseFrequency="0.035" numOctaves="2" seed="7"></feTurbulence>
-      <feDisplacementMap in="SourceGraphic" scale="2.6"></feDisplacementMap>
-    </filter>
-    <filter id="pen-glow" x="-20%" y="-60%" width="140%" height="220%">
-      <feGaussianBlur stdDeviation="5"></feGaussianBlur>
-    </filter>
-  </defs>
-
-  <!-- The connection, behind everything: a soft glow and the pen line itself. -->
+  <!-- The connection, behind everything: a soft glow (a wide and a wider faint stroke) and the pen line itself. -->
   <g class="link">
+    <path class="link-glow wide" pathLength="1" d="M236 318 C268 296 302 296 334 318"></path>
     <path class="link-glow" pathLength="1" d="M236 318 C268 296 302 296 334 318"></path>
     <path class="ink link-line" pathLength="1" d="M236 318 C268 296 302 296 334 318"></path>
   </g>
@@ -106,28 +123,26 @@ const noteY = (entry: number) => 180 + noteRow++ * 16 + entry * 10;
 
   {
     windows.map((w) => (
-      <g class="win" data-cx={w.cx} data-cy={w.cy} data-d={w.d} data-cue={w.cue} data-k={w.k} style={`opacity:${w.opacity}`}>
-        <g class="drift">
-          <g transform={`translate(${w.x} ${w.y}) scale(${w.d})`}>
-            <g class="ink">
-              <rect class="draw paper" pathLength="1" x="0" y="0" width={w.w} height={w.h} rx="5"></rect>
-              <path class="draw" pathLength="1" d={`M0 18 H${w.w}`}></path>
-              <circle class="draw" pathLength="1" cx="8" cy="9" r="2.2"></circle>
-              <circle class="draw" pathLength="1" cx="15" cy="9" r="2.2"></circle>
-              <circle class="draw" pathLength="1" cx="22" cy="9" r="2.2"></circle>
-              {w.k === 0 && (
-                <>
-                  <circle class="draw" pathLength="1" cx={w.w / 2} cy={18 + (w.h - 18) / 2} r={(w.h - 18) * 0.32}></circle>
-                  <path class="draw" pathLength="1" d={`M${w.w / 2 - 8} ${18 + (w.h - 18) / 2 - 4} q8 -6 16 0 M${w.w / 2 - 6} ${18 + (w.h - 18) / 2 + 5} q6 4 12 0`}></path>
-                </>
-              )}
-              {w.k === 1 && (
-                <path class="draw" pathLength="1" d={`M10 30 H${w.w - 18} M10 42 H${w.w - 34} M10 54 H${w.w - 24}`}></path>
-              )}
-              {w.k === 2 && <path class="draw" pathLength="1" d={`M30 32 H${w.w - 14} M30 46 H${w.w - 30} M10 30 l6 0 m-6 0 v14 m0 -7 h5 q4 0 4 -3.5 q0 -3.5 -4 -3.5 m-1 7 l6 7`}></path>}
-            </g>
-            <text class="label" x="30" y="12.5">{w.label}</text>
+      <g class="win" data-cx={w.cx} data-cy={w.cy} data-cue={w.cue} data-k={w.k} style={`opacity:${w.opacity}`}>
+        <g transform={`translate(${w.x} ${w.y}) scale(${w.d})`}>
+          <g class="ink">
+            <rect class="draw paper" pathLength="1" x="0" y="0" width={w.w} height={w.h} rx="5"></rect>
+            <path class="draw" pathLength="1" d={`M0 18 H${w.w}`}></path>
+            <circle class="draw" pathLength="1" cx="8" cy="9" r="2.2"></circle>
+            <circle class="draw" pathLength="1" cx="15" cy="9" r="2.2"></circle>
+            <circle class="draw" pathLength="1" cx="22" cy="9" r="2.2"></circle>
+            {w.k === 0 && (
+              <>
+                <circle class="draw" pathLength="1" cx={w.w / 2} cy={18 + (w.h - 18) / 2} r={(w.h - 18) * 0.32}></circle>
+                <path class="draw" pathLength="1" d={`M${w.w / 2 - 8} ${18 + (w.h - 18) / 2 - 4} q8 -6 16 0 M${w.w / 2 - 6} ${18 + (w.h - 18) / 2 + 5} q6 4 12 0`}></path>
+              </>
+            )}
+            {w.k === 1 && (
+              <path class="draw" pathLength="1" d={`M10 30 H${w.w - 18} M10 42 H${w.w - 34} M10 54 H${w.w - 24}`}></path>
+            )}
+            {w.k === 2 && <path class="draw" pathLength="1" d={`M30 32 H${w.w - 14} M30 46 H${w.w - 30} M10 30 l6 0 m-6 0 v14 m0 -7 h5 q4 0 4 -3.5 q0 -3.5 -4 -3.5 m-1 7 l6 7`}></path>}
           </g>
+          <text class="label" x="30" y="12.5">{w.label}</text>
         </g>
       </g>
     ))
@@ -147,16 +162,16 @@ const noteY = (entry: number) => 180 + noteRow++ * 16 + entry * 10;
 
     <g class="ph ph1">
       <g class="ph-o">
-        <text class="t-title" x="222" y="150">{up(ph.programme[lang])}</text>
+        {programme.map((l, i) => <text class="t-title" x="222" y={146 + i * 16} style={`font-size:${l.size}px`}>{l.t}</text>)}
         {
           ph.exercises.map((e, i) => (
-            <g transform={`translate(0 ${i * 44})`}>
+            <g transform={`translate(0 ${exTop + i * EX_STEP})`}>
+              <text class="t-row" x="222" y="0">{up(e[lang])}</text>
               <g class="ink">
-                <rect pathLength="1" x="222" y="166" width="36" height="28" rx="4"></rect>
-                <path pathLength="1" d="M236 173 l10 7 l-10 7 Z"></path>
+                <rect pathLength="1" x="222" y="8" width="30" height="22" rx="4"></rect>
+                <path pathLength="1" d="M233 13.5 l8 5.5 l-8 5.5 Z"></path>
               </g>
-              <text class="t-row" x="266" y="178">{up(e[lang])}</text>
-              <text class="t-small" x="266" y="191">{ph.sets[lang]}</text>
+              <text class="t-small" x="262" y="23">{ph.sets[lang]}</text>
             </g>
           ))
         }
@@ -166,15 +181,15 @@ const noteY = (entry: number) => 180 + noteRow++ * 16 + entry * 10;
     <g class="ph ph2">
       <g class="ph-o">
         <g class="ink">
-          <rect pathLength="1" x="220" y="134" width="120" height="216" rx="8"></rect>
+          <rect pathLength="1" x="220" y="134" width="120" height="196" rx="8"></rect>
           <g class="squat">
             <circle pathLength="1" cx="280" cy="214" r="10"></circle>
             <path pathLength="1" d="M280 224 L276 268 M278 236 L300 250 M278 236 L298 256 M276 268 L262 288 L268 318 M276 268 L292 290 L286 318"></path>
           </g>
         </g>
-        <circle class="rec" cx="232" cy="149" r="3.2"></circle>
-        <text class="t-small" x="240" y="152">REC</text>
-        <text class="t-row center" x="280" y="372">{up(ph.recording[lang])}</text>
+        <circle class="rec" cx="232" cy="149" r="3.4"></circle>
+        <text class="t-small" x="241" y="152.5">REC</text>
+        {recording.map((l, i) => <text class="t-row center" x="280" y={352 + i * 14}>{l}</text>)}
       </g>
     </g>
 
@@ -184,12 +199,12 @@ const noteY = (entry: number) => 180 + noteRow++ * 16 + entry * 10;
           <rect pathLength="1" x="220" y="134" width="120" height="82" rx="8"></rect>
           <path pathLength="1" d="M280 160 l-3 24 M279 170 l14 8 M277 184 l-8 14 M277 184 l10 14"></path>
           <circle pathLength="1" cx="281" cy="153" r="6"></circle>
-          <path pathLength="1" d={`M232 252 h100 q8 0 8 8 v${feedback.length * 13 + 8} q0 8 -8 8 h-84 l-12 12 v-12 h-4 q-8 0 -8 -8 v-${feedback.length * 13 + 8} q0 -8 8 -8 Z`}></path>
+          <path pathLength="1" d={`M232 250 h100 q8 0 8 8 v${bubble} q0 8 -8 8 h-84 l-12 12 v-12 h-4 q-8 0 -8 -8 v-${bubble} q0 -8 8 -8 Z`}></path>
         </g>
-        <text class="t-small" x="226" y="242">{up(ph.physio[lang])}</text>
+        <text class="t-small" x="224" y="240">{up(ph.physio[lang])}</text>
         {
           feedback.map((l, i) => (
-            <text class="t-row" x="234" y={272 + i * 13}>
+            <text class="t-row" x="233" y={271 + i * 14}>
               {l}
             </text>
           ))
@@ -199,7 +214,7 @@ const noteY = (entry: number) => 180 + noteRow++ * 16 + entry * 10;
 
     <g class="ph ph4">
       <g class="ph-o">
-        <text class="t-title" x="222" y="150">{up(ph.note[lang])}</text>
+        {note.map((l, i) => <text class="t-title" x="222" y={146 + i * 16} style={`font-size:${l.size}px`}>{l.t}</text>)}
         {
           noteLines.map((rows, entry) => (
             <g class="note-line">
@@ -217,11 +232,11 @@ const noteY = (entry: number) => 180 + noteRow++ * 16 + entry * 10;
     <g class="ph ph5">
       <g class="ph-o">
         <g class="ink">
-          <circle pathLength="1" cx="280" cy="226" r="34"></circle>
-          <path pathLength="1" d="M264 228 l11 11 l22 -24"></path>
+          <circle pathLength="1" cx="280" cy="222" r="34"></circle>
+          <path pathLength="1" d="M264 224 l11 11 l22 -24"></path>
         </g>
-        <text class="t-big center" x="280" y="296">€80</text>
-        <text class="t-row center" x="280" y="318">{up(ph.paid[lang])}</text>
+        <text class="t-big center" x="280" y="298">€80</text>
+        <text class="t-row center" x="280" y="322">{up(ph.paid[lang])}</text>
       </g>
     </g>
   </g>
@@ -244,22 +259,23 @@ const noteY = (entry: number) => 180 + noteRow++ * 16 + entry * 10;
     stroke-linejoin: round;
   }
 
-  .ink {
-    filter: url(#pen-wobble);
-  }
-
   /* Shapes filled with paper, so what lies behind them is hidden, as on a page. */
   .ink :global(.paper) {
     fill: var(--bg);
   }
 
+  /* The glow: faint and wide, then fainter and wider. Each is one path, so nothing overlaps itself and beads. */
   .link-glow {
     fill: none;
     stroke: var(--pen);
-    stroke-width: 9;
+    stroke-width: 8;
+    stroke-opacity: 0.13;
     stroke-linecap: round;
-    opacity: 0.45;
-    filter: url(#pen-glow);
+  }
+
+  .link-glow.wide {
+    stroke-width: 18;
+    stroke-opacity: 0.07;
   }
 
   text {
@@ -272,20 +288,21 @@ const noteY = (entry: number) => 180 + noteRow++ * 16 + entry * 10;
     font-size: 9px;
   }
 
+  /* The phone's writing, matching SIZE above. */
   .t-title {
-    font-size: 11px;
+    font-size: 14px;
   }
 
   .t-row {
-    font-size: 8.6px;
+    font-size: 11px;
   }
 
   .t-small {
-    font-size: 7.6px;
+    font-size: 9.5px;
   }
 
   .t-big {
-    font-size: 20px;
+    font-size: 26px;
   }
 
   .center {

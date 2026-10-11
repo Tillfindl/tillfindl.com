@@ -12,8 +12,6 @@ export interface DotState {
   variant: number;
   /** 0: face, 1: footprint. */
   morph: number;
-  /** Seconds, for a slight drift while the scene is on screen. */
-  time: number;
 }
 
 type Pt = { x: number; y: number; z: number };
@@ -21,8 +19,15 @@ type Pt = { x: number; y: number; z: number };
 /** Dot radius at the back and the front of a shape, in CSS pixels at a 900px tall canvas. */
 const R_BACK = 0.9;
 const R_FRONT = 2.6;
+/** The dot count those radii are for. With fewer dots each is larger, so a shape is as solid. */
+const R_COUNT = 1500;
 /** How much of the morph is spent staggering dots from top to bottom, so they stream rather than jump. */
 const STAGGER = 0.45;
+/**
+ * How many shades the dots are drawn in. Dots of one shade are filled together as one path, so a
+ * frame is a few fills instead of one per dot, which a phone's processor would struggle with.
+ */
+const SHADES = 12;
 
 /** The head: an ellipse in unit space (y grows downwards). */
 const HEAD = { cx: 0, cy: 0.02, rx: 0.25, ry: 0.34 };
@@ -108,6 +113,10 @@ export class Dots {
   private w = 0;
   private h = 0;
   private dpr = 1;
+  /** What was drawn last, so an unchanged picture is not drawn again. */
+  private drawn = '';
+  /** How much larger each dot is than R_BACK and R_FRONT say, for the number of dots. */
+  private grain: number;
 
   /** `ink` is the dots' colour as space-separated RGB, e.g. '47 51 148'. */
   constructor(
@@ -116,6 +125,7 @@ export class Dots {
     private ink = '23 22 20',
   ) {
     this.ctx = canvas.getContext('2d')!;
+    this.grain = Math.sqrt(R_COUNT / count);
     const rnd = random(7);
     this.scatter = sample(count, rnd, (x, y) => {
       const r = Math.hypot(x, y);
@@ -137,25 +147,37 @@ export class Dots {
     this.resize();
   }
 
+  /** Matches the canvas to its size on screen; nothing happens if that has not changed (a phone's address bar resizes the window often). */
   resize() {
-    this.dpr = Math.min(window.devicePixelRatio || 1, 2);
-    this.w = this.canvas.clientWidth;
-    this.h = this.canvas.clientHeight;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = this.canvas.clientWidth;
+    const h = this.canvas.clientHeight;
+    if (w === this.w && h === this.h && dpr === this.dpr) return;
+    this.dpr = dpr;
+    this.w = w;
+    this.h = h;
+    this.drawn = '';
     this.canvas.width = Math.round(this.w * this.dpr);
     this.canvas.height = Math.round(this.h * this.dpr);
   }
 
+  /** Draws the dots for `state`; if that is what is already on the canvas, nothing happens. */
   draw(state: DotState) {
+    const key = `${state.gather} ${state.variant} ${state.morph}`;
+    if (key === this.drawn) return;
+    this.drawn = key;
     const { ctx, dpr } = this;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, this.w, this.h);
     const size = Math.min(this.w, this.h) * 0.92;
     const cx = this.w / 2;
     const cy = this.h / 2;
-    const scale = size / 900;
+    const scale = (size / 900) * this.grain;
     const mask = maskAt(state.variant);
     const showMask = clamp01(state.gather * 1.4 - 0.4) * (1 - clamp01(state.morph * 3));
     const n = this.face.length;
+    const shades = Array.from({ length: SHADES + 1 }, () => new Path2D());
+    const used = new Array<boolean>(SHADES + 1).fill(false);
 
     for (let i = 0; i < n; i++) {
       const delay = i / n;
@@ -170,9 +192,6 @@ export class Dots {
       x += (o.x - x) * m;
       y += (o.y - y) * m;
       z += (o.z - z) * m;
-      // A slight sway, different for every dot, so the shape breathes rather than sits still.
-      x += Math.sin(state.time * 0.9 + i * 1.7) * 0.0025;
-      y += Math.cos(state.time * 0.7 + i * 2.3) * 0.0025;
 
       let r = (R_BACK + (R_FRONT - R_BACK) * z) * scale;
       let alpha = 0.22 + 0.7 * z;
@@ -180,10 +199,18 @@ export class Dots {
         r *= 1 + 0.5 * showMask;
         alpha = Math.min(1, alpha + 0.3 * showMask);
       }
-      ctx.fillStyle = `rgb(${this.ink} / ${alpha})`;
-      ctx.beginPath();
-      ctx.arc(cx + x * size, cy + y * size, Math.max(0.6, r), 0, Math.PI * 2);
-      ctx.fill();
+      const k = Math.round(alpha * SHADES);
+      const px = cx + x * size;
+      const py = cy + y * size;
+      r = Math.max(0.6, r);
+      shades[k].moveTo(px + r, py);
+      shades[k].arc(px, py, r, 0, Math.PI * 2);
+      used[k] = true;
+    }
+    for (let k = 0; k <= SHADES; k++) {
+      if (!used[k]) continue;
+      ctx.fillStyle = `rgb(${this.ink} / ${k / SHADES})`;
+      ctx.fill(shades[k]);
     }
 
     if (showMask > 0.02) this.outline(mask, cx, cy, size, showMask);

@@ -16,17 +16,20 @@ same file.
 
 `/v2/` (and `/de/v2/`) is a second, interactive version of the same page to compare against, on
 white paper with everything written in ballpoint blue (Mynerve, in capitals), apart from the name
-and the one button. The first scroll is one quick move from the opening to the first scene; after
-that the words move with the reader, as short handwritten phrases with big and small words
-(`content/phrase.ts`), while each scene's picture stays in place beside them and moves as each
-phrase passes. Every photo is a realistic instant print (`components/v2/Polaroid.astro`) that comes
-out of a pen-sketched camera or develops from dark film. The wards and Bounceback are one pen
-drawing (`components/v2/WardsDrawing.astro`): a doctor swamped by software windows, a patient who
+and the one button. Scrolling is the browser's own, so the page always moves exactly with the
+finger: the words scroll past as short handwritten phrases with big and small words
+(`content/phrase.ts`), while each scene's picture stays in place and changes only as a phrase passes
+it. On a wide screen the phrases pass beside the picture; on a phone the picture is a panel in the
+top half and the phrases come up below it and slip under its soft edge, and the next scene's panel
+pushes the last one away. Every photo is a realistic instant print (`components/v2/Polaroid.astro`)
+that comes out of a pen-sketched camera or develops from dark film. The wards and Bounceback are one
+pen drawing (`components/v2/WardsDrawing.astro`): a doctor swamped by software windows, a patient who
 walks off, and the phone the windows are swept into. Eigen has the run club and workshop prints and
 a dot morph on a canvas, and Personal a row of prints that moves sideways. The opening plays on CSS
-alone, so it starts before the script arrives; after that, Lenis smooths the wheel and GSAP
-ScrollTrigger drives the rest. It is kept out of search results (`noindex`, not in the sitemap).
-With reduced motion turned on, or without JavaScript, it reads as a plain page.
+alone, so it starts before the script arrives; after that GSAP ScrollTrigger ties everything to the
+scroll position, and on a desktop Lenis smooths the mouse wheel (it is never loaded into the scroll
+on a touch screen). It is kept out of search results (`noindex`, not in the sitemap). With reduced
+motion turned on, or without JavaScript, it reads as a plain page.
 
 ## Working on it
 

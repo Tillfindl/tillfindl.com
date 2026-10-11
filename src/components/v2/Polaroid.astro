@@ -3,8 +3,10 @@
 // 4.5 mm from the sides and 6 mm from the top, so the wide strip at the bottom is where people
 // write. A photo marked `wide` (a group shot a square would cut) is a wide instant print instead:
 // a 108 × 86 mm frame with a 99 × 62 mm image, 4.5 mm from the sides and 7 mm from the top. The
-// film's look (lifted blacks, a soft vignette, a little gloss, the frame's edge over the image) is
-// built from layers over the photo; `.chem` is the dark, undeveloped film.
+// film's look is a fixed filter on the photo (lifted blacks, softer colour) and plain layers over it
+// (a vignette, a little gloss, the frame's edge over the image). `.chem` is the dark, undeveloped
+// film and `.cast` the flat, cool picture that comes through it. Developing only fades those two,
+// and no layer uses a blend mode, so a print costs nothing to repaint while the page scrolls.
 //
 // `film` says how the print develops: 'developed' (default) is finished; 'latent' starts as dark
 // film that scripts/experience.ts develops; 'auto' develops by itself on load (the hero), on CSS
@@ -42,7 +44,6 @@ const { photo: p, lang, caption, position = p.position ?? '50% 50%', sizes, eage
       loading={eager ? 'eager' : 'lazy'}
       draggable="false"
     />
-    <i class="lift"></i>
     <i class="cast"></i>
     <i class="chem"></i>
   </div>
@@ -80,7 +81,6 @@ const { photo: p, lang, caption, position = p.position ?? '50% 50%', sizes, eage
     background: var(--noise);
     background-size: 140px;
     opacity: 0.07;
-    mix-blend-mode: multiply;
     pointer-events: none;
   }
 
@@ -114,7 +114,8 @@ const { photo: p, lang, caption, position = p.position ?? '50% 50%', sizes, eage
     height: 100%;
     object-fit: cover;
     border-radius: 0;
-    filter: contrast(1.04) saturate(0.8) sepia(0.14) brightness(1.03);
+    /* Instant film never goes fully black, and its colours are soft and a little warm. */
+    filter: contrast(0.92) brightness(1.05) saturate(0.82) sepia(0.12);
     pointer-events: none;
   }
 
@@ -123,17 +124,13 @@ const { photo: p, lang, caption, position = p.position ?? '50% 50%', sizes, eage
     inset: 0;
   }
 
-  /* Instant film never goes fully black: lighten against a dark blue-grey lifts the shadows. */
-  .lift {
-    background: #262830;
-    mix-blend-mode: lighten;
-  }
-
-  /* While it develops the picture runs cool and blue before its colours arrive. */
+  /*
+   * While it develops the picture comes through flat and cool before its colours arrive: a blue-grey
+   * veil over it, which the script fades out.
+   */
   .cast {
     z-index: 1;
-    background: #3d6f8c;
-    mix-blend-mode: color;
+    background: #56707e;
     opacity: 0;
   }
 
@@ -149,8 +146,7 @@ const { photo: p, lang, caption, position = p.position ?? '50% 50%', sizes, eage
     position: absolute;
     inset: 0;
     z-index: 3;
-    background: radial-gradient(ellipse 75% 75% at 50% 46%, transparent 58%, rgb(25 18 10 / 0.26) 100%);
-    mix-blend-mode: multiply;
+    background: radial-gradient(ellipse 75% 75% at 50% 46%, rgb(22 16 9 / 0) 58%, rgb(22 16 9 / 0.24) 100%);
   }
 
   .film::after {
@@ -186,13 +182,23 @@ const { photo: p, lang, caption, position = p.position ?? '50% 50%', sizes, eage
   }
 
   @media (prefers-reduced-motion: no-preference) {
-    /* Dark, undeveloped film, until the script develops it. */
+    /*
+     * Dark, undeveloped film over a flat, cool picture, until the script develops it. Each fading
+     * layer is its own compositor layer, so developing never repaints the print or the row it is in.
+     */
+    :global(.js) .latent .chem,
+    :global(.js) .latent .cast,
+    :global(.js) .auto .chem,
+    :global(.js) .auto .cast {
+      will-change: opacity;
+    }
+
     :global(.js) .latent .chem {
       opacity: 1;
     }
 
-    :global(.js) .latent .film :global(img) {
-      filter: contrast(0.5) saturate(0) sepia(0) brightness(0.55);
+    :global(.js) .latent .cast {
+      opacity: 0.6;
     }
 
     /*
@@ -203,12 +209,8 @@ const { photo: p, lang, caption, position = p.position ?? '50% 50%', sizes, eage
       animation: clear 0.9s cubic-bezier(0.55, 0, 0.75, 0.6) 0.5s both;
     }
 
-    :global(.js) .auto .film :global(img) {
-      animation: develop 1.1s ease-in-out 0.45s both;
-    }
-
     :global(.js) .auto .cast {
-      animation: cast 1.1s ease-in-out 0.45s both;
+      animation: cast 0.8s ease-in-out 0.8s both;
     }
   }
 
@@ -221,23 +223,11 @@ const { photo: p, lang, caption, position = p.position ?? '50% 50%', sizes, eage
     }
   }
 
-  @keyframes develop {
+  @keyframes cast {
     from {
-      filter: contrast(0.5) saturate(0) sepia(0) brightness(0.55);
+      opacity: 0.6;
     }
     to {
-      filter: contrast(1.04) saturate(0.8) sepia(0.14) brightness(1.03);
-    }
-  }
-
-  @keyframes cast {
-    0% {
-      opacity: 0;
-    }
-    35% {
-      opacity: 0.5;
-    }
-    100% {
       opacity: 0;
     }
   }

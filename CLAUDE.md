@@ -95,28 +95,45 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
   a wide print (108 × 86 mm, 99 × 62 mm image) for group photos marked `wide`. Never rotate photos,
   no cursor effects, no buttons or scroll hint in the hero. Captions name a place or race only when
   it is certain. Reveal text by words, letters or phrases, never by split lines.
-- Motion in `/v2/`, Revolut-style: the first scroll is one quick automatic move from the opening to
-  the first scene (and back up the same way), held while it runs; after that the page goes at the
-  reader's pace. Each scene is a sticky picture with its phrases scrolling past in the normal flow,
-  and each picture moves only when a phrase passes it (`data-cue` and `cue()`), so something moves
-  for every bit of scroll; each scene also drifts slightly while on screen. Only the Personal row
-  pins. Scrubs trail the scroll by 0.3 s at most, and no element is driven by two scroll animations
-  (use an inner wrapper, like `.phr-in` and `.ph-o`). The opening plays on CSS so it starts before
-  the script; it holds with a sticky stage, not a pin, because a pin re-wraps the element and
-  restarts its CSS animations. Animate clip paths with explicit from and to values; don't animate x
-  or y on an element centred with the CSS `translate` property, or opacity on an element with a CSS
-  animation; animate a wrapper instead. Letters.astro's and phrase.ts's spans are reached only
-  through `:global`. Pen strokes that draw on use `pathLength="1"` and a gap longer than the stroke.
-  Back to top swooshes with a vertical motion blur, never scrolling back through the page.
-- Check `/v2/` by jumping to exact points (`window.__xp.lenis.scrollTo(y, { immediate: true })`)
-  and capturing the start, middle and end of every cue, on a phone, a small phone, a tablet and a
-  desktop, in both languages, and with reduced motion (it must read as a plain page). Run the
-  motion check (step 40 px through the page and diff each frame against the last: none may be
-  still) and the blank-frame scan (every quarter screen, measure how much differs from the paper).
-  Check the first move with a real wheel and a real swipe, and that the Personal row's photos are
-  loaded before it moves on a throttled connection. Time the opening from the self-contained
-  preview too (about two seconds, playing once). Publish it as its own preview
-  (`node tools/preview.mjs --page v2`), separate from the main one.
+- Motion in `/v2/`: it has to feel smooth on a phone first. Scrolling is the browser's own and is
+  never taken over: no automatic moves, no snapping, no touch listeners that are not passive (Lenis
+  smooths the wheel on a desktop only, `pointer: fine`). Everything moves at one speed: every
+  scroll animation is `scrub: true`, with no lag, glides or ambient drift. Each scene is a sticky
+  picture with its phrases scrolling past in the normal flow; a picture changes only when a phrase
+  passes it (`data-cue` and `cue()`), and between scenes the pictures leave and arrive with the page.
+  Sticky, never a pin (the Personal row is a sticky stage moved by its section's progress, with the
+  section's extra height in `--row`); the opening holds with a sticky stage too, because a pin
+  re-wraps the element and restarts its CSS animations. Nothing that moves or changes while
+  scrolling may use a live SVG filter (feTurbulence, feDisplacementMap, blur), `mix-blend-mode`, or
+  an animated CSS `filter`: develop a print by fading plain layers (`.chem`, `.cast`, with
+  `will-change: opacity`). Canvas drawing happens only when its picture changes. Photos are fetched
+  and decoded in the background after the hero, never as they scroll in. No element is driven by two
+  scroll animations (use an inner wrapper, like `.phr-in` and `.ph-o`), and when two close phrases
+  change the same thing (the phone's screens), the later one waits for the earlier to finish.
+  Animate clip paths with explicit from and to values; don't animate x or y on an element centred
+  with the CSS `translate` property, or opacity on an element with a CSS animation; animate a
+  wrapper instead. Letters.astro's and phrase.ts's spans are reached only through `:global`. Pen
+  strokes that draw on use `pathLength="1"` and a gap longer than the stroke. Back to top swooshes
+  with a blur (along the scroll on a desktop, a plain CSS blur on a phone), never scrolling back
+  through the page.
+- `/v2/` on a phone: the picture is a panel in the top half (`--panel`, paper behind it, a soft
+  lower edge) and the phrases come up below it and slip under that edge, so text never lies over a
+  picture; the next scene's panel pushes the last one away. Prints that belong together lie on top
+  of one another in the panel, each laid down with its own phrase, captions left readable. Reading
+  text is at least 18 px on a phone (phrases about 26 to 28 px, small words 0.72 of that, scene
+  labels 18 px), with 20 px side margins; the phone's screens in the drawing are written large
+  enough to read once it has zoomed in.
+- Check `/v2/` by jumping to exact points (`window.__xp.scrollTo(y)`; `window.__xp.y` is where the
+  page is) and capturing the start, middle and end of every cue and every hand-over between scenes,
+  on a phone (emulated as a touch device, so Lenis is off), a small phone, a tablet and a desktop,
+  in both languages, and with reduced motion (it must read as a plain page). Measure smoothness:
+  fling through the page with real touch events on a phone at 4× CPU throttling and record the
+  frame times, long tasks and any non-passive touch or wheel listeners (there must be none). Run the
+  blank-frame scan (every quarter screen, measure how much differs from the paper), check there is
+  no text under 18 px and no horizontal overflow, and that the Personal row's photos are loaded
+  before it moves on a throttled connection. Time the opening from the self-contained preview too
+  (about two seconds, playing once). Publish it as its own preview (`node tools/preview.mjs --page
+  v2`), separate from the main one.
 - Comments explain intent and the non-obvious, in full sentences, British spelling. Don't narrate.
 - `README.md` stays current in the same commit as the change it describes.
 - `public/CNAME` must keep holding `tillfindl.com`, or the custom domain drops off on deploy.
