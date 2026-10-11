@@ -1,70 +1,46 @@
 ---
-// The interactive version (/v2/ and /de/v2/): the same words and photos as the main page, staged as
-// scenes you scroll through (src/scripts/experience.ts drives them). The look is white paper with
-// everything written in ballpoint blue, apart from the name and the one button. Every photo is a
-// real Polaroid that develops as it arrives, and the wards and Bounceback are a pen drawing.
+// The site: Till's story staged as scenes you scroll through (src/scripts/experience.ts drives
+// them). The look is white paper with everything written in ballpoint blue, apart from the name and
+// the one button. Every photo is a real Polaroid that develops as it arrives, and the wards and
+// Bounceback are a pen drawing.
 //
-// Each scene is a picture that stays in place (a sticky `.visual`) and the scene's words as short
-// handwritten phrases (`.script`) that scroll past it in the normal page flow, so the words move
-// exactly with the reader's finger and each phrase sets the picture moving as it passes. On a wide
-// screen the phrases pass to the left of the picture. On a phone the picture is a panel in the top
-// half of the screen and the phrases come up below it and slip under its soft lower edge, so words
-// and pictures never overlap; the next scene's panel then pushes it away. The phrases come from
-// `page.experience.script` and must say what the main page says (checked below).
+// The words are short handwritten phrases (`page.script`) in the normal page flow, so they move
+// exactly with the reader's finger. Medicine pairs every phrase with its own print, which scrolls
+// past beside it (above it on a phone), a little slower than the words. The other scenes are a
+// picture that stays in place (a sticky `.visual`) with the phrases scrolling past (`.script`), each
+// phrase setting the picture moving as it passes. On a wide screen the phrases pass to the left of
+// the picture; on a phone the picture is a panel at the top of the screen and the phrases come up
+// below it and slip under its soft lower edge, so words and pictures never overlap.
 // The hero plays on CSS alone, so it starts before the script loads. Without JavaScript, or with
-// reduced motion, it reads as a plain page built from the main page's paragraphs (`.plain`): the
-// staged layout only applies under `.js` and `prefers-reduced-motion: no-preference`.
+// reduced motion, it reads as a plain page (`.plain`) made from the same phrases: the staged layout
+// only applies under `.js` and `prefers-reduced-motion: no-preference`.
 import '@fontsource/mynerve/latin-400.css';
 import { getImage } from 'astro:assets';
-import Base from '../../layouts/Base.astro';
+import Base from '../layouts/Base.astro';
 import Polaroid from './Polaroid.astro';
 import Letters from './Letters.astro';
 import WardsDrawing from './WardsDrawing.astro';
-import { links, meta, page, person, SITE_URL, type Lang, type Phrase, type Photo } from '../../content/profile';
-import { photo } from '../../content/images';
-import { rich } from '../../content/rich';
-import { checkScript, phraseHtml } from '../../content/phrase';
-import { personJsonLd } from '../../content/jsonld';
+import { links, meta, page, person, SITE_URL, type Lang, type Phrase, type Photo } from '../content/profile';
+import { photo } from '../content/images';
+import { rich } from '../content/rich';
+import { paragraph, phraseHtml } from '../content/phrase';
+import { personJsonLd } from '../content/jsonld';
 
 interface Props {
   lang: Lang;
 }
 
 const { lang } = Astro.props;
-const x = page.experience;
-const script = x.script;
+const { script, sections, items } = page;
 const og = await getImage({ src: photo(page.portrait.file), width: 800, height: 800, fit: 'cover', format: 'jpg' });
 const jsonLd = personJsonLd(lang, new URL(og.src, SITE_URL).href);
-
-const chapter = (id: string) => {
-  const c = page.chapters.find((ch) => ch.id === id);
-  if (!c) throw new Error(`Missing chapter: ${id}`);
-  return c;
-};
-const paragraphs = (id: string) => chapter(id).blocks.flatMap((b) => (b.kind === 'p' ? [b.text[lang]] : []));
-const photosIn = (id: string): Photo[] =>
-  chapter(id).blocks.flatMap((b) => (b.kind === 'photo' ? [b.photo] : b.kind === 'pair' ? b.photos : []));
-const caption = (p: Photo) => x.captions[p.file]?.[lang];
+const caption = (p: Photo) => page.captions[p.file]?.[lang];
+/** A list of phrases as one paragraph of HTML, for the plain page. */
+const say = (list: (Phrase | Phrase['t'])[]) => rich(paragraph(list.map((p) => ('t' in p ? p.t : p)[lang])));
 
 // The top line, written either side of the portrait like a note beside a photo.
 const [introA, ...introRest] = page.intro[lang].split(/(?<=[.!?])\s+/);
 const introB = introRest.join(' ');
-
-const [medLead, wards] = paragraphs('medicine');
-const [theatre, gradA, gradB] = photosIn('medicine');
-const bounceback = paragraphs('bounceback')[0];
-const eigen = paragraphs('eigen')[0];
-const personal = chapter('personal');
-const items = personal.blocks.flatMap((b) => (b.kind === 'items' ? b.items : []));
-
-// The phrases say exactly what the main page says; the build stops here if they ever drift apart.
-const said = (list: Phrase[]) => list.map((p) => p.t[lang]);
-checkScript(`medicine (${lang})`, said(script.medicine), medLead);
-checkScript(`wards (${lang})`, said(script.wards), wards);
-checkScript(`bounceback (${lang})`, said(script.bounceback), bounceback);
-checkScript(`eigen (${lang})`, said(script.eigen), eigen);
-checkScript(`personal (${lang})`, [script.personal[lang]], paragraphs('personal')[0]);
-checkScript(`contact (${lang})`, [script.contact[lang]], page.contact.text[lang]);
 
 /** Where each phrase sits across its column, in turn (left, indented, right), like overlays placed by hand. */
 const PLACES = ['l', 'i', 'r', 'i'] as const;
@@ -95,7 +71,7 @@ const CROP: Record<string, string> = {
 };
 ---
 
-<Base lang={lang} title={x.title[lang]} description={meta.description[lang]} jsonLd={jsonLd} alternates={false} noindex>
+<Base lang={lang} title={meta.title[lang]} description={meta.description[lang]} jsonLd={jsonLd}>
   <script is:inline>document.documentElement.classList.add('js');</script>
   <div class="xp">
     <div class="xp-bg" aria-hidden="true"></div>
@@ -110,8 +86,8 @@ const CROP: Record<string, string> = {
     <header class="hud">
       <a href="#top" class="hud-name">{person.name}</a>
       <nav aria-label={lang === 'en' ? 'Language' : 'Sprache'}>
-        <a href="/v2/" hreflang="en" lang="en" aria-current={lang === 'en' ? 'page' : undefined}>EN</a>
-        <a href="/de/v2/" hreflang="de" lang="de" aria-current={lang === 'de' ? 'page' : undefined}>DE</a>
+        <a href="/" hreflang="en" lang="en" aria-current={lang === 'en' ? 'page' : undefined}>EN</a>
+        <a href="/de/" hreflang="de" lang="de" aria-current={lang === 'de' ? 'page' : undefined}>DE</a>
       </nav>
     </header>
 
@@ -144,31 +120,34 @@ const CROP: Record<string, string> = {
         </div>
       </section>
 
-      <!-- 2. Medicine: three prints that develop as the phrases about the degree pass them. -->
+      <!-- 2. Medicine: every phrase with its own print beside it, both scrolling past together. -->
       <section class="scene medicine">
         <div class="plain">
-          <h2 class="label">{chapter('medicine').title[lang]}</h2>
-          <p set:html={rich(medLead)} />
+          <h2 class="label">{sections.medicine[lang]}</h2>
+          <p set:html={say(script.medicine)} />
         </div>
-        <div class="visual">
-          <div class="v-in">
-            <div class="med-photos">
-              {
-                [gradA, gradB, theatre].map((p, i) => (
-                  <div class:list={['mp', `mp${i}`]}>
-                    <Polaroid photo={p} lang={lang} caption={caption(p)} position={CROP[p.file]} sizes="(min-width: 52rem) 17rem, 52vw" film="latent" />
-                  </div>
-                ))
-              }
-            </div>
-          </div>
-        </div>
-        <div class="script">
-          <h2 class="label phr"><span class="phr-in">{chapter('medicine').title[lang]}</span></h2>
+        <div class="pairs">
+          <h2 class="label phr"><span class="phr-in">{sections.medicine[lang]}</span></h2>
           {
             script.medicine.map((p, i) => (
-              <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]}>
-                <p class="phr-in" set:html={phraseHtml(p.t[lang])} />
+              <div class:list={['pair', { flip: i % 2 === 1 }]}>
+                <div class="phr">
+                  <p class="phr-in" set:html={phraseHtml(p.t[lang])} />
+                </div>
+                {p.print && (
+                  <div class="pp">
+                    <div class="pp-in">
+                      <Polaroid
+                        photo={p.print}
+                        lang={lang}
+                        caption={caption(p.print)}
+                        position={CROP[p.print.file]}
+                        sizes="(min-width: 52rem) 28rem, 62vw"
+                        film="latent"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             ))
           }
@@ -178,9 +157,9 @@ const CROP: Record<string, string> = {
       <!-- 3 and 4. The wards and Bounceback: one pen drawing, set moving by the phrases beside it. -->
       <section class="scene care">
         <div class="plain">
-          <p set:html={rich(wards)} />
-          <h2 class="label">{chapter('bounceback').title[lang]}</h2>
-          <p set:html={rich(bounceback)} />
+          <p set:html={say(script.wards)} />
+          <h2 class="label">{sections.bounceback[lang]}</h2>
+          <p set:html={say(script.bounceback)} />
         </div>
         <div class="visual">
           <div class="v-in">
@@ -190,15 +169,15 @@ const CROP: Record<string, string> = {
         <div class="script">
           {
             script.wards.map((p, i) => (
-              <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]}>
+              <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]} data-space={p.space}>
                 <p class="phr-in" set:html={phraseHtml(p.t[lang])} />
               </div>
             ))
           }
-          <h2 class="label phr"><span class="phr-in">{chapter('bounceback').title[lang]}</span></h2>
+          <h2 class="label phr"><span class="phr-in">{sections.bounceback[lang]}</span></h2>
           {
             script.bounceback.map((p, i) => (
-              <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]}>
+              <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]} data-space={p.space}>
                 <p class="phr-in" set:html={phraseHtml(p.t[lang])} />
               </div>
             ))
@@ -209,8 +188,8 @@ const CROP: Record<string, string> = {
       <!-- 5. Eigen: the run club print with a lap drawn round it, the workshop print, then dots form a face with a mask and stream into a footprint. -->
       <section class="scene eigen">
         <div class="plain">
-          <h2 class="label">{chapter('eigen').title[lang]}</h2>
-          <p set:html={rich(eigen)} />
+          <h2 class="label">{sections.eigen[lang]}</h2>
+          <p set:html={say(script.eigen)} />
         </div>
         <div class="visual">
           <div class="v-in">
@@ -224,10 +203,10 @@ const CROP: Record<string, string> = {
                   <circle class="runner" r="7" cx="74" cy="372"></circle>
                 </svg>
                 <Polaroid
-                  photo={x.eigenPrints.run}
+                  photo={page.eigenPrints.run}
                   lang={lang}
-                  caption={caption(x.eigenPrints.run)}
-                  position={CROP[x.eigenPrints.run.file]}
+                  caption={caption(page.eigenPrints.run)}
+                  position={CROP[page.eigenPrints.run.file]}
                   sizes="(min-width: 52rem) 19rem, 50vw"
                   film="latent"
                 />
@@ -235,17 +214,17 @@ const CROP: Record<string, string> = {
             </div>
             <div class="work">
               <div class="work-in">
-                <Polaroid photo={x.eigenPrints.workshop} lang={lang} position={CROP[x.eigenPrints.workshop.file]} sizes="(min-width: 52rem) 14rem, 40vw" film="latent" />
+                <Polaroid photo={page.eigenPrints.workshop} lang={lang} position={CROP[page.eigenPrints.workshop.file]} sizes="(min-width: 52rem) 14rem, 40vw" film="latent" />
               </div>
             </div>
             <canvas class="dots" aria-hidden="true"></canvas>
           </div>
         </div>
         <div class="script">
-          <h2 class="label phr"><span class="phr-in">{chapter('eigen').title[lang]}</span></h2>
+          <h2 class="label phr"><span class="phr-in">{sections.eigen[lang]}</span></h2>
           {
             script.eigen.map((p, i) => (
-              <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]}>
+              <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]} data-space={p.space}>
                 <p class="phr-in" set:html={phraseHtml(p.t[lang])} />
               </div>
             ))
@@ -258,21 +237,21 @@ const CROP: Record<string, string> = {
         <div class="row-stage">
           <div class="track">
             <div class="p-intro">
-              <h2 class="label">{personal.title[lang]}</h2>
+              <h2 class="label">{sections.personal[lang]}</h2>
               <p class="lead" set:html={phraseHtml(script.personal[lang])} />
             </div>
             {
-              items.map((it, i) => (
+              items.map((it) => (
                 <div class="group">
                   <div class="g-text">
                     <h3>
                       <Letters text={it.title[lang]} />
                     </h3>
                     <p class="love" set:html={rich(it.text[lang])} />
-                    <p class="detail" set:html={rich(it.detail[lang])} />
+                    {it.detail && <p class="detail" set:html={rich(it.detail[lang])} />}
                   </div>
                   <div class="g-prints">
-                    {(x.gallery[i] ?? []).map((p) => (
+                    {it.prints.map((p) => (
                       <div class:list={['gp', { wide: p.wide }]}>
                         <Polaroid
                           photo={p}
@@ -292,10 +271,11 @@ const CROP: Record<string, string> = {
         </div>
       </section>
 
-      <!-- 7. Ending: the contact line written in ballpoint, the name as a wordmark. -->
+      <!-- 7. Ending: one dry line, the contact line written in ballpoint, the name as a wordmark. -->
       <section class="scene ending">
         <div class="end-inner">
-          <h2 class="label">{page.contact.title[lang]}</h2>
+          <p class="joke" set:html={phraseHtml(script.joke[lang])} />
+          <h2 class="label">{sections.contact[lang]}</h2>
           <p class="contact-line" set:html={phraseHtml(script.contact[lang], { letters: true })} />
           <div class="end-actions">
             {
@@ -304,7 +284,7 @@ const CROP: Record<string, string> = {
                   LinkedIn
                 </a>
               ) : (
-                <span class="button pending">{page.contact.pending[lang]}</span>
+                <span class="button pending">{page.pending[lang]}</span>
               )
             }
             <a class="top-link" href="#top">{page.footer.top[lang]}</a>
@@ -322,7 +302,7 @@ const CROP: Record<string, string> = {
   </div>
 
   <script>
-    import '../../scripts/experience';
+    import '../scripts/experience';
   </script>
 </Base>
 
@@ -477,12 +457,25 @@ const CROP: Record<string, string> = {
     margin-top: var(--s-8);
   }
 
-  .med-photos,
+  .pairs,
   .g-prints,
   .eigen .v-in {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: var(--s-4);
+  }
+
+  .pairs {
+    margin-top: var(--s-8);
+  }
+
+  .pairs .phr,
+  .pairs .label {
+    display: none;
+  }
+
+  .joke {
+    margin-bottom: var(--s-8);
   }
 
   .g-prints {
@@ -550,10 +543,14 @@ const CROP: Record<string, string> = {
        * The phrases: their size, the space above the first one in a scene (so it sits mid-screen
        * when the scene settles), between phrases, and after the last one.
        */
-      --phr-size: clamp(1.45rem, 2.1vw, 2.3rem);
-      --p-top: 38svh;
-      --phr-gap: 24svh;
-      --p-bottom: 30svh;
+      --phr-size: clamp(1.6rem, 2.35vw, 2.65rem);
+      --p-top: 26svh;
+      --phr-gap: 18svh;
+      --p-bottom: 14svh;
+      /* Medicine: a print's width, the space above the first pair, and between pairs. */
+      --med-w: clamp(18rem, 28vw, 30rem);
+      --pairs-top: 12svh;
+      --pair-gap: 14svh;
       /* How much bigger the big words are. */
       --big: 1.6;
       font-size: clamp(1.1rem, 1.5vw, 1.45rem);
@@ -620,7 +617,7 @@ const CROP: Record<string, string> = {
       display: block;
       position: relative;
       z-index: 2;
-      width: min(38rem, 44vw);
+      width: min(44rem, 46vw);
       margin: calc(-1 * var(--stage)) 0 0 var(--side);
       padding: var(--p-top) 0 var(--p-bottom);
       pointer-events: none;
@@ -641,6 +638,15 @@ const CROP: Record<string, string> = {
       margin: 0;
     }
 
+    /* A phrase with a pause after it, and one that belongs with the phrase after it. */
+    :global(.js) .phr[data-space='more'] {
+      margin-bottom: calc(var(--phr-gap) * 2.2);
+    }
+
+    :global(.js) .phr[data-space='less'] {
+      margin-bottom: calc(var(--phr-gap) * 0.25);
+    }
+
     :global(.js) .phr[data-at='i'] {
       padding-left: 12%;
     }
@@ -650,9 +656,10 @@ const CROP: Record<string, string> = {
     }
 
     /* The scene's name, small, above its first phrase. A colour, not opacity: the script fades it. */
-    :global(.js) .script .label {
+    :global(.js) .script .label,
+    :global(.js) .pairs .label {
       margin-bottom: var(--s-6);
-      font-size: 0.95rem;
+      font-size: 1.05rem;
       line-height: 1.32;
       color: rgb(47 51 148 / 0.6);
       opacity: 1;
@@ -678,10 +685,13 @@ const CROP: Record<string, string> = {
       white-space: nowrap;
     }
 
-    /* Just under the letters, clear of the line below. */
+    /*
+     * Just under the letters, clear of the line below. It starts a little before the word and ends
+     * with it, so on a line set against the right edge it never reaches past the column.
+     */
     :global(.js) .xp :global(.u-line) {
       position: absolute;
-      left: -1%;
+      left: -2%;
       bottom: 0.02em;
       width: 102%;
       height: 0.3em;
@@ -779,10 +789,10 @@ const CROP: Record<string, string> = {
     :global(.js) .o-pen {
       position: absolute;
       top: 52%;
-      width: min(19rem, 24vw);
+      width: min(21rem, 25vw);
       margin: 0;
       translate: 0 -50%;
-      font-size: clamp(1.35rem, 2.05vw, 2.1rem);
+      font-size: clamp(1.45rem, 2.25vw, 2.3rem);
       line-height: 1.25;
     }
 
@@ -861,27 +871,48 @@ const CROP: Record<string, string> = {
       }
     }
 
-    /* ----- Medicine: the prints on the right ----- */
+    /*
+     * ----- Medicine: each phrase beside its own print, on alternating sides -----
+     * Nothing here is sticky: the pairs scroll past with the page, and the script moves each print
+     * a little slower than its phrase (on .pp-in, so the layout stays put).
+     */
 
-    :global(.js) .med-photos {
-      position: absolute;
-      top: 50%;
-      right: var(--side);
-      left: 46%;
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      gap: 2vw;
+    :global(.js) .pairs {
+      display: block;
+      max-width: 74rem;
+      margin: 0 auto;
+      padding: var(--pairs-top) var(--side) var(--p-bottom);
+    }
+
+    :global(.js) .pairs .label {
+      display: block;
+    }
+
+    :global(.js) .pair {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) var(--med-w);
+      align-items: center;
+      column-gap: 6vw;
+      margin-bottom: var(--pair-gap);
+    }
+
+    :global(.js) .pair.flip {
+      grid-template-columns: var(--med-w) minmax(0, 1fr);
+    }
+
+    :global(.js) .pair.flip .pp {
+      order: -1;
+    }
+
+    :global(.js) .pairs .phr {
+      display: block;
       margin: 0;
-      translate: 0 -50%;
+      font-size: var(--phr-size);
+      line-height: 1.18;
     }
 
-    :global(.js) .mp {
-      width: clamp(10rem, 15vw, 17rem);
-    }
-
-    :global(.js) .mp1 {
-      margin-top: 6svh;
+    :global(.js) .pp-in {
+      position: relative;
     }
 
     /* ----- The wards and Bounceback: the drawing on the right ----- */
@@ -990,7 +1021,7 @@ const CROP: Record<string, string> = {
     }
 
     :global(.js) .p-intro .lead {
-      font-size: clamp(1.7rem, 2.7vw, 2.6rem);
+      font-size: clamp(1.9rem, 3vw, 2.9rem);
       line-height: 1.1;
     }
 
@@ -1004,23 +1035,23 @@ const CROP: Record<string, string> = {
     /* Set like the phrases: the title big, the line on what Till loves medium, the proof small. */
     :global(.js) .g-text {
       flex: none;
-      width: min(24rem, 72vw);
+      width: min(26rem, 72vw);
     }
 
     :global(.js) .g-text h3 {
       margin-bottom: var(--s-4);
-      font-size: clamp(2rem, 3.2vw, 3.1rem);
+      font-size: clamp(2.2rem, 3.5vw, 3.4rem);
       line-height: 1;
     }
 
     :global(.js) .g-text .love {
-      font-size: clamp(1.25rem, 1.75vw, 1.7rem);
+      font-size: clamp(1.35rem, 1.95vw, 1.9rem);
       line-height: 1.15;
     }
 
     :global(.js) .g-text .detail {
       margin-top: var(--s-4);
-      font-size: 0.95rem;
+      font-size: 1.05rem;
     }
 
     :global(.js) .g-prints {
@@ -1074,10 +1105,17 @@ const CROP: Record<string, string> = {
       padding: var(--s-16) var(--side) var(--s-8);
     }
 
+    /* The dry line before Contact, set like a phrase. */
+    :global(.js) .joke {
+      margin: 0 0 var(--s-16);
+      font-size: var(--phr-size);
+      line-height: 1.18;
+    }
+
     :global(.js) .contact-line {
       --big: 1.4;
       max-width: 30ch;
-      font-size: clamp(1.8rem, 3.3vw, 3.2rem);
+      font-size: clamp(2rem, 3.6vw, 3.5rem);
       line-height: 1.12;
     }
 
@@ -1135,25 +1173,34 @@ const CROP: Record<string, string> = {
         --side: 20px;
         --pw: min(52vw, 15rem);
         --w0: 1.3s;
-        /* The picture panel: its height, where its pictures start (clear of the corner links), and its soft edge. */
-        --panel: 50svh;
-        --panel-top: 3.25rem;
-        --skirt: 7svh;
         /*
-         * The phrases: big enough to read at arm's length. The first one in a scene is near the
-         * bottom of the screen when its panel arrives, so it sets the picture moving only after.
+         * The picture panel: its height (small enough to leave the words most of the screen), where
+         * its pictures start (clear of the corner links), and its soft edge.
          */
-        --phr-size: clamp(1.6rem, 7vw, 2rem);
-        --p-top: 34svh;
-        --phr-gap: 11svh;
-        --p-bottom: 6svh;
-        --big: 1.45;
+        --panel: 42svh;
+        --panel-top: 3.25rem;
+        --skirt: 4svh;
+        /* The phrases: big enough to read at arm's length, starting just under the panel. */
+        --phr-size: clamp(1.75rem, 7.8vw, 2.25rem);
+        --p-top: 6svh;
+        --phr-gap: 9svh;
+        --p-bottom: 8svh;
+        /* As big as the longest big word ("biomechanics") allows on an indented line. */
+        --big: 1.34;
+        --med-w: 62vw;
+        --pairs-top: 6svh;
+        --pair-gap: 10svh;
         /* Phone size, growing on a tablet held upright. */
         font-size: clamp(1.125rem, 2.8vw, 1.4rem);
       }
 
       :global(.js) .hud {
         padding: var(--s-4) var(--side);
+      }
+
+      /* No hold on a phone: the first swipe moves the page, and the opening scrolls away with it. */
+      :global(.js) .opening {
+        --hold: 0;
       }
 
       :global(.js) .o-head {
@@ -1170,7 +1217,7 @@ const CROP: Record<string, string> = {
         width: auto;
         text-align: center;
         translate: none;
-        font-size: 1.35rem;
+        font-size: 1.5rem;
       }
 
       :global(.js) .o-pen-a {
@@ -1195,7 +1242,8 @@ const CROP: Record<string, string> = {
         left: 0;
         right: 0;
         height: var(--skirt);
-        background: linear-gradient(var(--bg), rgb(240 240 237 / 0));
+        /* Solid for its first quarter, so an underline is hidden as soon as the words above it are. */
+        background: linear-gradient(var(--bg) 25%, rgb(240 240 237 / 0));
         pointer-events: none;
       }
 
@@ -1210,11 +1258,29 @@ const CROP: Record<string, string> = {
         margin: 0 var(--side);
       }
 
+      /*
+       * On a phone a phrase reads as one sentence that wraps to the width (its designed lines are
+       * for a wide column), set from the left; only the indented ones keep a small indent, so even
+       * the longest big word fits.
+       */
+      :global(.js) .xp :global(.ln) {
+        display: inline;
+      }
+
+      :global(.js) .phr-in {
+        text-wrap: balance;
+      }
+
       :global(.js) .phr[data-at='i'] {
         padding-left: 6%;
       }
 
-      :global(.js) .script .label {
+      :global(.js) .phr[data-at='r'] {
+        text-align: left;
+      }
+
+      :global(.js) .script .label,
+      :global(.js) .pairs .label {
         margin-bottom: var(--s-4);
         font-size: 1.125rem;
       }
@@ -1224,43 +1290,32 @@ const CROP: Record<string, string> = {
       }
 
       /*
-       * Medicine: the three prints lie on top of one another, each a little higher and further right
-       * than the one before, so every caption stays readable. --mw is a print's width (as wide as the
-       * panel allows) and --dy how much higher each lies; the three together are 1.678 widths tall.
+       * Medicine: each print above its phrase, alternately on the left and the right, with room
+       * between them for the print to lag the words a little without reaching them.
        */
-      :global(.js) .medicine {
-        --mw: min(52vw, (var(--panel) - var(--panel-top) - 1rem) * 0.596);
-        --dy: calc(var(--mw) * 0.231);
+      :global(.js) .pairs {
+        padding: var(--pairs-top) var(--side) var(--p-bottom);
       }
 
-      :global(.js) .med-photos {
-        display: block;
-        top: calc(var(--panel-top) + (var(--panel) - var(--panel-top) - var(--mw) * 1.678) / 2);
-        left: var(--side);
-        right: var(--side);
-        height: calc(var(--mw) * 1.678);
-        translate: none;
+      :global(.js) .pair,
+      :global(.js) .pair.flip {
+        display: flex;
+        flex-direction: column;
       }
 
-      :global(.js) .mp {
-        position: absolute;
-        width: var(--mw);
+      :global(.js) .pp,
+      :global(.js) .pair.flip .pp {
+        order: -1;
+        width: var(--med-w);
+        margin-bottom: var(--s-12);
       }
 
-      :global(.js) .mp0 {
-        left: 0;
-        top: calc(2 * var(--dy));
+      :global(.js) .pair.flip .pp {
+        margin-left: auto;
       }
 
-      :global(.js) .mp1 {
-        left: calc(50% - var(--mw) / 2);
-        top: var(--dy);
-        margin-top: 0;
-      }
-
-      :global(.js) .mp2 {
-        right: 0;
-        top: 0;
+      :global(.js) .pair.flip .phr {
+        text-align: right;
       }
 
       /* The drawing fills the panel's width, or its height if that is shorter, and sits in its middle. */
@@ -1301,12 +1356,24 @@ const CROP: Record<string, string> = {
         height: calc(100% - var(--panel-top));
       }
 
+      /*
+       * The row sits a little above the middle and its intro at the top of the row, so the intro
+       * comes up soon after the last Eigen phrase rather than half a screen later.
+       */
+      :global(.js) .row-stage {
+        padding-bottom: 16svh;
+      }
+
+      :global(.js) .p-intro {
+        align-self: flex-start;
+      }
+
       :global(.js) .track {
         gap: 14vw;
       }
 
       :global(.js) .p-intro .lead {
-        font-size: clamp(1.9rem, 8vw, 2.4rem);
+        font-size: clamp(2rem, 8.6vw, 2.6rem);
       }
 
       :global(.js) .group {
@@ -1314,7 +1381,7 @@ const CROP: Record<string, string> = {
       }
 
       :global(.js) .g-text {
-        width: 78vw;
+        width: 80vw;
       }
 
       /* As large as the longest single word ("Photography") allows on the narrowest phones. */
@@ -1323,12 +1390,12 @@ const CROP: Record<string, string> = {
       }
 
       :global(.js) .g-text .love {
-        font-size: 1.35rem;
+        font-size: 1.45rem;
         line-height: 1.2;
       }
 
       :global(.js) .g-text .detail {
-        font-size: 1.125rem;
+        font-size: 1.15rem;
       }
 
       :global(.js) .gp {
@@ -1345,7 +1412,8 @@ const CROP: Record<string, string> = {
       }
 
       :global(.js) .contact-line {
-        font-size: clamp(1.6rem, 7vw, 2.1rem);
+        --big: 1.25;
+        font-size: clamp(1.75rem, 7.6vw, 2.25rem);
       }
 
       :global(.js) .wordmark {
@@ -1353,10 +1421,22 @@ const CROP: Record<string, string> = {
       }
     }
 
+    /* In a narrow desktop window the big words are a little less big, so their lines never wrap. */
+    @media (min-width: 52rem) and (max-width: 68rem) {
+      :global(.js) .xp {
+        --big: 1.45;
+      }
+    }
+
     /* On the narrowest phones the big words are a little less big, so the longest one still fits. */
     @media (max-width: 22.5rem) {
       :global(.js) .xp {
-        --big: 1.3;
+        --big: 1.2;
+        --phr-size: 1.6rem;
+      }
+
+      :global(.js) .phr[data-at='i'] {
+        padding-left: 4%;
       }
     }
   }

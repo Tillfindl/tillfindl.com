@@ -14,8 +14,7 @@ export default defineConfig({
   integrations: [
     sitemap({
       i18n: { defaultLocale: 'en', locales: { en: 'en', de: 'de' } },
-      // The interactive version under /v2/ is a draft to compare against, not for search engines.
-      filter: (page) => !page.includes('/404') && !page.includes('/v2/'),
+      filter: (page) => !page.includes('/404'),
     }),
   ],
 });

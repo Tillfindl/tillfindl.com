@@ -7,14 +7,14 @@
 //
 // Nothing here uses an SVG filter: a live filter is redrawn on every frame the drawing moves, which
 // is what made scrolling past it stutter on a phone. The glow is two wide, faint strokes instead.
-import { page, type Lang } from '../../content/profile';
+import { page, type Lang } from '../content/profile';
 
 interface Props {
   lang: Lang;
 }
 
 const { lang } = Astro.props;
-const x = page.experience;
+const x = page;
 const up = (s: string) => s.toUpperCase();
 
 /**

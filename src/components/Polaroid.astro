@@ -14,8 +14,8 @@
 // the script expected (`.js`); otherwise every print is simply developed. The caption is split into
 // letters here, at build time, so it can be written one letter at a time.
 import { Image } from 'astro:assets';
-import type { Lang, Photo } from '../../content/profile';
-import { photo } from '../../content/images';
+import type { Lang, Photo } from '../content/profile';
+import { photo } from '../content/images';
 import Letters from './Letters.astro';
 
 interface Props {
@@ -65,6 +65,11 @@ const { photo: p, lang, caption, position = p.position ?? '50% 50%', sizes, eage
     container-type: inline-size;
     border-radius: 1.6% / 1.3%;
     background: #fcfcfa linear-gradient(180deg, #fefefd, #f5f5f2);
+    /*
+     * Its own stacking context: the film's layers are numbered (z-index) within the print, and
+     * without this they would rise above any print laid on top of it.
+     */
+    isolation: isolate;
     box-shadow:
       0 0 0 0.5px rgb(0 0 0 / 0.06),
       0 1px 1.5px rgb(0 0 0 / 0.12),

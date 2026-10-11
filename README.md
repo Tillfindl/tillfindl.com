@@ -1,35 +1,25 @@
 # tillfindl.com
 
-The personal website of Till Findl: a small one-page site built with [Astro](https://astro.build),
-hosted on GitHub Pages at [tillfindl.com](https://tillfindl.com). The domain is registered on
-Cloudflare.
+The personal website of Till Findl, built with [Astro](https://astro.build), hosted on GitHub
+Pages at [tillfindl.com](https://tillfindl.com). The domain is registered on Cloudflare.
 
-A short personal page in English (`/`) and German (`/de/`): name, one line about what Till does,
-portrait and buttons, then three plain sections (medicine, Bounceback, Eigen) with photos set into
-the text, a personal section of interests with a photo each, and contact at the end, on warm
-off-white paper. Each section is a small
-label beside a reading column, so the whole page shares two edges. The fuller facts go to search engines
-(JSON-LD) and AI assistants (`/llms.txt`, which also carries the page text), generated from the
-same file.
-
-### The interactive version
-
-`/v2/` (and `/de/v2/`) is a second, interactive version of the same page to compare against, on
-white paper with everything written in ballpoint blue (Mynerve, in capitals), apart from the name
-and the one button. Scrolling is the browser's own, so the page always moves exactly with the
-finger: the words scroll past as short handwritten phrases with big and small words
-(`content/phrase.ts`), while each scene's picture stays in place and changes only as a phrase passes
-it. On a wide screen the phrases pass beside the picture; on a phone the picture is a panel in the
-top half and the phrases come up below it and slip under its soft edge, and the next scene's panel
-pushes the last one away. Every photo is a realistic instant print (`components/v2/Polaroid.astro`)
-that comes out of a pen-sketched camera or develops from dark film. The wards and Bounceback are one
-pen drawing (`components/v2/WardsDrawing.astro`): a doctor swamped by software windows, a patient who
-walks off, and the phone the windows are swept into. Eigen has the run club and workshop prints and
-a dot morph on a canvas, and Personal a row of prints that moves sideways. The opening plays on CSS
-alone, so it starts before the script arrives; after that GSAP ScrollTrigger ties everything to the
-scroll position, and on a desktop Lenis smooths the mouse wheel (it is never loaded into the scroll
-on a touch screen). It is kept out of search results (`noindex`, not in the sitemap). With reduced
-motion turned on, or without JavaScript, it reads as a plain page.
+One page in English (`/`) and German (`/de/`), told as scenes you scroll through, on white paper
+with everything written in ballpoint blue (Mynerve, in capitals) apart from the name and the one
+button. Scrolling is the browser's own, so the page always moves exactly with the finger. The words
+are short handwritten phrases with big and small words (`content/phrase.ts`). Medicine pairs each
+phrase with its own print, which scrolls past beside it a little slower than the words. The other
+scenes keep a picture in place that changes as each phrase passes it: on a wide screen beside the
+phrases, on a phone as a panel at the top with the phrases coming up below it and slipping under
+its soft edge. Every photo is a realistic instant print (`components/Polaroid.astro`) that comes out
+of a pen-sketched camera or develops from dark film. The wards and Bounceback are one pen drawing
+(`components/WardsDrawing.astro`): a doctor swamped by software windows, a patient who walks off,
+and the phone the windows are swept into. Eigen has the run club and workshop prints and a dot
+morph on a canvas, Personal a row of prints that moves sideways, and a dry line comes before
+Contact. The opening plays on CSS alone, so it starts before the script arrives; after that GSAP
+ScrollTrigger ties everything to the scroll position, and on a desktop Lenis smooths the mouse wheel
+(it is never loaded on a touch screen). With reduced motion turned on, or without JavaScript, it
+reads as a plain page made from the same phrases. The fuller facts go to search engines (JSON-LD)
+and AI assistants (`/llms.txt`, which also carries the page's words), generated from the same file.
 
 ## Working on it
 
@@ -41,47 +31,47 @@ npm run dev       # local server with live reload at http://localhost:4321
 npm run check     # type-check the .astro and .ts files
 npm run build     # build the static site into dist/
 npm run preview   # serve the built dist/ locally
-node tools/preview.mjs             # self-contained preview of the main page, into preview/
-node tools/preview.mjs --page v2   # the same for the interactive version, into preview-v2/
+node tools/preview.mjs   # self-contained preview of the site, into preview/
 ```
 
 ## How it is laid out
 
 ```
 src/
-  content/profile.ts    `page`: the sections the page shows (paragraphs and photos),
-                        in English and German. `facts`: the fuller record, read only by search
-                        engines and AI assistants
-  content/rich.ts       The small markup paragraphs may use: [label](url) links and *italics*
-  content/phrase.ts     The interactive version's phrase markup, and the check that its phrases
-                        say what the paragraphs say
+  content/profile.ts    `page`: what the page shows, in English and German: the phrases
+                        (`script`), the prints and captions, the personal items, the drawings'
+                        labels. `facts`: the fuller record, read only by search engines and AI
+  content/phrase.ts     The phrase markup (big, small, underlined, line breaks), and `paragraph`,
+                        which turns a list of phrases back into plain text
+  content/rich.ts       [label](url) links, as safe HTML
   content/jsonld.ts     Structured data (schema.org Person) built from the profile
   content/images.ts     Looks up photos in src/assets/photos by file name
-  pages/index.astro     "/" (English); pages/de/index.astro is "/de/" (German); both render Page
+  pages/index.astro     "/" (English); pages/de/index.astro is "/de/" (German); both render Experience
   pages/llms.txt.ts     "/llms.txt": a plain summary for AI assistants, built from the profile
   pages/404.astro       The not-found page
-  components/           Page (intro and contact), Chapter (one section's label, text and photos), Footer
-  components/v2/        Experience (the interactive version's scenes, pages/v2 and pages/de/v2), Polaroid,
-                        WardsDrawing (the pen drawing), Letters (text split into letters at build time)
-  scripts/              experience.ts (the interactive version's motion), dots.ts (its dot morph)
+  components/           Experience (the scenes), Polaroid, WardsDrawing (the pen drawing),
+                        Letters (text split into letters at build time)
+  scripts/              experience.ts (the motion), dots.ts (the dot morph)
   layouts/Base.astro    The HTML shell: <head>, language alternates, social card, JSON-LD
   styles/global.css     Design tokens (colour, type, spacing) and base styles
   assets/photos/        Photos; the build resizes them and strips their metadata
 public/                 Copied as-is: CNAME (the custom domain), favicon, robots.txt
+tools/preview.mjs       Turns the build into one self-contained file for sharing drafts
 astro.config.mjs        Site URL, languages, sitemap
 .github/workflows/      deploy.yml publishes main to GitHub Pages; check.yml checks pull requests
 ```
 
 ### Changing things
 
-- **Words:** edit `src/content/profile.ts`. The page, the German page, the structured data and
-  `/llms.txt` all follow. Before adding a sentence to the page, ask whether it could go in `facts`.
+- **Words:** edit the phrases in `page.script` in `src/content/profile.ts`. The page, the German
+  page, the plain page and `/llms.txt` all follow. Before adding a sentence, ask whether it could go
+  in `facts` instead.
 - **Photos:** drop the file into `src/assets/photos/`, add it to `photos` in the profile with alt
-  text in both languages, and place it in a section. A landscape `photo` fills the text column,
-  an upright one takes half of it, and a `pair` sets two halves side by side. In the personal
-  section, each of the `items` has its own photo, title and line.
-- **The look:** colours, type sizes, the 8px spacing scale and the column widths are tokens at
-  the top of `src/styles/global.css`.
+  text in both languages, and use it: as a Medicine phrase's `print`, in an item's `prints`, or as
+  one of the Eigen prints. A caption goes in `captions`, a square crop in `CROP` in Experience.astro.
+- **The look:** the page's sizes and spacing are named variables at the top of Experience.astro's
+  staged styles (and again for phones); colours and the spacing scale are tokens in
+  `src/styles/global.css`.
 
 Keep private details out of the repo: no phone number, home address, birth date or personal email.
 

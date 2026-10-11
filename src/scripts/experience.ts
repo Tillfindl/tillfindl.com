@@ -5,12 +5,12 @@
  * finger and the browser can scroll on its own thread; on a phone or tablet nothing here even
  * listens to touches. Lenis only smooths a mouse wheel's steps on a desktop.
  *
- * Every animation is tied straight to the scroll position (scrub: true), so everything on screen
- * moves at one speed. The words are in the normal page flow and move with the page. A picture stays
- * where it is and changes only while one of its phrases passes it (a "cue"), and between scenes the
- * pictures leave and arrive with the page, at the same speed as everything else. Each scene is a
- * sticky picture with its phrases scrolling past (Experience.astro); the Personal row is sticky too,
- * and moves sideways by as much as its section has scrolled. Scrolling back plays it all in reverse.
+ * Every animation is tied straight to the scroll position (scrub: true), with no lag. The words are
+ * in the normal page flow and move with the page. In Medicine each phrase has its own print beside
+ * it, which scrolls past a little slower than the words. The other scenes are a sticky picture that
+ * changes only while one of its phrases passes it (a "cue"); between scenes the pictures leave and
+ * arrive with the page. The Personal row is sticky too, and moves sideways by as much as its section
+ * has scrolled. Scrolling back plays it all in reverse.
  *
  * The hero plays on CSS and needs nothing from here until you scroll. Nothing is rotated. With
  * reduced motion nothing here runs and the page reads as a plain page.
@@ -41,12 +41,16 @@ const ZONES: { desktop: { in: Range; out: Range; line: Range; cue: Range }; mobi
   desktop: { in: ['top 96%', 'top 76%'], out: ['bottom 26%', 'bottom 6%'], line: ['top 82%', 'top 60%'], cue: ['top 86%', 'top 42%'] },
   mobile: { line: ['top 92%', 'top 72%'], cue: ['top 90%', 'top 62%'] },
 };
-/** How far a print drops as it is laid down, and how much larger it starts. */
-const LAY = { y: '4vh', scale: 1.05 };
+/**
+ * How far a Medicine print lags its phrase, in screen heights either way: it starts this much
+ * higher and ends this much lower, so it moves a little slower than the words. Less on a phone,
+ * where the print sits just above its phrase.
+ */
+const LAG = { desktop: 0.1, mobile: 0.03 };
 /** How far the drawing zooms in on its phone, so the screens can be read (on a phone, at most). */
 const PHONE_ZOOM = { desktop: 1.2, mobile: 1.9 };
 /** On a phone, the zoomed-in phone fills at most this much of the picture panel's height. */
-const PHONE_FILL = 0.84;
+const PHONE_FILL = 0.9;
 /** How many dots make the face and the footprint: fewer on a phone, where each frame costs more. */
 const DOTS = { desktop: 1500, mobile: 650 };
 /** How long after the page has loaded (the hero has settled by then) every photo is fetched, in ms. */
@@ -196,7 +200,7 @@ function backToTop() {
     const r = el.getBoundingClientRect();
     return r.bottom > 0 && r.top < vh;
   };
-  const leaving = $$('.opening, .scene .visual, .script .phr, .personal, .ending').filter(onScreen);
+  const leaving = $$('.opening, .pairs .pair, .scene .visual, .script .phr, .personal, .ending').filter(onScreen);
   const arriving = $$('.opening');
   gsap
     .timeline({
@@ -225,10 +229,6 @@ function cue(name: string) {
   if (!phrase) throw new Error(`No phrase for cue "${name}"`);
   return gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: phrase, start: zone.cue[0], end: zone.cue[1], scrub: true } });
 }
-
-/** Lays prints down: each drops a little onto the table and settles, one after another. */
-const lay = (shots: Element | Element[], dur: number, stagger = 0) =>
-  gsap.fromTo(shots, { y: LAY.y, scale: LAY.scale, opacity: 0 }, { y: 0, scale: 1, opacity: 1, duration: dur, stagger, ease: 'power2.out' });
 
 /** Writes letters between `at` and `at + dur`, one after another, as a pen would. */
 function write(tl: gsap.core.Timeline, chars: Element[], at: number, dur: number) {
@@ -321,44 +321,41 @@ function phrases(desktop: boolean) {
 /* ---------- The scenes ---------- */
 
 /**
- * 1. The opening plays on CSS. Scrolling only clears it: the notes drift apart and fade, and the
- * print steps back. The elements with CSS animations (the letters, the logo, the print) are left
- * alone, because an animation's fill would override what GSAP writes; their wrappers move.
+ * 1. The opening plays on CSS. On a desktop it holds briefly while scrolling clears it: the notes
+ * drift apart and fade, and the print steps back. On a phone it does not hold, so the first swipe
+ * simply scrolls it away. The elements with CSS animations (the letters, the logo, the print) are
+ * left alone, because an animation's fill would override what GSAP writes; their wrappers move.
  */
 function opening(desktop: boolean) {
+  if (!desktop) return;
   const scene = $('.opening');
   gsap
     .timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: scene, start: 'top top', end: 'bottom bottom', scrub: true } })
-    .fromTo('.o-pen-a p', { x: 0, y: 0, opacity: 1 }, { x: desktop ? '-4vw' : 0, y: desktop ? 0 : '-3vh', opacity: 0, immediateRender: false }, 0)
-    .fromTo('.o-pen-b p', { x: 0, y: 0, opacity: 1 }, { x: desktop ? '4vw' : 0, y: desktop ? 0 : '3vh', opacity: 0, immediateRender: false }, 0)
+    .fromTo('.o-pen-a p', { x: 0, opacity: 1 }, { x: '-4vw', opacity: 0, immediateRender: false }, 0)
+    .fromTo('.o-pen-b p', { x: 0, opacity: 1 }, { x: '4vw', opacity: 0, immediateRender: false }, 0)
     .fromTo('.eject', { scale: 1, y: 0 }, { scale: 0.9, y: '-4vh', immediateRender: false }, 0)
     .fromTo('.o-head', { opacity: 1 }, { opacity: 0, duration: 0.5, immediateRender: false }, 0);
 }
 
 /**
- * 2. Medicine: three dark prints, each developing with its phrase. On a desktop they are laid down
- * side by side as the scene comes in. On a phone they lie on top of one another in the picture
- * panel: the first is there when the panel arrives, and each of the others is laid on top with its
- * own phrase, so the print being talked about is always the one in full view.
+ * 2. Medicine: each phrase with its own print. The print scrolls past with its phrase but a little
+ * slower (LAG), develops as it comes up the screen, and has its caption written last. Nothing is
+ * laid down or pinned: the pairs simply go by with the page.
  */
 function medicine(desktop: boolean) {
-  const scene = $('.medicine');
-  const shots = $$('.mp', scene);
-  const polas = shots.map((s) => $('.pola', s));
-
-  if (desktop) {
-    gsap
-      .timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: scene, start: 'top 95%', end: 'top 30%', scrub: true } })
-      .add(lay(shots, 0.5, 0.25), 0);
-  }
-  polas.forEach((pola, i) => {
-    const tl = cue(`med-${i + 1}`);
-    const laid = !desktop && i > 0;
-    if (laid) tl.add(lay(shots[i], 0.3), 0);
-    const at = laid ? 0.15 : 0;
-    tl.add(develop(pola, 0.8 - at), at);
+  const lag = desktop ? LAG.desktop : LAG.mobile;
+  for (const pair of $$('.medicine .pair')) {
+    const print = $('.pp-in', pair);
+    const pola = $('.pola', print);
+    gsap.fromTo(
+      print,
+      { y: () => -lag * window.innerHeight },
+      { y: () => lag * window.innerHeight, ease: 'none', scrollTrigger: { trigger: pair, start: 'top bottom', end: 'bottom top', scrub: true, invalidateOnRefresh: true } },
+    );
+    const tl = gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: print, start: 'top 95%', end: 'top 45%', scrub: true } });
+    tl.add(develop(pola, 0.8), 0);
     write(tl, $$('.pen-cap .ch', pola), 0.65, 0.35);
-  });
+  }
 }
 
 /**
@@ -455,7 +452,9 @@ function care(desktop: boolean) {
     },
     0.45,
   );
-  sweep.to(screens[0], { opacity: 1, duration: 0.15 }, 0.75);
+  // "and we started with physio, where recovery depends on the exercises patients do at home.":
+  // the phone shows the day's exercises.
+  cue('home').to(screens[0], { opacity: 1, duration: 0.15 }, 0.2);
 
   // The phone's screens, one after another. A screen comes in on its outer group and leaves on its
   // inner one, because the phrase that brings it is not always the phrase that takes it away. Each
@@ -481,8 +480,9 @@ function care(desktop: boolean) {
 }
 
 /**
- * 5. Eigen: the run club print develops and a lap is drawn round it; the workshop print is laid on
- * top with Max; then the prints give way to the dots: a face, the mask's versions, and the footprint.
+ * 5. Eigen: the run club print develops and a lap is drawn round it; the workshop print comes in
+ * over its corner with Max; then the prints give way to the dots: a face for the CPAP masks, the
+ * custom versions, and the footprint.
  */
 function eigen(dots: Dots) {
   const scene = $('.eigen');
@@ -521,7 +521,8 @@ function eigen(dots: Dots) {
     .to(runner, { opacity: 1, duration: 0.05 }, 0)
     .to(path, { attr: { 'stroke-dashoffset': 0 }, duration: 1 }, 0)
     .to(state, { route: 1, duration: 1, onUpdate: placeRunner }, 0);
-  cue('max').add(lay($('.work-in', scene), 0.4), 0).add(develop(work, 0.7), 0.3);
+  // The workshop print comes in where it lies, and develops.
+  cue('max').fromTo('.work-in', { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0).add(develop(work, 0.7), 0.3);
   // The prints give way to the dots. Their children move, so nothing else drives those elements.
   cue('masks')
     .to(['.run-in > *', '.work-in > *'], { y: '-110vh', duration: 0.45, ease: 'power3.in', stagger: 0.05 }, 0)

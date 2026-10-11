@@ -1,22 +1,43 @@
 /*
  * /llms.txt: a plain-text summary of Till for AI assistants (the llms.txt convention).
- * The facts first, then the page's chapters in full, both from profile.ts.
+ * The facts first, then the page's words in full, both from profile.ts.
  */
 import type { APIRoute } from 'astro';
 import { facts, links, page, person, SITE_URL, type Lang } from '../content/profile';
+import { paragraph } from '../content/phrase';
 import { plain } from '../content/rich';
 
-/** The page's sections as plain text: a heading each, then its paragraphs and items. Photos are left out. */
-const chapters = (lang: Lang) =>
-  page.chapters.flatMap((c) => [
-    `### ${c.title[lang]}`,
+/** The page's scenes as plain text: a heading each, then its words, and the personal items. */
+const words = (lang: Lang) => {
+  const say = (list: { t: Record<Lang, string> }[]) => plain(paragraph(list.map((p) => p.t[lang])));
+  const { script, sections } = page;
+  return [
+    `### ${sections.medicine[lang]}`,
     '',
-    ...c.blocks.flatMap((b) => {
-      if (b.kind === 'p') return [plain(b.text[lang]), ''];
-      if (b.kind === 'items') return [...b.items.map((i) => `- ${i.title[lang]}: ${plain(i.text[lang])} ${plain(i.detail[lang])}`), ''];
-      return [];
-    }),
-  ]);
+    say(script.medicine),
+    '',
+    say(script.wards),
+    '',
+    `### ${sections.bounceback[lang]}`,
+    '',
+    say(script.bounceback),
+    '',
+    `### ${sections.eigen[lang]}`,
+    '',
+    say(script.eigen),
+    '',
+    `### ${sections.personal[lang]}`,
+    '',
+    plain(paragraph([script.personal[lang]])),
+    '',
+    ...page.items.map((i) => `- ${i.title[lang]}: ${plain(i.text[lang])}${i.detail ? ` ${plain(i.detail[lang])}` : ''}`),
+    '',
+    `### ${sections.contact[lang]}`,
+    '',
+    plain(paragraph([script.joke[lang], script.contact[lang]])),
+    '',
+  ];
+};
 
 export const GET: APIRoute = () => {
   const text = [
@@ -46,14 +67,14 @@ export const GET: APIRoute = () => {
     '',
     page.intro.en,
     '',
-    ...chapters('en'),
+    ...words('en'),
     '## Deutsch',
     '',
     `> ${facts.summary.de}`,
     '',
     page.intro.de,
     '',
-    ...chapters('de'),
+    ...words('de'),
   ].join('\n');
 
   return new Response(text, { headers: { 'Content-Type': 'text/plain; charset=utf-8' } });

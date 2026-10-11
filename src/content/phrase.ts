@@ -1,14 +1,14 @@
 /*
- * The overlay markup of the interactive version's phrases (`page.experience.script`), turned into
- * safe HTML. On top of the chapters' [label](url) links:
+ * The overlay markup of the page's phrases (`page.script`), turned into safe HTML. On top of
+ * [label](url) links:
  *
  *   ^words^   written big: the words that carry the phrase
  *   _words_   written small: the connecting words
  *   ~words~   underlined in pen as the phrase arrives
  *   " / "     a line break (a space either side, so the slashes in a link are never taken for one)
  *
- * `strip` gives back the plain words, so a phrase list can be checked against the paragraph it
- * stands for (`checkScript`), and the two versions of the page never say different things.
+ * `strip` gives back the plain words, and `paragraph` a whole list of phrases as one paragraph, for
+ * the plain page and /llms.txt.
  */
 import { escape } from './rich';
 
@@ -28,7 +28,7 @@ function hold(text: string) {
   return { t, links };
 }
 
-/** The phrase as plain words, with its links left as [label](url), the form the chapters use. */
+/** The phrase as plain words, with its links left as [label](url) for rich.ts. */
 export function strip(text: string): string {
   const { t, links } = hold(text);
   return t
@@ -90,11 +90,7 @@ export function phraseHtml(text: string, { letters = false } = {}): string {
     .join(' ');
 }
 
-/** Stops the build if a list of phrases no longer says exactly what its paragraph says. */
-export function checkScript(name: string, phrases: string[], paragraph: string) {
-  const norm = (s: string) => s.replace(/\s+/g, ' ').trim();
-  const said = norm(phrases.map(strip).join(' '));
-  if (said !== norm(paragraph)) {
-    throw new Error(`The /v2/ phrases for "${name}" no longer match their paragraph in profile.ts.\n  phrases:   ${said}\n  paragraph: ${norm(paragraph)}`);
-  }
+/** A list of phrases read one after another as a paragraph, with its links left as [label](url). */
+export function paragraph(phrases: string[]): string {
+  return phrases.map(strip).join(' ').replace(/\s+/g, ' ').trim();
 }

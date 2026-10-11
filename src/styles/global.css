@@ -113,27 +113,6 @@ img {
   white-space: nowrap;
 }
 
-/*
- * A row of the page: label above content on a phone; from 52rem up, the label column and the text
- * column side by side. The intro, every section and contact use it, so all of them share the
- * same two edges. `.full` spans both columns.
- */
-.row {
-  display: grid;
-  row-gap: var(--s-2);
-}
-
-@media (min-width: 52rem) {
-  .row {
-    grid-template-columns: var(--label) minmax(0, var(--measure));
-    column-gap: var(--gutter);
-  }
-
-  .row > .full {
-    grid-column: 1 / -1;
-  }
-}
-
 /* Section labels: small and grey, sitting on the first line of the text beside them. */
 .label {
   color: var(--muted);

@@ -1,17 +1,18 @@
 /*
  * Everything the site says about Till, in English and German.
  *
- * `page` is what the page shows: name and one line about what Till does now, then short sections
- * (medicine, Bounceback, Eigen) with photos set into the text, and a personal section of items.
- * `facts` is the fuller record for machines (JSON-LD for search engines, /llms.txt for AI
- * assistants).
+ * `page` is what the page shows: the opening line, then the scenes' words as short handwritten
+ * phrases (`page.script`), the prints and their captions, the personal items, and the labels in the
+ * drawings. The phrases are the only copy of the page's words: the plain page (without JavaScript,
+ * or with reduced motion) and /llms.txt are made from them with the markup taken out. `facts` is the
+ * fuller record for machines (JSON-LD for search engines, /llms.txt for AI assistants).
  *
- * Voice: professional and plain. The why runs through the sections (the wards lead to Bounceback,
+ * Voice: professional and plain. The why runs through the scenes (the wards lead to Bounceback,
  * the run club to Max and Eigen) without ever announcing itself as a story. No lessons, no
  * rhetorical questions. Facts, never proof. Never call Till an engineer; "dad", not "father". No
- * em dashes, no race times, nothing private.
+ * em dashes, no race times, nothing private. One dry line before Contact, by Till's choice.
  *
- * Inline markup in paragraphs: [label](url) for a link, *text* for italics (see rich.ts).
+ * Inline markup: [label](url) for a link (see rich.ts); the phrases' own markup is in phrase.ts.
  */
 
 export type Lang = 'en' | 'de';
@@ -48,39 +49,42 @@ export interface Photo {
    */
   wide?: boolean;
 }
-
-/** One thing in the personal section: a photo, a short title, what Till loves about it, and the proof. */
+/** One thing in the personal section: a short title, what Till loves about it, the proof, and its prints. */
 export interface Item {
   title: L;
   text: L;
-  detail: L;
-  photo: Photo;
+  /** The proof, in smaller writing; left out where it would only be a list. */
+  detail?: L;
+  /** The prints in its row, in order. */
+  prints: Photo[];
 }
 
-/** One piece of a section: a paragraph, a photo, a pair of photos, or a grid of personal items. */
-export type Block =
-  | { kind: 'p'; text: L }
-  | { kind: 'photo'; photo: Photo }
-  | { kind: 'pair'; photos: [Photo, Photo] }
-  | { kind: 'items'; items: Item[] };
-
-export interface Chapter {
-  id: string;
-  title: L;
-  blocks: Block[];
-}
-
-/** One phrase of the interactive version's words (see `experience.script`). */
+/** One phrase of the page's words (see `page.script`). */
 export interface Phrase {
   t: L;
   /** What the phrase sets moving beside it, by name (scripts/experience.ts). */
   cue?: string;
+  /** The print that goes with the phrase, in a scene that pairs every phrase with a photo. */
+  print?: Photo;
+  /** How much room follows the phrase: `more` for a pause, `less` when it belongs with the next one. */
+  space?: 'more' | 'less';
 }
 
-const p = (en: string, de: string): Block => ({ kind: 'p', text: { en, de } });
+/** The page's words, scene by scene (see `page.script`). */
+export interface Script {
+  medicine: Phrase[];
+  wards: Phrase[];
+  bounceback: Phrase[];
+  eigen: Phrase[];
+  personal: L;
+  joke: L;
+  contact: L;
+}
+
+/** Gives a literal its declared type, with the usual checks for missing or unknown fields. */
+const typed = <T>(value: T) => value;
 
 const photos = {
-  dad: { file: 'with-dad.jpg', alt: { en: 'Till and his dad in London at night', de: 'Till und sein Papa abends in London' } },
   medSchool: {
     file: 'ucl-medical-school.jpg',
     alt: {
@@ -89,11 +93,6 @@ const photos = {
     },
   },
   portico: { file: 'ucl-portico.jpg', alt: { en: 'Till in graduation gown in front of the UCL portico', de: 'Till im Talar vor dem Portikus des UCL' } },
-  nightRun: {
-    file: 'night-run.jpg',
-    alt: { en: 'Till after an evening run in London', de: 'Till nach einem Abendlauf in London' },
-    position: '50% 40%',
-  },
   theatre: {
     file: 'theatre-kl.jpg',
     alt: { en: 'Till with the surgical team in an orthopaedic theatre in Kuala Lumpur', de: 'Till mit dem OP-Team in einem orthopädischen OP in Kuala Lumpur' },
@@ -145,273 +144,237 @@ export const page = {
     file: 'portrait-harris.jpg',
     alt: { en: 'Till Findl on the Isle of Harris, Scotland', de: 'Till Findl auf der Isle of Harris, Schottland' },
   } satisfies Photo,
-  place: { en: 'Vienna', de: 'Wien' },
   /** Till's own wording; keep it as written. */
   intro: {
     en: 'Studied medicine at UCL. Now I build the software physiotherapy runs on, from Vienna.',
     de: 'Medizin am UCL studiert. Heute baue ich aus Wien die Software, auf der Physiotherapie läuft.',
   },
-  chapters: [
-    {
-      id: 'medicine',
-      title: { en: 'Medicine', de: 'Medizin' },
-      blocks: [
-        p(
-          'Six years of medicine at UCL, with clinical rotations at University College Hospital, the Royal Free, Great Ormond Street, Queen Square and Moorfields, and a final elective in orthopaedics in Kuala Lumpur.',
-          'Sechs Jahre Medizin am UCL, mit klinischen Rotationen am University College Hospital, Royal Free, Great Ormond Street, Queen Square und Moorfields und einer abschließenden Famulatur in der Orthopädie in Kuala Lumpur.',
-        ),
-        { kind: 'photo', photo: photos.theatre },
-        p(
-          'On every rotation it annoyed me how much of the day went into software instead of patients: one program for imaging, another for notes, another for prescriptions. And once patients went home, they were mostly on their own.',
-          'Auf jeder Rotation hat mich genervt, wie viel vom Tag in Software statt in Patienten ging: ein Programm für die Bildgebung, eines für Notizen, eines für Verschreibungen. Und sobald Patienten nach Hause gingen, waren sie meistens auf sich allein gestellt.',
-        ),
-        { kind: 'pair', photos: [photos.medSchool, photos.portico] },
-      ],
-    },
-    {
-      id: 'bounceback',
-      title: { en: 'Bounceback', de: 'Bounceback' },
-      blocks: [
-        p(
-          `So with my team in Vienna I started Bounceback: software for physio practices that keeps patients and their physio connected between appointments, and runs the rest of the practice too. [bounceback.at](${links.bounceback})`,
-          `Also habe ich mit meinem Team in Wien Bounceback gegründet: Software für Physiopraxen, die Patienten und Physios zwischen den Terminen verbindet und auf der auch der Rest der Praxis läuft. [bounceback.at](${links.bounceback})`,
-        ),
-      ],
-    },
-    {
-      id: 'eigen',
-      title: { en: 'Eigen', de: 'Eigen' },
-      blocks: [
-        p(
-          `Alongside Bounceback there’s Eigen, which goes back to London. For two years I hosted a Sunday run club in Highbury. Some of my best friends came from it, and so did Max, a robotics engineer from ETH Zurich. Our first project together was custom 3D-printed CPAP masks from smartphone face scans, built in quick iterations. Then we pivoted to running, and that became Eigen: a 3D foot scan and a short running video, matched to the shoes that suit how someone runs. I look after the product and the biomechanics. [eigen-running.com](${links.eigen})`,
-          `Neben Bounceback gibt es Eigen, und das geht auf London zurück. Zwei Jahre lang habe ich in Highbury einen Sonntagslauf organisiert. Einige meiner besten Freunde kommen von dort, und auch Max, Robotikingenieur von der ETH Zürich. Unser erstes gemeinsames Projekt waren maßgefertigte, 3D-gedruckte CPAP-Masken aus Smartphone-Gesichtsscans, in schnellen Iterationen gebaut. Dann haben wir auf Laufen umgeschwenkt, und daraus wurde Eigen: ein 3D-Fußscan und ein kurzes Laufvideo, abgeglichen mit den Schuhen, die zum Laufstil passen. Ich kümmere mich um das Produkt und die Biomechanik. [eigen-running.com](${links.eigen})`,
-        ),
-        { kind: 'photo', photo: photos.nightRun },
-      ],
-    },
-    {
-      id: 'personal',
-      title: { en: 'Personal', de: 'Privat' },
-      blocks: [
-        p('What I like doing outside of work.', 'Was ich außerhalb der Arbeit gern mache.'),
-        {
-          kind: 'items',
-          items: [
-            {
-              title: { en: 'Triathlon', de: 'Triathlon' },
-              text: {
-                en: 'I hate the swim, but I love riding my bike and running with friends.',
-                de: 'Das Schwimmen hasse ich, aber Radfahren und Laufen mit Freunden liebe ich.',
-              },
-              detail: {
-                en: `[Ironman Kalmar](${links.ironmanKalmar}) and Ironman Tallinn, and marathons including [Amsterdam](${links.amsterdamMarathon}).`,
-                de: `[Ironman Kalmar](${links.ironmanKalmar}) und Ironman Tallinn, dazu Marathons, darunter [Amsterdam](${links.amsterdamMarathon}).`,
-              },
-              photo: photos.bike,
-            },
-            {
-              title: { en: 'Ice hockey', de: 'Eishockey' },
-              text: {
-                en: 'I had the best time of my life with the UCL ice hockey team.',
-                de: 'Mit dem Eishockeyteam des UCL hatte ich die beste Zeit meines Lebens.',
-              },
-              detail: {
-                en: 'Played for the UCL Yetis in BUIHA Division 1.',
-                de: 'Für die UCL Yetis in der BUIHA Division 1 gespielt.',
-              },
-              photo: photos.hockey,
-            },
-            {
-              title: { en: 'Skiing', de: 'Skifahren' },
-              text: {
-                en: 'I grew up on skis, and a race course is still my favourite place on a mountain.',
-                de: 'Ich bin auf Skiern aufgewachsen, und eine Rennstrecke ist immer noch mein liebster Platz am Berg.',
-              },
-              detail: {
-                en: 'FIS races and Viennese youth champion; qualified ski instructor (LS2).',
-                de: 'FIS-Rennen und Wiener Jugendmeister; ausgebildeter Skilehrer (LS2).',
-              },
-              photo: photos.ski,
-            },
-            {
-              title: { en: 'Photography and film', de: 'Fotografie und Film' },
-              text: {
-                en: 'I like having something to look back on from trips and past experiences.',
-                de: 'Ich mag es, von Reisen und Erlebnissen etwas zu haben, auf das ich zurückschauen kann.',
-              },
-              detail: {
-                en: 'Sold landscape prints from Austria and Lofoten; now mostly short films of trips with friends.',
-                de: 'Landschaftsdrucke aus Österreich und von den Lofoten verkauft; heute vor allem kurze Filme von Reisen mit Freunden.',
-              },
-              photo: photos.lofotenCabins,
-            },
-          ],
+  /** Each scene's name, written small above its first phrase. */
+  sections: {
+    medicine: { en: 'Medicine', de: 'Medizin' },
+    bounceback: { en: 'Bounceback', de: 'Bounceback' },
+    eigen: { en: 'Eigen', de: 'Eigen' },
+    personal: { en: 'Personal', de: 'Privat' },
+    contact: { en: 'Contact', de: 'Kontakt' },
+  } satisfies Record<string, L>,
+  /**
+   * The page's words, as the short phrases it shows one or two at a time, with overlay markup (see
+   * phrase.ts): ^big^, _small_, ~underlined~, and " / " where a line breaks. Read one after another
+   * with the markup taken out, each list is the scene's paragraph on the plain page. A `cue` names
+   * what the phrase sets moving in the drawing or photos beside it (scripts/experience.ts); in
+   * Medicine each phrase brings its own `print`.
+   */
+  script: typed<Script>({
+    medicine: [
+      { print: photos.portico, t: { en: '^Six years^ of medicine / at ^UCL^,', de: '^Sechs Jahre^ Medizin / am ^UCL^,' } },
+      {
+        print: photos.medSchool,
+        t: {
+          en: '_with clinical rotations at_ / University College Hospital, / the Royal Free, / Great Ormond Street, / Queen Square and Moorfields,',
+          de: '_mit klinischen Rotationen am_ / University College Hospital, / Royal Free, / Great Ormond Street, / Queen Square und Moorfields',
         },
+      },
+      {
+        print: photos.theatre,
+        t: { en: '_and a final elective in_ orthopaedics / in ^Kuala Lumpur^.', de: '_und einer abschließenden Famulatur_ / in der Orthopädie / in ^Kuala Lumpur^.' },
+      },
+    ],
+    wards: [
+      { cue: 'wards-1', t: { en: '_On every rotation_ / it ^annoyed^ me', de: '_Auf jeder Rotation_ / hat mich ^genervt^,' } },
+      {
+        cue: 'wards-2',
+        t: { en: 'how much of the day / was spent / at a ^computer^ / _instead of with_ patients:', de: 'wie viel vom Tag / am ^Computer^ / _statt bei den_ Patienten / verging:' },
+      },
+      {
+        cue: 'wards-3',
+        t: {
+          en: 'one program for ~imaging~, / another for ~notes~, / another for ~prescriptions~.',
+          de: 'ein Programm / für die ~Bildgebung~, / eines für ~Notizen~, / eines für ~Verschreibungen~.',
+        },
+      },
+      { cue: 'leave', t: { en: 'And once patients / went home,', de: 'Und sobald Patienten / nach Hause gingen,' } },
+      { cue: 'break', t: { en: 'they were mostly / ^on their own^.', de: 'waren sie meistens / ^auf sich allein^ / gestellt.' } },
+    ],
+    bounceback: [
+      { cue: 'sweep', t: { en: 'So I put together / a ^team^ in Vienna,', de: 'Also habe ich in Wien / ein ^Team^ / zusammengestellt,' } },
+      {
+        cue: 'home',
+        t: {
+          en: 'and we started / with ^physio^, / where recovery depends / on the exercises / patients do at home.',
+          de: 'und wir haben mit der / ~Physiotherapie~ / angefangen, / wo die Genesung / von den Übungen / abhängt, / die Patienten / zu Hause machen.',
+        },
+      },
+      {
+        cue: 'screens-a',
+        t: {
+          en: '^Bounceback^ / is software / for physio practices / that keeps patients / and their physio ~connected~ / between appointments,',
+          de: '^Bounceback^ / ist Software / für Physiopraxen, / die Patienten und Physios / zwischen den Terminen / ~verbindet~',
+        },
+      },
+      { cue: 'screens-b', t: { en: 'and runs the rest / of the practice too.', de: 'und auf der auch / der Rest der Praxis läuft.' } },
+      { t: { en: `_[bounceback.at](${links.bounceback})_`, de: `_[bounceback.at](${links.bounceback})_` } },
+    ],
+    eigen: [
+      {
+        cue: 'eigen-1',
+        t: { en: 'In London I always had / a ^side project^ going, / _mostly out of_ curiosity.', de: 'In London hatte ich immer / ein ^Nebenprojekt^ / am Laufen, / _meistens aus_ Neugier.' },
+      },
+      {
+        cue: 'lap',
+        space: 'more',
+        t: { en: 'For two years I hosted / _a_ ^Sunday run club^ / in Highbury.', de: 'Zwei Jahre lang / habe ich in Highbury / _einen_ ^Sonntagslauf^ / organisiert.' },
+      },
+      { space: 'less', t: { en: 'Some of my best friends / came from it,', de: 'Einige meiner / besten Freunde / kommen von dort,' } },
+      {
+        cue: 'max',
+        t: { en: '_and so did_ ^Max^, / a robotics engineer / from ETH Zurich.', de: '_und auch_ ^Max^, / Robotikingenieur / von der ETH Zürich.' },
+      },
+      {
+        cue: 'masks',
+        t: { en: 'Our first project together / was ^CPAP masks^ / for sleep apnoea.', de: 'Unser erstes / gemeinsames Projekt / waren ^CPAP-Masken^ / gegen Schlafapnoe.' },
+      },
+      {
+        cue: 'iterate',
+        t: {
+          en: 'Standard masks / often fit badly and ~leak~, / so we 3D-printed / ^custom^ ones / from a face scan / on a phone.',
+          de: 'Standardmasken / sitzen oft schlecht / und sind ~undicht~, / also haben wir / ~maßgefertigte~ / aus einem Gesichtsscan / am Handy 3D-gedruckt.',
+        },
+      },
+      { cue: 'pivot', t: { en: 'Then we ^pivoted^ / to running,', de: 'Dann haben wir auf Laufen / ^umgeschwenkt^,' } },
+      { t: { en: '_and that became_ ^Eigen^.', de: '_und daraus wurde_ ^Eigen^.' } },
+      {
+        t: {
+          en: 'Most runners choose shoes / by brand or by feel / in a shop,',
+          de: 'Die meisten / suchen Laufschuhe / nach Marke oder Gefühl / im Geschäft aus,',
+        },
+      },
+      { t: { en: 'so Eigen looks at / how someone / ~actually runs~:', de: 'also schaut Eigen, / wie jemand / ~wirklich läuft~:' } },
+      {
+        t: {
+          en: 'a 3D foot scan / and a short running video, / matched to the shoes / that suit them.',
+          de: 'ein 3D-Fußscan / und ein kurzes Laufvideo, / abgeglichen / mit den Schuhen, / die dazu passen.',
+        },
+      },
+      {
+        t: {
+          en: 'I look after / the ^product^ / _and the_ ^biomechanics^ / behind it.',
+          de: 'Ich kümmere mich / um das ^Produkt^ / _und die_ ^Biomechanik^ / dahinter.',
+        },
+      },
+      { t: { en: `_[eigen-running.com](${links.eigen})_`, de: `_[eigen-running.com](${links.eigen})_` } },
+    ],
+    personal: { en: 'What I ^like^ doing / outside of work.', de: 'Was ich außerhalb der Arbeit / ^gern^ mache.' },
+    /** The one dry line before Contact, Till's own choice. */
+    joke: {
+      en: 'Yes, I finished / medical school. / No, I won’t look / at your ^rash^.',
+      de: 'Ja, ich habe Medizin / fertig studiert. / Nein, ich schaue mir / deinen ^Ausschlag^ nicht an.',
+    },
+    contact: {
+      en: 'If you’d like to ^contact^ me, / LinkedIn is the easiest way / to reach me.',
+      de: 'Wenn du mich ^kontaktieren^ möchtest, / erreichst du mich am einfachsten / über ^LinkedIn^.',
+    },
+  }),
+  /** The personal section: a sport or interest each, with its row of prints. */
+  items: typed<Item[]>([
+    {
+      title: { en: 'Triathlon', de: 'Triathlon' },
+      text: {
+        en: 'I hate the swim, but I love riding my bike and running with friends.',
+        de: 'Das Schwimmen hasse ich, aber Radfahren und Laufen mit Freunden liebe ich.',
+      },
+      detail: {
+        en: `[Ironman Kalmar](${links.ironmanKalmar}) and Ironman Tallinn, and marathons including [Amsterdam](${links.amsterdamMarathon}).`,
+        de: `[Ironman Kalmar](${links.ironmanKalmar}) und Ironman Tallinn, dazu Marathons, darunter [Amsterdam](${links.amsterdamMarathon}).`,
+      },
+      prints: [photos.transition, photos.bike, photos.run, photos.swim],
+    },
+    {
+      title: { en: 'Ice hockey', de: 'Eishockey' },
+      text: {
+        en: 'I had the best time of my life with the UCL ice hockey team.',
+        de: 'Mit dem Eishockeyteam des UCL hatte ich die beste Zeit meines Lebens.',
+      },
+      detail: { en: 'Played for the UCL Yetis in BUIHA Division 1.', de: 'Für die UCL Yetis in der BUIHA Division 1 gespielt.' },
+      prints: [photos.yetis, photos.hockey, photos.sister],
+    },
+    {
+      title: { en: 'Skiing', de: 'Skifahren' },
+      text: { en: 'I’ve skied for as long as I can remember.', de: 'Ich fahre Ski, seit ich denken kann.' },
+      detail: {
+        en: 'FIS races and Viennese youth champion; qualified ski instructor (LS2).',
+        de: 'FIS-Rennen und Wiener Jugendmeister; ausgebildeter Skilehrer (LS2).',
+      },
+      prints: [photos.skiCarve, photos.ski, photos.skiPodium, photos.snowcat],
+    },
+    {
+      title: { en: 'Photography and film', de: 'Fotografie und Film' },
+      text: {
+        en: 'I like having something to look back on from trips and past experiences.',
+        de: 'Ich mag es, von Reisen und Erlebnissen etwas zu haben, auf das ich zurückschauen kann.',
+      },
+      prints: [
+        photos.lofotenCabins,
+        photos.lofotenAurora,
+        photos.hallstatt,
+        photos.defender,
+        photos.reindeer,
+        photos.dolomites,
+        photos.nashville,
+        photos.summer,
       ],
     },
-  ] satisfies Chapter[],
-  contact: {
-    title: { en: 'Contact', de: 'Kontakt' },
-    text: {
-      en: 'If you’d like to contact me, LinkedIn is the easiest way to reach me.',
-      de: 'Wenn du mich kontaktieren möchtest, erreichst du mich am einfachsten über LinkedIn.',
-    },
-    pending: { en: 'Link coming soon', de: 'Link folgt' },
+  ]),
+  /**
+   * Written by hand on the bottom strip of the Polaroids, keyed by photo file. Only places and
+   * races we are sure of; a print without an entry stays blank.
+   */
+  captions: {
+    'ucl-medical-school.jpg': { en: 'Medical school', de: 'Medical School' },
+    'ucl-portico.jpg': { en: 'Graduation ’26', de: 'Abschluss ’26' },
+    'theatre-kl.jpg': { en: 'Kuala Lumpur', de: 'Kuala Lumpur' },
+    'run-club.jpg': { en: 'Sunday run club', de: 'Sonntagslauf' },
+    'ironman-swim.jpg': { en: 'Ironman Kalmar', de: 'Ironman Kalmar' },
+    'ironman-transition.jpg': { en: 'Ironman Tallinn', de: 'Ironman Tallinn' },
+    'yetis-team.jpg': { en: 'UCL Yetis', de: 'UCL Yetis' },
+    'lofoten-cabins.jpg': { en: 'Lofoten', de: 'Lofoten' },
+    'lofoten-aurora.jpg': { en: 'Lofoten', de: 'Lofoten' },
+    'hallstatt.jpg': { en: 'Hallstatt', de: 'Hallstatt' },
+    'dolomites.jpg': { en: 'Dolomites', de: 'Dolomiten' },
+    'nashville.jpg': { en: 'Nashville', de: 'Nashville' },
+  } as Record<string, L>,
+  /** The run club print and the workshop print in the Eigen scene. */
+  eigenPrints: { run: photos.runClub, workshop: photos.workshop },
+  /** The software windows' labels in the wards drawing. */
+  windows: [
+    { en: 'Imaging', de: 'Bildgebung' },
+    { en: 'Notes', de: 'Notizen' },
+    { en: 'Prescriptions', de: 'Verschreibungen' },
+  ],
+  /** What the phone's screens say in the Bounceback drawing. */
+  phone: {
+    programme: { en: 'Today’s programme', de: 'Heutiges Programm' },
+    exercises: [
+      { en: 'Split squats', de: 'Ausfallschritte' },
+      { en: 'Calf raises', de: 'Wadenheben' },
+      { en: 'Side plank', de: 'Seitstütz' },
+    ],
+    sets: { en: '3 × 10', de: '3 × 10' },
+    recording: { en: 'Recording set 2', de: 'Satz 2 wird aufgenommen' },
+    physio: { en: 'Your physio', de: 'Dein Physio' },
+    feedback: { en: 'Nice depth. Keep the knee over your second toe.', de: 'Schöne Tiefe. Das Knie über der zweiten Zehe halten.' },
+    note: { en: 'Session note', de: 'Behandlungsnotiz' },
+    noteLines: [
+      { en: 'Knee pain on stairs, improving.', de: 'Knieschmerz beim Stiegensteigen, besser.' },
+      { en: 'Quadriceps 4/5, full range.', de: 'Quadrizeps 4/5, volle Beweglichkeit.' },
+      { en: 'Progress to single-leg work.', de: 'Weiter mit einbeinigen Übungen.' },
+    ],
+    paid: { en: 'Paid', de: 'Bezahlt' },
   },
+  /** Shown instead of the LinkedIn button until the link is in `links`. */
+  pending: { en: 'Link coming soon', de: 'Link folgt' },
   footer: {
     forMachines: { en: 'Summary for AI assistants', de: 'Zusammenfassung für KI-Assistenten' },
     top: { en: 'Back to top', de: 'Nach oben' },
-  },
-  /**
-   * Words and photos only the interactive version (/v2/) shows: the same words as `chapters`, set
-   * as handwritten phrases (`script`), the Polaroid captions, the prints for each personal item,
-   * and the labels in its drawings.
-   */
-  experience: {
-    title: { en: 'Till Findl, interactive', de: 'Till Findl, interaktiv' },
-    /**
-     * The chapters' words, split into the short phrases the interactive version shows one or two at
-     * a time, with overlay markup (see phrase.ts): ^big^, _small_, ~underlined~, and " / " where a
-     * line breaks. Each list must say exactly what its paragraph says once the markup is taken out;
-     * the build stops if it does not (Experience.astro checks it). A `cue` names what the phrase
-     * sets moving in the drawing or photos beside it (scripts/experience.ts).
-     */
-    script: {
-      medicine: [
-        { cue: 'med-1', t: { en: '^Six years^ of medicine / at ^UCL^,', de: '^Sechs Jahre^ Medizin / am ^UCL^,' } },
-        {
-          cue: 'med-2',
-          t: {
-            en: '_with clinical rotations at_ / University College Hospital, / the Royal Free, / Great Ormond Street, / Queen Square and Moorfields,',
-            de: '_mit klinischen Rotationen am_ / University College Hospital, / Royal Free, / Great Ormond Street, / Queen Square und Moorfields',
-          },
-        },
-        {
-          cue: 'med-3',
-          t: { en: '_and a final elective in_ orthopaedics / in ^Kuala Lumpur^.', de: '_und einer abschließenden Famulatur_ / in der Orthopädie / in ^Kuala Lumpur^.' },
-        },
-      ],
-      wards: [
-        { cue: 'wards-1', t: { en: '_On every rotation_ / it ^annoyed^ me', de: '_Auf jeder Rotation_ / hat mich ^genervt^,' } },
-        {
-          cue: 'wards-2',
-          t: { en: 'how much of the day / went into ^software^ / _instead of_ patients:', de: 'wie viel vom Tag / in ^Software^ / _statt in_ Patienten ging:' },
-        },
-        {
-          cue: 'wards-3',
-          t: {
-            en: 'one program for ~imaging~, / another for ~notes~, / another for ~prescriptions~.',
-            de: 'ein Programm / für die ~Bildgebung~, / eines für ~Notizen~, / eines für ~Verschreibungen~.',
-          },
-        },
-        { cue: 'leave', t: { en: 'And once patients / went home,', de: 'Und sobald Patienten / nach Hause gingen,' } },
-        { cue: 'break', t: { en: 'they were mostly / ^on their own^.', de: 'waren sie meistens / ^auf sich allein^ / gestellt.' } },
-      ],
-      bounceback: [
-        {
-          cue: 'sweep',
-          t: { en: 'So with my team in ^Vienna^ / I started ^Bounceback^:', de: 'Also habe ich / mit meinem Team in ^Wien^ / ^Bounceback^ gegründet:' },
-        },
-        {
-          cue: 'screens-a',
-          t: {
-            en: 'software for physio practices / that keeps patients / and their physio ~connected~ / between appointments,',
-            de: 'Software für Physiopraxen, / die Patienten und Physios / zwischen den Terminen / ~verbindet~',
-          },
-        },
-        { cue: 'screens-b', t: { en: 'and runs the rest / of the practice too.', de: 'und auf der auch / der Rest der Praxis läuft.' } },
-        { t: { en: `_[bounceback.at](${links.bounceback})_`, de: `_[bounceback.at](${links.bounceback})_` } },
-      ],
-      eigen: [
-        {
-          cue: 'eigen-1',
-          t: { en: 'Alongside Bounceback / there’s ^Eigen^, / _which goes back to_ London.', de: 'Neben Bounceback / gibt es ^Eigen^, / _und das geht auf_ London zurück.' },
-        },
-        {
-          cue: 'lap',
-          t: { en: 'For two years I hosted / a ^Sunday run club^ / in Highbury.', de: 'Zwei Jahre lang / habe ich in Highbury / einen ^Sonntagslauf^ / organisiert.' },
-        },
-        { t: { en: 'Some of my best friends / came from it,', de: 'Einige meiner besten Freunde / kommen von dort,' } },
-        {
-          cue: 'max',
-          t: { en: '_and so did_ ^Max^, / a robotics engineer / from ETH Zurich.', de: '_und auch_ ^Max^, / Robotikingenieur / von der ETH Zürich.' },
-        },
-        {
-          cue: 'masks',
-          t: {
-            en: 'Our first project together / was custom 3D-printed / ^CPAP masks^ / from smartphone face scans,',
-            de: 'Unser erstes gemeinsames / Projekt waren maßgefertigte, / 3D-gedruckte / ^CPAP-Masken^ / aus Smartphone-Gesichtsscans,',
-          },
-        },
-        { cue: 'iterate', t: { en: 'built in ~quick iterations~.', de: 'in ~schnellen~ ~Iterationen~ / gebaut.' } },
-        { cue: 'pivot', t: { en: 'Then we ^pivoted^ / to running,', de: 'Dann haben wir auf Laufen / ^umgeschwenkt^,' } },
-        {
-          t: {
-            en: 'and that became ^Eigen^: / a 3D foot scan / and a short running video,',
-            de: 'und daraus wurde ^Eigen^: / ein 3D-Fußscan / und ein kurzes Laufvideo,',
-          },
-        },
-        { t: { en: 'matched to the shoes / that suit how someone runs.', de: 'abgeglichen mit den Schuhen, / die zum Laufstil passen.' } },
-        { t: { en: 'I look after the ^product^ / and the ^biomechanics^.', de: 'Ich kümmere mich / um das ^Produkt^ / und die ^Biomechanik^.' } },
-        { t: { en: `_[eigen-running.com](${links.eigen})_`, de: `_[eigen-running.com](${links.eigen})_` } },
-      ],
-      personal: { en: 'What I ^like^ doing / outside of work.', de: 'Was ich außerhalb der Arbeit / ^gern^ mache.' },
-      contact: {
-        en: 'If you’d like to ^contact^ me, / LinkedIn is the easiest way / to reach me.',
-        de: 'Wenn du mich ^kontaktieren^ möchtest, / erreichst du mich am einfachsten / über ^LinkedIn^.',
-      },
-    } satisfies Record<string, Phrase[] | L>,
-    /**
-     * Written by hand on the bottom strip of the Polaroids, keyed by photo file. Only places and
-     * races we are sure of; a print without an entry stays blank.
-     */
-    captions: {
-      'ucl-medical-school.jpg': { en: 'Medical school', de: 'Medical School' },
-      'ucl-portico.jpg': { en: 'Graduation ’26', de: 'Abschluss ’26' },
-      'theatre-kl.jpg': { en: 'Kuala Lumpur', de: 'Kuala Lumpur' },
-      'run-club.jpg': { en: 'Sunday run club', de: 'Sonntagslauf' },
-      'ironman-swim.jpg': { en: 'Ironman Kalmar', de: 'Ironman Kalmar' },
-      'ironman-transition.jpg': { en: 'Ironman Tallinn', de: 'Ironman Tallinn' },
-      'yetis-team.jpg': { en: 'UCL Yetis', de: 'UCL Yetis' },
-      'lofoten-cabins.jpg': { en: 'Lofoten', de: 'Lofoten' },
-      'lofoten-aurora.jpg': { en: 'Lofoten', de: 'Lofoten' },
-      'hallstatt.jpg': { en: 'Hallstatt', de: 'Hallstatt' },
-      'dolomites.jpg': { en: 'Dolomites', de: 'Dolomiten' },
-      'nashville.jpg': { en: 'Nashville', de: 'Nashville' },
-    } as Record<string, L>,
-    /** The run club print and the workshop print beside the Eigen phrases. */
-    eigenPrints: { run: photos.runClub, workshop: photos.workshop },
-    /** The prints for each personal item, in the order of the items in `chapters`. */
-    gallery: [
-      [photos.transition, photos.bike, photos.run, photos.swim],
-      [photos.yetis, photos.hockey, photos.sister],
-      [photos.skiCarve, photos.ski, photos.skiPodium, photos.snowcat],
-      [photos.lofotenCabins, photos.lofotenAurora, photos.hallstatt, photos.defender, photos.reindeer, photos.dolomites, photos.nashville, photos.summer],
-    ] as Photo[][],
-    windows: [
-      { en: 'Imaging', de: 'Bildgebung' },
-      { en: 'Notes', de: 'Notizen' },
-      { en: 'Prescriptions', de: 'Verschreibungen' },
-    ],
-    phone: {
-      programme: { en: 'Today’s programme', de: 'Heutiges Programm' },
-      exercises: [
-        { en: 'Split squats', de: 'Ausfallschritte' },
-        { en: 'Calf raises', de: 'Wadenheben' },
-        { en: 'Side plank', de: 'Seitstütz' },
-      ],
-      sets: { en: '3 × 10', de: '3 × 10' },
-      recording: { en: 'Recording set 2', de: 'Satz 2 wird aufgenommen' },
-      physio: { en: 'Your physio', de: 'Dein Physio' },
-      feedback: { en: 'Nice depth. Keep the knee over your second toe.', de: 'Schöne Tiefe. Das Knie über der zweiten Zehe halten.' },
-      note: { en: 'Session note', de: 'Behandlungsnotiz' },
-      noteLines: [
-        { en: 'Knee pain on stairs, improving.', de: 'Knieschmerz beim Stiegensteigen, besser.' },
-        { en: 'Quadriceps 4/5, full range.', de: 'Quadrizeps 4/5, volle Beweglichkeit.' },
-        { en: 'Progress to single-leg work.', de: 'Weiter mit einbeinigen Übungen.' },
-      ],
-      paid: { en: 'Paid', de: 'Bezahlt' },
-    },
   },
 };
 

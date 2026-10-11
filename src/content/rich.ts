@@ -1,5 +1,5 @@
 /*
- * The little inline markup the chapters use, turned into safe HTML: [label](url) becomes an
+ * The little inline markup the profile's words use, turned into safe HTML: [label](url) becomes an
  * underlined link, and *text* becomes italics. Everything else is escaped.
  */
 
