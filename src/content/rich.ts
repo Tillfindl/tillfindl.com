@@ -3,7 +3,7 @@
  * underlined link, and *text* becomes italics. Everything else is escaped.
  */
 
-const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+export const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 
 export function rich(text: string): string {
   return escape(text)

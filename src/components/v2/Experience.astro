@@ -1,20 +1,26 @@
 ---
 // The interactive version (/v2/ and /de/v2/): the same words and photos as the main page, staged as
-// full-screen scenes that play as you scroll (src/scripts/experience.ts drives them). The look is
-// white paper with everything written in ballpoint blue, apart from the name and the one button;
-// every photo is a real Polaroid that develops as it arrives, and the wards and Bounceback are a
-// pen drawing (WardsDrawing). The hero plays on CSS alone, so it starts before the script loads.
-// Without JavaScript, or with reduced motion, it reads as a plain page: the staged layout only
-// applies under `.js` and `prefers-reduced-motion: no-preference`.
+// scenes you scroll through (src/scripts/experience.ts drives them). The look is white paper with
+// everything written in ballpoint blue, apart from the name and the one button. Every photo is a
+// real Polaroid that develops as it arrives, and the wards and Bounceback are a pen drawing.
+//
+// Each scene is a picture that stays in place (a sticky `.visual`) and the scene's words as short
+// handwritten phrases (`.script`) that scroll past it in the normal page flow, so the words move
+// exactly with the reader's finger and each phrase sets the picture moving as it passes. The
+// phrases come from `page.experience.script` and must say what the main page says (checked below).
+// The hero plays on CSS alone, so it starts before the script loads. Without JavaScript, or with
+// reduced motion, it reads as a plain page built from the main page's paragraphs (`.plain`): the
+// staged layout only applies under `.js` and `prefers-reduced-motion: no-preference`.
 import '@fontsource/mynerve/latin-400.css';
 import { getImage } from 'astro:assets';
 import Base from '../../layouts/Base.astro';
 import Polaroid from './Polaroid.astro';
 import Letters from './Letters.astro';
 import WardsDrawing from './WardsDrawing.astro';
-import { links, meta, page, person, SITE_URL, type Lang, type Photo } from '../../content/profile';
+import { links, meta, page, person, SITE_URL, type Lang, type Phrase, type Photo } from '../../content/profile';
 import { photo } from '../../content/images';
 import { rich } from '../../content/rich';
+import { checkScript, phraseHtml } from '../../content/phrase';
 import { personJsonLd } from '../../content/jsonld';
 
 interface Props {
@@ -23,6 +29,7 @@ interface Props {
 
 const { lang } = Astro.props;
 const x = page.experience;
+const script = x.script;
 const og = await getImage({ src: photo(page.portrait.file), width: 800, height: 800, fit: 'cover', format: 'jpg' });
 const jsonLd = personJsonLd(lang, new URL(og.src, SITE_URL).href);
 
@@ -34,28 +41,30 @@ const chapter = (id: string) => {
 const paragraphs = (id: string) => chapter(id).blocks.flatMap((b) => (b.kind === 'p' ? [b.text[lang]] : []));
 const photosIn = (id: string): Photo[] =>
   chapter(id).blocks.flatMap((b) => (b.kind === 'photo' ? [b.photo] : b.kind === 'pair' ? b.photos : []));
-/** Splits a paragraph into sentences, so a scene can bring them in one at a time. */
-const sentences = (text: string) => text.split(/(?<=[.!?])\s+(?=[A-ZÄÖÜ[])/);
 const caption = (p: Photo) => x.captions[p.file]?.[lang];
 
 // The top line, written either side of the portrait like a note beside a photo.
-const [introA, ...introRest] = sentences(page.intro[lang]);
+const [introA, ...introRest] = page.intro[lang].split(/(?<=[.!?])\s+/);
 const introB = introRest.join(' ');
 
 const [medLead, wards] = paragraphs('medicine');
 const [theatre, gradA, gradB] = photosIn('medicine');
-const bb = sentences(paragraphs('bounceback')[0]);
-const eigen = sentences(paragraphs('eigen')[0]);
-const [nightRun] = photosIn('eigen');
+const bounceback = paragraphs('bounceback')[0];
+const eigen = paragraphs('eigen')[0];
 const personal = chapter('personal');
-const personalLead = paragraphs('personal')[0];
 const items = personal.blocks.flatMap((b) => (b.kind === 'items' ? b.items : []));
 
-// The wards paragraph ends on patients going home alone; that last sentence lands on its own.
-const wardsSentences = sentences(wards);
-const wardsEnd = wardsSentences.pop() ?? '';
-const wardsMain = wardsSentences.join(' ');
-const words = (text: string) => text.split(' ');
+// The phrases say exactly what the main page says; the build stops here if they ever drift apart.
+const said = (list: Phrase[]) => list.map((p) => p.t[lang]);
+checkScript(`medicine (${lang})`, said(script.medicine), medLead);
+checkScript(`wards (${lang})`, said(script.wards), wards);
+checkScript(`bounceback (${lang})`, said(script.bounceback), bounceback);
+checkScript(`eigen (${lang})`, said(script.eigen), eigen);
+checkScript(`personal (${lang})`, [script.personal[lang]], paragraphs('personal')[0]);
+checkScript(`contact (${lang})`, [script.contact[lang]], page.contact.text[lang]);
+
+/** Where each phrase sits across its column, in turn (left, indented, right), like overlays placed by hand. */
+const PLACES = ['l', 'i', 'r', 'i'] as const;
 
 /** Square crops for the Polaroids, so the person stays in frame. */
 const CROP: Record<string, string> = {
@@ -63,13 +72,15 @@ const CROP: Record<string, string> = {
   'ucl-medical-school.jpg': '50% 66%',
   'ucl-portico.jpg': '50% 72%',
   'theatre-kl.jpg': '72% 50%',
-  'night-run.jpg': '50% 40%',
+  'run-club.jpg': '50% 85%',
+  'workshop.jpg': '50% 72%',
   'ironman-swim.jpg': '45% 40%',
+  'ironman-transition.jpg': '50% 45%',
+  'yetis-team.jpg': '50% 40%',
   'ski-gate.jpg': '72% 50%',
-  'ski-powder.jpg': '50% 72%',
   'ski-podium.jpg': '50% 30%',
-  'ski-duo.jpg': '55% 60%',
-  'ski-summit-selfie.jpg': '50% 40%',
+  'ski-carve.jpg': '50% 52%',
+  'snowcat.jpg': '50% 55%',
   'bike-sunset.jpg': '50% 60%',
   'hockey-fisheye.jpg': '50% 50%',
   'summer-austria.jpg': '50% 60%',
@@ -86,6 +97,12 @@ const CROP: Record<string, string> = {
   <div class="xp">
     <div class="xp-bg" aria-hidden="true"></div>
     <div class="progress" aria-hidden="true"></div>
+    <!-- A blur along one axis only: motion blur, for the quick trip back to the top. -->
+    <svg class="fx" width="0" height="0" aria-hidden="true" focusable="false">
+      <filter id="motion-blur" x="0" y="-20%" width="100%" height="140%" color-interpolation-filters="sRGB">
+        <feGaussianBlur stdDeviation="0 0"></feGaussianBlur>
+      </filter>
+    </svg>
 
     <header class="hud">
       <a href="#top" class="hud-name">{person.name}</a>
@@ -94,11 +111,10 @@ const CROP: Record<string, string> = {
         <a href="/de/v2/" hreflang="de" lang="de" aria-current={lang === 'de' ? 'page' : undefined}>DE</a>
       </nav>
     </header>
-    <p class="scene-name" aria-hidden="true"></p>
 
     <main>
       <!-- 1. Opening: the portrait comes out of a camera and develops while the note is written beside it. -->
-      <section class="scene opening" id="top" data-scene="" style={`--na: ${[...introA].length}`}>
+      <section class="scene opening" id="top" style={`--na: ${[...introA].length}`}>
         <div class="stage">
           <div class="o-head"><h1 class="logo">{person.name}</h1></div>
           <div class="o-pen o-pen-a"><p><Letters text={introA} /></p></div>
@@ -122,102 +138,151 @@ const CROP: Record<string, string> = {
             </div>
           </div>
           <div class="o-pen o-pen-b"><p><Letters text={introB} /></p></div>
-          <p class="hint" aria-hidden="true"><span>{x.scroll[lang]}</span></p>
         </div>
       </section>
 
-      <!-- 2. Medicine: the paragraph, and three prints laid down that develop as you scroll. -->
-      <section class="scene medicine" data-scene={chapter('medicine').title[lang]}>
-        <div class="stage">
-          <div class="med-text">
-            <h2 class="label">{chapter('medicine').title[lang]}</h2>
-            <p class="lead" set:html={rich(medLead)} />
-          </div>
-          <div class="med-photos">
-            {
-              [gradA, gradB, theatre].map((p, i) => (
-                <div class:list={['mp', `mp${i}`]}>
-                  <Polaroid photo={p} lang={lang} caption={caption(p)} position={CROP[p.file]} sizes="(min-width: 52rem) 17rem, 44vw" film="latent" />
-                </div>
-              ))
-            }
-          </div>
+      <!-- 2. Medicine: three prints that develop as the phrases about the degree pass them. -->
+      <section class="scene medicine">
+        <div class="plain">
+          <h2 class="label">{chapter('medicine').title[lang]}</h2>
+          <p set:html={rich(medLead)} />
         </div>
-      </section>
-
-      <!-- 3 and 4. The wards and Bounceback: one pen drawing, with the words beside it. -->
-      <section class="scene care" data-scene={chapter('bounceback').title[lang]}>
-        <div class="stage">
-          <div class="care-text">
-            <div class="wards-text">
-              <p class="reading">
-                <span class="main">{words(wardsMain).map((w) => <span class="word">{w} </span>)}</span>
-                <span class="end">{words(wardsEnd).map((w) => <span class="word">{w} </span>)}</span>
-              </p>
+        <div class="visual">
+          <div class="v-in">
+            <div class="med-photos">
+              {
+                [gradA, gradB, theatre].map((p, i) => (
+                  <div class:list={['mp', `mp${i}`]}>
+                    <Polaroid photo={p} lang={lang} caption={caption(p)} position={CROP[p.file]} sizes="(min-width: 52rem) 17rem, 33vw" film="latent" />
+                  </div>
+                ))
+              }
             </div>
-            <div class="bb-text">
-              <h2 class="label">{chapter('bounceback').title[lang]}</h2>
-              <div class="bb-groups">
-                <p class="bb1" set:html={rich(bb[0])} />
-                <p class="bb2" set:html={rich(bb.slice(1).join(' '))} />
+          </div>
+        </div>
+        <div class="script">
+          <h2 class="label phr"><span class="phr-in">{chapter('medicine').title[lang]}</span></h2>
+          {
+            script.medicine.map((p, i) => (
+              <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]}>
+                <p class="phr-in" set:html={phraseHtml(p.t[lang])} />
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- 3 and 4. The wards and Bounceback: one pen drawing, set moving by the phrases beside it. -->
+      <section class="scene care">
+        <div class="plain">
+          <p set:html={rich(wards)} />
+          <h2 class="label">{chapter('bounceback').title[lang]}</h2>
+          <p set:html={rich(bounceback)} />
+        </div>
+        <div class="visual">
+          <div class="v-in">
+            <div class="draw-wrap"><WardsDrawing lang={lang} /></div>
+          </div>
+        </div>
+        <div class="script">
+          {
+            script.wards.map((p, i) => (
+              <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]}>
+                <p class="phr-in" set:html={phraseHtml(p.t[lang])} />
+              </div>
+            ))
+          }
+          <h2 class="label phr"><span class="phr-in">{chapter('bounceback').title[lang]}</span></h2>
+          {
+            script.bounceback.map((p, i) => (
+              <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]}>
+                <p class="phr-in" set:html={phraseHtml(p.t[lang])} />
+              </div>
+            ))
+          }
+        </div>
+      </section>
+
+      <!-- 5. Eigen: the run club print with a lap drawn round it, the workshop print, then dots form a face with a mask and stream into a footprint. -->
+      <section class="scene eigen">
+        <div class="plain">
+          <h2 class="label">{chapter('eigen').title[lang]}</h2>
+          <p set:html={rich(eigen)} />
+        </div>
+        <div class="visual">
+          <div class="v-in">
+            <div class="run">
+              <div class="run-in">
+                <svg class="route" viewBox="0 0 500 486" aria-hidden="true">
+                  <filter id="wobble">
+                    <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="4"></feTurbulence>
+                    <feDisplacementMap in="SourceGraphic" scale="7"></feDisplacementMap>
+                  </filter>
+                  <path
+                    class="route-path"
+                    d="M74 372 C18 262 40 118 152 58 C262 2 424 30 472 150 C522 272 452 424 322 458 C200 490 78 452 50 330 C40 288 48 250 66 218"
+                  ></path>
+                  <circle class="runner" r="7" cx="74" cy="372"></circle>
+                </svg>
+                <Polaroid
+                  photo={x.eigenPrints.run}
+                  lang={lang}
+                  caption={caption(x.eigenPrints.run)}
+                  position={CROP[x.eigenPrints.run.file]}
+                  sizes="(min-width: 52rem) 19rem, 42vw"
+                  film="latent"
+                />
               </div>
             </div>
+            <div class="work">
+              <div class="work-in">
+                <Polaroid photo={x.eigenPrints.workshop} lang={lang} position={CROP[x.eigenPrints.workshop.file]} sizes="(min-width: 52rem) 14rem, 32vw" film="latent" />
+              </div>
+            </div>
+            <canvas class="dots" aria-hidden="true"></canvas>
           </div>
-          <div class="draw-wrap"><WardsDrawing lang={lang} /></div>
         </div>
-      </section>
-
-      <!-- 5. Eigen: the run club print with a lap drawn round it, then dots form a face with a mask and stream into a footprint. -->
-      <section class="scene eigen" data-scene={chapter('eigen').title[lang]}>
-        <div class="stage">
-          <div class="run">
-            <div class="run-in">
-              <svg class="route" viewBox="0 0 500 486" aria-hidden="true">
-                <filter id="wobble">
-                  <feTurbulence type="fractalNoise" baseFrequency="0.018" numOctaves="2" seed="4"></feTurbulence>
-                  <feDisplacementMap in="SourceGraphic" scale="7"></feDisplacementMap>
-                </filter>
-                <path
-                  class="route-path"
-                  d="M74 372 C18 262 40 118 152 58 C262 2 424 30 472 150 C522 272 452 424 322 458 C200 490 78 452 50 330 C40 288 48 250 66 218"
-                ></path>
-                <circle class="runner" r="7" cx="74" cy="372"></circle>
-              </svg>
-              <Polaroid photo={nightRun} lang={lang} caption={caption(nightRun)} position={CROP[nightRun.file]} sizes="(min-width: 52rem) 20rem, 50vw" film="latent" />
-            </div>
-          </div>
-          <canvas class="dots" aria-hidden="true"></canvas>
-          <div class="eigen-text">
-            <h2 class="label">{chapter('eigen').title[lang]}</h2>
-            <div class="e-groups">
-              <p class="e1" set:html={rich(eigen.slice(0, 3).join(' '))} />
-              <p class="e2" set:html={rich(eigen[3])} />
-              <p class="e3" set:html={rich(eigen.slice(4).join(' '))} />
-            </div>
-          </div>
+        <div class="script">
+          <h2 class="label phr"><span class="phr-in">{chapter('eigen').title[lang]}</span></h2>
+          {
+            script.eigen.map((p, i) => (
+              <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]}>
+                <p class="phr-in" set:html={phraseHtml(p.t[lang])} />
+              </div>
+            ))
+          }
         </div>
       </section>
 
       <!-- 6. Personal: a row of prints that moves sideways as you scroll; each develops as it arrives. -->
-      <section class="scene personal" data-scene={personal.title[lang]}>
+      <section class="scene personal">
         <div class="row-stage">
           <div class="track">
             <div class="p-intro">
               <h2 class="label">{personal.title[lang]}</h2>
-              <p class="lead">{personalLead}</p>
+              <p class="lead" set:html={phraseHtml(script.personal[lang])} />
             </div>
             {
               items.map((it, i) => (
                 <div class="group">
                   <div class="g-text">
-                    <h3>{it.title[lang]}</h3>
-                    <p set:html={rich(it.text[lang])} />
+                    <h3>
+                      <Letters text={it.title[lang]} />
+                    </h3>
+                    <p class="love" set:html={rich(it.text[lang])} />
                     <p class="detail" set:html={rich(it.detail[lang])} />
                   </div>
                   <div class="g-prints">
                     {(x.gallery[i] ?? []).map((p) => (
-                      <div class="gp">
-                        <Polaroid photo={p} lang={lang} caption={caption(p)} position={CROP[p.file]} sizes="(min-width: 52rem) 19rem, 62vw" film="latent" />
+                      <div class:list={['gp', { wide: p.wide }]}>
+                        <Polaroid
+                          photo={p}
+                          lang={lang}
+                          caption={caption(p)}
+                          position={CROP[p.file]}
+                          sizes={p.wide ? '(min-width: 52rem) 26rem, 86vw' : '(min-width: 52rem) 19rem, 62vw'}
+                          film="latent"
+                        />
                       </div>
                     ))}
                   </div>
@@ -229,10 +294,10 @@ const CROP: Record<string, string> = {
       </section>
 
       <!-- 7. Ending: the contact line written in ballpoint, the name as a wordmark. -->
-      <section class="scene ending" data-scene="">
+      <section class="scene ending">
         <div class="end-inner">
           <h2 class="label">{page.contact.title[lang]}</h2>
-          <p class="contact-line"><Letters text={page.contact.text[lang]} /></p>
+          <p class="contact-line" set:html={phraseHtml(script.contact[lang], { letters: true })} />
           <div class="end-actions">
             {
               links.linkedin ? (
@@ -251,7 +316,7 @@ const CROP: Record<string, string> = {
           <a class="machines" href="/llms.txt">{page.footer.forMachines[lang]}</a>
         </footer>
         <div class="end-mark" aria-hidden="true">
-          <p class="wordmark">{[...person.name].map((c) => <span class="c">{c === ' ' ? ' ' : c}</span>)}</p>
+          <p class="wordmark">{[...person.name].map((c) => <span class="c">{c === ' ' ? ' ' : c}</span>)}</p>
         </div>
       </section>
     </main>
@@ -302,6 +367,15 @@ const CROP: Record<string, string> = {
     background: var(--bg);
   }
 
+  /*
+   * The page under the paper is the same colour, so nothing else can show if the fixed paper is a
+   * frame late during a fast scroll. These styles only load on the interactive version's pages.
+   */
+  :global(html),
+  :global(body) {
+    background: #f0f0ed;
+  }
+
   /* The paper's grain, still, like a printed poster. */
   .xp-bg::after {
     content: '';
@@ -312,14 +386,20 @@ const CROP: Record<string, string> = {
     mix-blend-mode: multiply;
   }
 
+  .fx {
+    position: absolute;
+    width: 0;
+    height: 0;
+    overflow: hidden;
+  }
+
   .progress,
-  .scene-name,
   .camera,
-  .hint,
+  .script,
   .draw-wrap,
   .route,
   .dots,
-  .wordmark {
+  .end-mark {
     display: none;
   }
 
@@ -375,7 +455,7 @@ const CROP: Record<string, string> = {
     width: min(18rem, 70%);
   }
 
-  /* Letters.astro's spans, so scoped styles reach them only through :global. */
+  /* Letters.astro's and phrase.ts's spans, which scoped styles reach only through :global. */
   .xp :global(.wd) {
     white-space: nowrap;
   }
@@ -393,27 +473,28 @@ const CROP: Record<string, string> = {
     font-weight: 400;
   }
 
-  .med-photos,
-  .g-prints {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: var(--s-4);
-    margin-top: var(--s-8);
-  }
-
-  .bb-text,
-  .eigen-text {
-    margin-top: var(--s-12);
-  }
-
-  .bb-text p + p,
-  .e-groups p + p,
+  .plain p + p,
   .g-text p + p {
     margin-top: var(--s-3);
   }
 
-  .run {
-    width: min(16rem, 60%);
+  .plain p + .label {
+    margin-top: var(--s-12);
+  }
+
+  .visual {
+    margin-top: var(--s-8);
+  }
+
+  .med-photos,
+  .g-prints,
+  .eigen .v-in {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--s-4);
+  }
+
+  .g-prints {
     margin-top: var(--s-8);
   }
 
@@ -474,11 +555,20 @@ const CROP: Record<string, string> = {
       /* When the note starts being written, and how long each letter takes. */
       --w0: 0.95s;
       --per: 13ms;
+      /*
+       * The phrases: their size, the space above the first one in a scene (so it sits mid-screen
+       * when the scene settles), between phrases, and after the last one.
+       */
+      --phr-size: clamp(1.45rem, 2.1vw, 2.3rem);
+      --p-top: 38svh;
+      --phr-gap: 24svh;
+      --p-bottom: 30svh;
+      /* How much bigger the big words are. */
+      --big: 1.6;
       font-size: clamp(1.1rem, 1.5vw, 1.45rem);
     }
 
     :global(.js) .hud,
-    :global(.js) .scene-name,
     :global(.js) .progress {
       position: fixed;
       z-index: 40;
@@ -494,15 +584,6 @@ const CROP: Record<string, string> = {
       pointer-events: auto;
     }
 
-    :global(.js) .scene-name {
-      display: block;
-      left: var(--side);
-      bottom: var(--s-6);
-      margin: 0;
-      font-size: 0.95rem;
-      opacity: 0.6;
-    }
-
     :global(.js) .progress {
       display: block;
       inset: 0 0 auto;
@@ -513,14 +594,109 @@ const CROP: Record<string, string> = {
     }
 
     :global(.js) .scene {
+      position: relative;
       max-width: none;
       padding: 0;
     }
 
-    /* Not clipped: while a scene glides in or out, its content may lie over the next one's. */
     :global(.js) .stage {
       position: relative;
       height: var(--stage);
+    }
+
+    /* ----- Scenes with a picture and phrases: the picture stays, the phrases scroll past it ----- */
+
+    :global(.js) .plain {
+      display: none;
+    }
+
+    /* Not clipped: while a scene glides in or out, its picture may lie over the next one's. */
+    :global(.js) .visual {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      height: var(--stage);
+      margin: 0;
+    }
+
+    :global(.js) .v-in {
+      position: absolute;
+      inset: 0;
+    }
+
+    /* Pulled up over the picture, so the phrases start at the top of the scene. */
+    :global(.js) .script {
+      display: block;
+      position: relative;
+      z-index: 2;
+      width: min(38rem, 44vw);
+      margin: calc(-1 * var(--stage)) 0 0 var(--side);
+      padding: var(--p-top) 0 var(--p-bottom);
+      pointer-events: none;
+    }
+
+    :global(.js) .script a {
+      pointer-events: auto;
+    }
+
+    :global(.js) .phr {
+      margin: 0 0 var(--phr-gap);
+      font-size: var(--phr-size);
+      line-height: 1.18;
+    }
+
+    :global(.js) .phr-in {
+      display: block;
+      margin: 0;
+    }
+
+    :global(.js) .phr[data-at='i'] {
+      padding-left: 12%;
+    }
+
+    :global(.js) .phr[data-at='r'] {
+      text-align: right;
+    }
+
+    /* The scene's name, small, above its first phrase. A colour, not opacity: the script fades it. */
+    :global(.js) .script .label {
+      margin-bottom: var(--s-6);
+      font-size: 0.95rem;
+      line-height: 1.32;
+      color: rgb(47 51 148 / 0.6);
+      opacity: 1;
+    }
+
+    /* The overlay markup (phrase.ts): lines, big words, small connecting words, and pen underlines. */
+    :global(.js) .xp :global(.ln) {
+      display: block;
+      text-wrap: balance;
+    }
+
+    :global(.js) .xp :global(.big) {
+      font-size: calc(var(--big) * 1em);
+      line-height: 0.95;
+    }
+
+    :global(.js) .xp :global(.sm) {
+      font-size: 0.58em;
+    }
+
+    :global(.js) .xp :global(.u) {
+      position: relative;
+      white-space: nowrap;
+    }
+
+    /* Just under the letters, clear of the line below. */
+    :global(.js) .xp :global(.u-line) {
+      position: absolute;
+      left: -1%;
+      bottom: 0.02em;
+      width: 102%;
+      height: 0.3em;
+      background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 14' preserveAspectRatio='none'%3E%3Cpath d='M3 9 C40 4 80 12 120 7 S180 5 197 8' fill='none' stroke='%232f3394' stroke-width='2.4' stroke-linecap='round'/%3E%3C/svg%3E")
+        0 0 / 100% 100% no-repeat;
+      pointer-events: none;
     }
 
     /* ----- Opening: plays on CSS, from the moment the page starts arriving ----- */
@@ -634,19 +810,6 @@ const CROP: Record<string, string> = {
       animation-delay: calc(var(--w0) + (var(--na) + 4 + var(--i)) * var(--per));
     }
 
-    :global(.js) .hint {
-      display: block;
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 5svh;
-      margin: 0;
-      font-size: 0.95rem;
-      text-align: center;
-      opacity: 0.6;
-      animation: rise 0.6s ease-out 1.7s both;
-    }
-
     @keyframes ink {
       from {
         opacity: 0;
@@ -703,23 +866,13 @@ const CROP: Record<string, string> = {
       }
     }
 
-    /* ----- Medicine ----- */
-
-    :global(.js) .med-text {
-      position: absolute;
-      z-index: 2;
-      left: var(--side);
-      top: 50%;
-      width: min(30rem, 40vw);
-      translate: 0 -50%;
-    }
+    /* ----- Medicine: the prints on the right ----- */
 
     :global(.js) .med-photos {
       position: absolute;
       top: 50%;
       right: var(--side);
       left: 46%;
-      z-index: 3;
       display: flex;
       align-items: flex-start;
       justify-content: center;
@@ -736,76 +889,44 @@ const CROP: Record<string, string> = {
       margin-top: 6svh;
     }
 
-    /* ----- Care: the wards and Bounceback ----- */
-
-    :global(.js) .care-text {
-      position: absolute;
-      z-index: 3;
-      left: var(--side);
-      top: 50%;
-      width: min(30rem, 40vw);
-      translate: 0 -50%;
-      display: grid;
-    }
-
-    :global(.js) .wards-text,
-    :global(.js) .bb-text {
-      grid-area: 1 / 1;
-      align-self: center;
-      margin: 0;
-    }
+    /* ----- The wards and Bounceback: the drawing on the right ----- */
 
     :global(.js) .draw-wrap {
       display: block;
       position: absolute;
-      z-index: 2;
       right: var(--side);
       top: 50%;
       width: min(50vw, 44rem);
       translate: 0 -50%;
     }
 
-    /* ----- Eigen ----- */
+    /* ----- Eigen: the prints and the dots on the right ----- */
 
-    :global(.js) .eigen-text {
-      position: absolute;
-      z-index: 5;
-      left: var(--side);
-      top: 50%;
-      width: min(30rem, 40vw);
-      margin: 0;
-      translate: 0 -50%;
-    }
-
-    :global(.js) .e-groups,
-    :global(.js) .bb-groups {
-      display: grid;
-    }
-
-    :global(.js) .e-groups p,
-    :global(.js) .bb-groups p {
-      grid-area: 1 / 1;
-      margin: 0;
-    }
-
-    :global(.js) .bb-groups .bb2 {
-      grid-area: auto;
-      margin-top: var(--s-3);
+    :global(.js) .eigen .v-in {
+      display: block;
     }
 
     :global(.js) .run {
       position: absolute;
-      z-index: 2;
-      left: 68%;
+      left: 64%;
       top: 50%;
-      width: clamp(12rem, 20vw, 20rem);
-      margin: 0;
+      width: clamp(12rem, 19vw, 19rem);
       translate: -50% -50%;
     }
 
-    /* The script moves this wrapper, not .run, whose CSS translate centres it. */
-    :global(.js) .run-in {
+    /* The script moves these wrappers, not .run and .work, whose CSS translate centres them. */
+    :global(.js) .run-in,
+    :global(.js) .work-in {
       position: relative;
+    }
+
+    :global(.js) .work {
+      position: absolute;
+      left: 84%;
+      top: 62%;
+      z-index: 2;
+      width: clamp(9rem, 13vw, 14rem);
+      translate: -50% -50%;
     }
 
     :global(.js) .route {
@@ -834,7 +955,6 @@ const CROP: Record<string, string> = {
     :global(.js) .dots {
       display: block;
       position: absolute;
-      z-index: 2;
       left: 44%;
       top: 0;
       width: 56%;
@@ -843,11 +963,6 @@ const CROP: Record<string, string> = {
 
     /* ----- Personal: one long row, moved sideways by the script ----- */
 
-    :global(.js) .personal {
-      max-width: none;
-      padding: 0;
-    }
-
     :global(.js) .row-stage {
       display: flex;
       align-items: center;
@@ -855,12 +970,14 @@ const CROP: Record<string, string> = {
       overflow: hidden;
     }
 
+    /* Its own layer, so moving it never repaints the text and photos inside. */
     :global(.js) .track {
       display: flex;
       align-items: center;
       gap: 9vw;
       width: max-content;
       padding: 0 18vw 0 var(--side);
+      will-change: transform;
     }
 
     :global(.js) .p-intro {
@@ -869,8 +986,8 @@ const CROP: Record<string, string> = {
     }
 
     :global(.js) .p-intro .lead {
-      font-size: clamp(1.6rem, 2.6vw, 2.4rem);
-      line-height: 1.2;
+      font-size: clamp(1.7rem, 2.7vw, 2.6rem);
+      line-height: 1.1;
     }
 
     :global(.js) .group {
@@ -880,15 +997,26 @@ const CROP: Record<string, string> = {
       margin: 0;
     }
 
+    /* Set like the phrases: the title big, the line on what Till loves medium, the proof small. */
     :global(.js) .g-text {
       flex: none;
-      width: min(21rem, 70vw);
+      width: min(24rem, 72vw);
     }
 
     :global(.js) .g-text h3 {
-      font-size: clamp(1.8rem, 3vw, 2.8rem);
-      line-height: 1.1;
-      margin-bottom: var(--s-3);
+      margin-bottom: var(--s-4);
+      font-size: clamp(2rem, 3.2vw, 3.1rem);
+      line-height: 1;
+    }
+
+    :global(.js) .g-text .love {
+      font-size: clamp(1.25rem, 1.75vw, 1.7rem);
+      line-height: 1.15;
+    }
+
+    :global(.js) .g-text .detail {
+      margin-top: var(--s-4);
+      font-size: 0.95rem;
     }
 
     :global(.js) .g-prints {
@@ -903,6 +1031,11 @@ const CROP: Record<string, string> = {
       --gw: calc(46svh * 88 / 107);
       flex: none;
       width: var(--gw);
+    }
+
+    /* A wide print is as tall as the square ones, so it is wider. */
+    :global(.js) .gp.wide {
+      --gw: calc(46svh * 108 / 86);
     }
 
     :global(.js) .gp + .gp {
@@ -938,8 +1071,9 @@ const CROP: Record<string, string> = {
     }
 
     :global(.js) .contact-line {
-      max-width: 28ch;
-      font-size: clamp(1.9rem, 3.7vw, 3.5rem);
+      --big: 1.4;
+      max-width: 30ch;
+      font-size: clamp(1.8rem, 3.3vw, 3.2rem);
       line-height: 1.12;
     }
 
@@ -961,6 +1095,7 @@ const CROP: Record<string, string> = {
      * taken back by the margin, keeps the tops of the letters inside.
      */
     :global(.js) .end-mark {
+      display: block;
       overflow: hidden;
       margin-top: -8vw;
       padding-top: 8vw;
@@ -984,12 +1119,20 @@ const CROP: Record<string, string> = {
       will-change: transform;
     }
 
-    /* ----- Phones and narrow tablets: the same scenes, stacked vertically ----- */
+    /*
+     * ----- Phones and narrow tablets -----
+     * The picture sits in the top half of the screen and the phrases come up from the bottom into
+     * the lower half, fading out before they reach it.
+     */
 
     @media (max-width: 51.99rem) {
       :global(.js) .xp {
         --pw: min(52vw, 15rem);
         --w0: 1.3s;
+        --phr-size: clamp(1.25rem, 5.4vw, 1.6rem);
+        --p-top: 56svh;
+        --phr-gap: 15svh;
+        --p-bottom: 10svh;
         /* Phone size, growing on a tablet held upright. */
         font-size: clamp(1.05rem, 2.6vw, 1.4rem);
       }
@@ -1020,22 +1163,17 @@ const CROP: Record<string, string> = {
         top: calc(49% + var(--pw) * 0.608 + 1.25rem);
       }
 
-      :global(.js) .hint {
-        display: none;
+      :global(.js) .script {
+        width: auto;
+        margin-right: var(--side);
       }
 
-      :global(.js) .med-text,
-      :global(.js) .care-text,
-      :global(.js) .eigen-text {
-        top: 11svh;
-        right: var(--side);
-        width: auto;
-        translate: none;
+      :global(.js) .phr[data-at='i'] {
+        padding-left: 8%;
       }
 
       :global(.js) .med-photos {
-        top: auto;
-        bottom: 6svh;
+        top: 9svh;
         left: var(--side);
         translate: none;
         display: grid;
@@ -1046,7 +1184,7 @@ const CROP: Record<string, string> = {
       }
 
       :global(.js) .mp {
-        width: 37vw;
+        width: min(33vw, 17svh);
       }
 
       :global(.js) .mp0 {
@@ -1062,48 +1200,31 @@ const CROP: Record<string, string> = {
         grid-area: c;
       }
 
-      /* The words at the top, and the drawing in the middle of whatever space they leave. */
-      :global(.js) .care .stage {
-        display: flex;
-        flex-direction: column;
-        padding: 11svh var(--side) 3svh;
-      }
-
-      :global(.js) .care-text {
-        position: relative;
-        top: auto;
-        left: auto;
-        right: auto;
-      }
-
       :global(.js) .draw-wrap {
-        position: relative;
-        top: auto;
+        top: 8svh;
+        left: 50%;
         right: auto;
-        flex: 1;
-        min-height: 0;
-        display: flex;
-        align-items: center;
-        width: auto;
-        translate: none;
-      }
-
-      :global(.js) .bb-groups .bb2 {
-        grid-area: 1 / 1;
-        margin: 0;
+        width: min(calc(100vw - 2 * var(--side)), 46svh * 560 / 520);
+        translate: -50% 0;
       }
 
       :global(.js) .run {
-        left: 50%;
-        top: 66%;
-        width: 50vw;
+        left: 36%;
+        top: 29svh;
+        width: min(42vw, 30svh);
+      }
+
+      :global(.js) .work {
+        left: 74%;
+        top: 33svh;
+        width: min(32vw, 23svh);
       }
 
       :global(.js) .dots {
         left: 0;
-        top: 40svh;
+        top: 6svh;
         width: 100%;
-        height: 60svh;
+        height: 44svh;
       }
 
       :global(.js) .track {
@@ -1116,6 +1237,14 @@ const CROP: Record<string, string> = {
 
       :global(.js) .gp {
         --gw: 62vw;
+      }
+
+      :global(.js) .gp.wide {
+        --gw: 86vw;
+      }
+
+      :global(.js) .contact-line {
+        font-size: clamp(1.4rem, 6.4vw, 1.9rem);
       }
 
       :global(.js) .wordmark {

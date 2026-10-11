@@ -14,17 +14,19 @@ same file.
 
 ### The interactive version
 
-`/v2/` (and `/de/v2/`) is a second, interactive version of the same page to compare against: the
-same words and photos staged as full-screen scenes that play as you scroll, on white paper with
-everything written in ballpoint blue (Mynerve, in capitals), apart from the name and the one
-button. Every photo is a realistic Polaroid 600 print (`components/v2/Polaroid.astro`) that comes
-out of a pen-sketched camera or is laid down dark and develops. The wards and Bounceback are one pen
+`/v2/` (and `/de/v2/`) is a second, interactive version of the same page to compare against, on
+white paper with everything written in ballpoint blue (Mynerve, in capitals), apart from the name
+and the one button. The first scroll is one quick move from the opening to the first scene; after
+that the words move with the reader, as short handwritten phrases with big and small words
+(`content/phrase.ts`), while each scene's picture stays in place beside them and moves as each
+phrase passes. Every photo is a realistic instant print (`components/v2/Polaroid.astro`) that comes
+out of a pen-sketched camera or develops from dark film. The wards and Bounceback are one pen
 drawing (`components/v2/WardsDrawing.astro`): a doctor swamped by software windows, a patient who
-walks off, and the phone the windows are swept into. Eigen is a dot morph on a canvas, and Personal
-a row of prints that moves sideways. The opening plays on CSS alone, so it starts before the
-script arrives; after that, smooth scrolling with Lenis, scenes pinned and scrubbed with GSAP
-ScrollTrigger. It is kept out of search results (`noindex`, not in the sitemap). With reduced
-motion turned on, or without JavaScript, it reads as a plain page.
+walks off, and the phone the windows are swept into. Eigen has the run club and workshop prints and
+a dot morph on a canvas, and Personal a row of prints that moves sideways. The opening plays on CSS
+alone, so it starts before the script arrives; after that, Lenis smooths the wheel and GSAP
+ScrollTrigger drives the rest. It is kept out of search results (`noindex`, not in the sitemap).
+With reduced motion turned on, or without JavaScript, it reads as a plain page.
 
 ## Working on it
 
@@ -48,6 +50,8 @@ src/
                         in English and German. `facts`: the fuller record, read only by search
                         engines and AI assistants
   content/rich.ts       The small markup paragraphs may use: [label](url) links and *italics*
+  content/phrase.ts     The interactive version's phrase markup, and the check that its phrases
+                        say what the paragraphs say
   content/jsonld.ts     Structured data (schema.org Person) built from the profile
   content/images.ts     Looks up photos in src/assets/photos by file name
   pages/index.astro     "/" (English); pages/de/index.astro is "/de/" (German); both render Page

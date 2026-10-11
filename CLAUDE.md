@@ -44,8 +44,9 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
   When Till pushes back, change what he pointed at, proportionally; don't swing to the opposite.
 - Professional, with the why: the line under the name is Till's own wording, so keep it as
   written. Then Medicine (UCL on its own line, the elective separate), Bounceback, Eigen and
-  Personal. Medicine names the rotations; what he kept noticing across them leads into
-  Bounceback, which leads with remote rehab (check claims against the `the-why` product facts);
+  Personal. Medicine names the rotations; what annoyed him on every rotation, said plainly as to a
+  friend (never pitch-like), leads into Bounceback, which says the idea in one sentence, no feature
+  list, no hardware (check claims against the `the-why` product facts);
   the Highbury run club leads to Max, the CPAP masks (quick iterations), the pivot and Eigen. Storytelling is fine only while the reader doesn't notice it: no
   "that's where I met", no set-ups and pay-offs. No dad, no dancing, Global Health not featured. State facts, never prove them (no test results, no "lab-level", no
   counts as a flex). Never call Till an engineer. "Dad", not "father". German says
@@ -81,30 +82,41 @@ output, GitHub Pages on the custom domain) and the layout of the repo.
   images through `astro:assets`. The main page has no script libraries; GSAP and Lenis are
   bundled for the interactive version (`/v2/`) only, never loaded from a CDN.
 - The interactive version (`/v2/`, `components/v2/Experience.astro`, `scripts/experience.ts`)
-  uses the same words from `profile.ts`; only its drawing labels, Polaroid captions and photo rows
-  live in `page.experience`. Its look is white paper and ballpoint blue (`#2f3394`, Mynerve in
-  capitals): all text is in the pen, apart from "Till Findl" and the button, and illustrations are
-  pen drawings (`WardsDrawing.astro`), never pop-ups or cards. Every photo is a realistic Polaroid
-  600 print at true proportions (88 × 107 mm frame, 79 mm square image) that develops from dark
-  film. Never rotate photos, no cursor effects, no buttons in the hero. Captions name a place only
-  when it is certain. Reveal text by words or letters, never by lines (split lines break oddly when
-  the width changes).
-- Motion in `/v2/`: every scene is scrubbed by the scroll, so scrolling back reverses it. No blank
-  screens: nothing fades out at the end of a pin, and on desktop content glides in early and out
-  late (`GLIDE`). The opening plays on CSS so it starts before the script; it holds with a sticky
-  stage, not a pin, because a pin re-wraps the element and restarts its CSS animations. Animate
-  clip paths with explicit from and to values; don't animate x or y on an element centred with the
-  CSS `translate` property (GSAP takes it over), and don't animate opacity on an element with a CSS
-  animation (its fill wins); animate a wrapper instead. Letters.astro's spans are another
-  component's, so styles reach them only through `:global`. Pen strokes that draw on use
-  `pathLength="1"` and a gap longer than the stroke, so no round cap leaves a dot at the end.
-- Check `/v2/` by jumping to exact points inside each pinned scene
-  (`window.__xp.lenis.scrollTo(y, { immediate: true })`) and capturing several moments of every
-  transition, on a phone, a small phone and a desktop, in both languages, and with reduced motion
-  (it must read as a plain page). Scan for blank frames: step every quarter screen through the page
-  and measure how much of each frame differs from the paper; look at the emptiest ones. Time the
-  opening from the self-contained preview too (it should settle in about two seconds and play only
-  once). Publish it as its own preview (`node tools/preview.mjs --page v2`), separate from the main one.
+  says the same words as the main page. Its phrases (`page.experience.script`) are the chapters'
+  paragraphs split into short handwritten lines with overlay markup (`content/phrase.ts`: `^big^`,
+  `_small_`, `~underlined~`, " / " for a line break); the build stops if a phrase list, markup
+  stripped, no longer matches its paragraph, so change the wording in both places together. Keep
+  designed lines short enough not to wrap on a desktop (check every width; on a phone a long line
+  wraps into balanced halves). Only phrases, drawing labels, Polaroid captions and photo rows live
+  in `page.experience`. Its look is white paper and ballpoint blue (`#2f3394`, Mynerve in capitals):
+  all text is in the pen, apart from "Till Findl" and the button, and illustrations are pen drawings
+  (`WardsDrawing.astro`), never pop-ups or cards. Every photo is a realistic instant print at true
+  proportions that develops from dark film: Polaroid 600 (88 × 107 mm frame, 79 mm square image), or
+  a wide print (108 × 86 mm, 99 × 62 mm image) for group photos marked `wide`. Never rotate photos,
+  no cursor effects, no buttons or scroll hint in the hero. Captions name a place or race only when
+  it is certain. Reveal text by words, letters or phrases, never by split lines.
+- Motion in `/v2/`, Revolut-style: the first scroll is one quick automatic move from the opening to
+  the first scene (and back up the same way), held while it runs; after that the page goes at the
+  reader's pace. Each scene is a sticky picture with its phrases scrolling past in the normal flow,
+  and each picture moves only when a phrase passes it (`data-cue` and `cue()`), so something moves
+  for every bit of scroll; each scene also drifts slightly while on screen. Only the Personal row
+  pins. Scrubs trail the scroll by 0.3 s at most, and no element is driven by two scroll animations
+  (use an inner wrapper, like `.phr-in` and `.ph-o`). The opening plays on CSS so it starts before
+  the script; it holds with a sticky stage, not a pin, because a pin re-wraps the element and
+  restarts its CSS animations. Animate clip paths with explicit from and to values; don't animate x
+  or y on an element centred with the CSS `translate` property, or opacity on an element with a CSS
+  animation; animate a wrapper instead. Letters.astro's and phrase.ts's spans are reached only
+  through `:global`. Pen strokes that draw on use `pathLength="1"` and a gap longer than the stroke.
+  Back to top swooshes with a vertical motion blur, never scrolling back through the page.
+- Check `/v2/` by jumping to exact points (`window.__xp.lenis.scrollTo(y, { immediate: true })`)
+  and capturing the start, middle and end of every cue, on a phone, a small phone, a tablet and a
+  desktop, in both languages, and with reduced motion (it must read as a plain page). Run the
+  motion check (step 40 px through the page and diff each frame against the last: none may be
+  still) and the blank-frame scan (every quarter screen, measure how much differs from the paper).
+  Check the first move with a real wheel and a real swipe, and that the Personal row's photos are
+  loaded before it moves on a throttled connection. Time the opening from the self-contained
+  preview too (about two seconds, playing once). Publish it as its own preview
+  (`node tools/preview.mjs --page v2`), separate from the main one.
 - Comments explain intent and the non-obvious, in full sentences, British spelling. Don't narrate.
 - `README.md` stays current in the same commit as the change it describes.
 - `public/CNAME` must keep holding `tillfindl.com`, or the custom domain drops off on deploy.

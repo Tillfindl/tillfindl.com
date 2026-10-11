@@ -2,8 +2,9 @@
 // The wards and Bounceback scenes as one ballpoint drawing: a doctor and a patient joined by a
 // glowing pen line, software windows that pile up around the doctor at different depths, and the
 // phone they are swept into, whose screens are pen sketches too. Every stroke has pathLength 1, so
-// scripts/experience.ts can draw it on with stroke-dashoffset. All coordinates are in the
-// 560 × 520 viewBox.
+// scripts/experience.ts can draw it on with stroke-dashoffset. Each window says which phrase draws
+// it in (data-cue), and floats inside its own `.drift` group, so floating and being swept into the
+// phone never move the same element. All coordinates are in the 560 × 520 viewBox.
 import { page, type Lang } from '../../content/profile';
 
 interface Props {
@@ -14,18 +15,22 @@ const { lang } = Astro.props;
 const x = page.experience;
 const up = (s: string) => s.toUpperCase();
 
-/** Software windows: position, size, depth (nearer is larger and darker) and kind. */
+/**
+ * Software windows: position, size, depth (nearer is larger and darker), kind (0 imaging, 1 notes,
+ * 2 prescriptions) and the phrase that draws them in. The three on "wards-3" come in with the words
+ * "imaging", "notes" and "prescriptions", in that order.
+ */
 const WINDOWS = [
-  { x: 24, y: 58, w: 120, h: 78, d: 1.0, k: 0 },
-  { x: 214, y: 36, w: 128, h: 70, d: 0.8, k: 1 },
-  { x: 52, y: 252, w: 110, h: 72, d: 1.15, k: 2 },
-  { x: 250, y: 150, w: 100, h: 66, d: 0.7, k: 0 },
-  { x: 8, y: 166, w: 96, h: 64, d: 0.65, k: 1 },
-  { x: 112, y: 78, w: 112, h: 70, d: 1.2, k: 1 },
-  { x: 318, y: 62, w: 92, h: 60, d: 0.6, k: 2 },
-  { x: 16, y: 352, w: 120, h: 70, d: 0.9, k: 0 },
-  { x: 232, y: 210, w: 104, h: 68, d: 1.05, k: 2 },
-  { x: 124, y: 14, w: 100, h: 62, d: 0.75, k: 2 },
+  { x: 24, y: 58, w: 120, h: 78, d: 1.0, k: 0, cue: 'wards-1' },
+  { x: 214, y: 36, w: 128, h: 70, d: 0.8, k: 1, cue: 'wards-1' },
+  { x: 52, y: 252, w: 110, h: 72, d: 1.15, k: 2, cue: 'wards-2' },
+  { x: 250, y: 150, w: 100, h: 66, d: 0.7, k: 0, cue: 'wards-3' },
+  { x: 8, y: 166, w: 96, h: 64, d: 0.65, k: 1, cue: 'wards-2' },
+  { x: 112, y: 78, w: 112, h: 70, d: 1.2, k: 1, cue: 'wards-3' },
+  { x: 318, y: 62, w: 92, h: 60, d: 0.6, k: 2, cue: 'wards-2' },
+  { x: 16, y: 352, w: 120, h: 70, d: 0.9, k: 0, cue: 'wards-2' },
+  { x: 232, y: 210, w: 104, h: 68, d: 1.05, k: 2, cue: 'wards-3' },
+  { x: 124, y: 14, w: 100, h: 62, d: 0.75, k: 2, cue: 'wards-1' },
 ];
 const windows = WINDOWS.map((w) => ({
   ...w,
@@ -101,32 +106,38 @@ const noteY = (entry: number) => 180 + noteRow++ * 16 + entry * 10;
 
   {
     windows.map((w) => (
-      <g class="win" data-cx={w.cx} data-cy={w.cy} data-d={w.d} style={`opacity:${w.opacity}`}>
-        <g transform={`translate(${w.x} ${w.y}) scale(${w.d})`}>
-          <g class="ink">
-            <rect class="draw paper" pathLength="1" x="0" y="0" width={w.w} height={w.h} rx="5"></rect>
-            <path class="draw" pathLength="1" d={`M0 18 H${w.w}`}></path>
-            <circle class="draw" pathLength="1" cx="8" cy="9" r="2.2"></circle>
-            <circle class="draw" pathLength="1" cx="15" cy="9" r="2.2"></circle>
-            <circle class="draw" pathLength="1" cx="22" cy="9" r="2.2"></circle>
-            {w.k === 0 && (
-              <>
-                <circle class="draw" pathLength="1" cx={w.w / 2} cy={18 + (w.h - 18) / 2} r={(w.h - 18) * 0.32}></circle>
-                <path class="draw" pathLength="1" d={`M${w.w / 2 - 8} ${18 + (w.h - 18) / 2 - 4} q8 -6 16 0 M${w.w / 2 - 6} ${18 + (w.h - 18) / 2 + 5} q6 4 12 0`}></path>
-              </>
-            )}
-            {w.k === 1 && (
-              <path class="draw" pathLength="1" d={`M10 30 H${w.w - 18} M10 42 H${w.w - 34} M10 54 H${w.w - 24}`}></path>
-            )}
-            {w.k === 2 && <path class="draw" pathLength="1" d={`M30 32 H${w.w - 14} M30 46 H${w.w - 30} M10 30 l6 0 m-6 0 v14 m0 -7 h5 q4 0 4 -3.5 q0 -3.5 -4 -3.5 m-1 7 l6 7`}></path>}
+      <g class="win" data-cx={w.cx} data-cy={w.cy} data-d={w.d} data-cue={w.cue} data-k={w.k} style={`opacity:${w.opacity}`}>
+        <g class="drift">
+          <g transform={`translate(${w.x} ${w.y}) scale(${w.d})`}>
+            <g class="ink">
+              <rect class="draw paper" pathLength="1" x="0" y="0" width={w.w} height={w.h} rx="5"></rect>
+              <path class="draw" pathLength="1" d={`M0 18 H${w.w}`}></path>
+              <circle class="draw" pathLength="1" cx="8" cy="9" r="2.2"></circle>
+              <circle class="draw" pathLength="1" cx="15" cy="9" r="2.2"></circle>
+              <circle class="draw" pathLength="1" cx="22" cy="9" r="2.2"></circle>
+              {w.k === 0 && (
+                <>
+                  <circle class="draw" pathLength="1" cx={w.w / 2} cy={18 + (w.h - 18) / 2} r={(w.h - 18) * 0.32}></circle>
+                  <path class="draw" pathLength="1" d={`M${w.w / 2 - 8} ${18 + (w.h - 18) / 2 - 4} q8 -6 16 0 M${w.w / 2 - 6} ${18 + (w.h - 18) / 2 + 5} q6 4 12 0`}></path>
+                </>
+              )}
+              {w.k === 1 && (
+                <path class="draw" pathLength="1" d={`M10 30 H${w.w - 18} M10 42 H${w.w - 34} M10 54 H${w.w - 24}`}></path>
+              )}
+              {w.k === 2 && <path class="draw" pathLength="1" d={`M30 32 H${w.w - 14} M30 46 H${w.w - 30} M10 30 l6 0 m-6 0 v14 m0 -7 h5 q4 0 4 -3.5 q0 -3.5 -4 -3.5 m-1 7 l6 7`}></path>}
+            </g>
+            <text class="label" x="30" y="12.5">{w.label}</text>
           </g>
-          <text class="label" x="30" y="12.5">{w.label}</text>
         </g>
       </g>
     ))
   }
 
-  <!-- The phone the windows are swept into, with its screens drawn in pen. -->
+  <!--
+    The phone the windows are swept into, with its screens drawn in pen. Each screen has an inner
+    group (.ph-o): one phrase brings a screen in on the outer group and the next takes it away on
+    the inner one, so two scroll animations never drive the same element.
+  -->
   <g class="phone">
     <g class="ink">
       <rect class="draw paper" pathLength="1" x="205" y="104" width="150" height="304" rx="24"></rect>
@@ -135,73 +146,83 @@ const noteY = (entry: number) => 180 + noteRow++ * 16 + entry * 10;
     </g>
 
     <g class="ph ph1">
-      <text class="t-title" x="222" y="150">{up(ph.programme[lang])}</text>
-      {
-        ph.exercises.map((e, i) => (
-          <g transform={`translate(0 ${i * 44})`}>
-            <g class="ink">
-              <rect pathLength="1" x="222" y="166" width="36" height="28" rx="4"></rect>
-              <path pathLength="1" d="M236 173 l10 7 l-10 7 Z"></path>
+      <g class="ph-o">
+        <text class="t-title" x="222" y="150">{up(ph.programme[lang])}</text>
+        {
+          ph.exercises.map((e, i) => (
+            <g transform={`translate(0 ${i * 44})`}>
+              <g class="ink">
+                <rect pathLength="1" x="222" y="166" width="36" height="28" rx="4"></rect>
+                <path pathLength="1" d="M236 173 l10 7 l-10 7 Z"></path>
+              </g>
+              <text class="t-row" x="266" y="178">{up(e[lang])}</text>
+              <text class="t-small" x="266" y="191">{ph.sets[lang]}</text>
             </g>
-            <text class="t-row" x="266" y="178">{up(e[lang])}</text>
-            <text class="t-small" x="266" y="191">{ph.sets[lang]}</text>
-          </g>
-        ))
-      }
+          ))
+        }
+      </g>
     </g>
 
     <g class="ph ph2">
-      <g class="ink">
-        <rect pathLength="1" x="220" y="134" width="120" height="216" rx="8"></rect>
-        <g class="squat">
-          <circle pathLength="1" cx="280" cy="214" r="10"></circle>
-          <path pathLength="1" d="M280 224 L276 268 M278 236 L300 250 M278 236 L298 256 M276 268 L262 288 L268 318 M276 268 L292 290 L286 318"></path>
+      <g class="ph-o">
+        <g class="ink">
+          <rect pathLength="1" x="220" y="134" width="120" height="216" rx="8"></rect>
+          <g class="squat">
+            <circle pathLength="1" cx="280" cy="214" r="10"></circle>
+            <path pathLength="1" d="M280 224 L276 268 M278 236 L300 250 M278 236 L298 256 M276 268 L262 288 L268 318 M276 268 L292 290 L286 318"></path>
+          </g>
         </g>
+        <circle class="rec" cx="232" cy="149" r="3.2"></circle>
+        <text class="t-small" x="240" y="152">REC</text>
+        <text class="t-row center" x="280" y="372">{up(ph.recording[lang])}</text>
       </g>
-      <circle class="rec" cx="232" cy="149" r="3.2"></circle>
-      <text class="t-small" x="240" y="152">REC</text>
-      <text class="t-row center" x="280" y="372">{up(ph.recording[lang])}</text>
     </g>
 
     <g class="ph ph3">
-      <g class="ink">
-        <rect pathLength="1" x="220" y="134" width="120" height="82" rx="8"></rect>
-        <path pathLength="1" d="M280 160 l-3 24 M279 170 l14 8 M277 184 l-8 14 M277 184 l10 14"></path>
-        <circle pathLength="1" cx="281" cy="153" r="6"></circle>
-        <path pathLength="1" d={`M232 252 h100 q8 0 8 8 v${feedback.length * 13 + 8} q0 8 -8 8 h-84 l-12 12 v-12 h-4 q-8 0 -8 -8 v-${feedback.length * 13 + 8} q0 -8 8 -8 Z`}></path>
+      <g class="ph-o">
+        <g class="ink">
+          <rect pathLength="1" x="220" y="134" width="120" height="82" rx="8"></rect>
+          <path pathLength="1" d="M280 160 l-3 24 M279 170 l14 8 M277 184 l-8 14 M277 184 l10 14"></path>
+          <circle pathLength="1" cx="281" cy="153" r="6"></circle>
+          <path pathLength="1" d={`M232 252 h100 q8 0 8 8 v${feedback.length * 13 + 8} q0 8 -8 8 h-84 l-12 12 v-12 h-4 q-8 0 -8 -8 v-${feedback.length * 13 + 8} q0 -8 8 -8 Z`}></path>
+        </g>
+        <text class="t-small" x="226" y="242">{up(ph.physio[lang])}</text>
+        {
+          feedback.map((l, i) => (
+            <text class="t-row" x="234" y={272 + i * 13}>
+              {l}
+            </text>
+          ))
+        }
       </g>
-      <text class="t-small" x="226" y="242">{up(ph.physio[lang])}</text>
-      {
-        feedback.map((l, i) => (
-          <text class="t-row" x="234" y={272 + i * 13}>
-            {l}
-          </text>
-        ))
-      }
     </g>
 
     <g class="ph ph4">
-      <text class="t-title" x="222" y="150">{up(ph.note[lang])}</text>
-      {
-        noteLines.map((rows, entry) => (
-          <g class="note-line">
-            {rows.map((r) => (
-              <text class="t-row" x="222" y={noteY(entry)}>
-                {r}
-              </text>
-            ))}
-          </g>
-        ))
-      }
+      <g class="ph-o">
+        <text class="t-title" x="222" y="150">{up(ph.note[lang])}</text>
+        {
+          noteLines.map((rows, entry) => (
+            <g class="note-line">
+              {rows.map((r) => (
+                <text class="t-row" x="222" y={noteY(entry)}>
+                  {r}
+                </text>
+              ))}
+            </g>
+          ))
+        }
+      </g>
     </g>
 
     <g class="ph ph5">
-      <g class="ink">
-        <circle pathLength="1" cx="280" cy="226" r="34"></circle>
-        <path pathLength="1" d="M264 228 l11 11 l22 -24"></path>
+      <g class="ph-o">
+        <g class="ink">
+          <circle pathLength="1" cx="280" cy="226" r="34"></circle>
+          <path pathLength="1" d="M264 228 l11 11 l22 -24"></path>
+        </g>
+        <text class="t-big center" x="280" y="296">€80</text>
+        <text class="t-row center" x="280" y="318">{up(ph.paid[lang])}</text>
       </g>
-      <text class="t-big center" x="280" y="296">€80</text>
-      <text class="t-row center" x="280" y="318">{up(ph.paid[lang])}</text>
     </g>
   </g>
 </svg>
