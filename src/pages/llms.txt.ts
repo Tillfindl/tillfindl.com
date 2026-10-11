@@ -34,7 +34,7 @@ const words = (lang: Lang) => {
     '',
     `### ${sections.contact[lang]}`,
     '',
-    plain(paragraph([script.joke[lang], script.contact[lang]])),
+    plain(paragraph([script.contact[lang]])),
     '',
   ];
 };

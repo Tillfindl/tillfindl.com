@@ -45,23 +45,24 @@ Till's choice, so never bring it back or keep anything in step with it.
   badly and leak, running shoes picked by brand), plainly, then what it is.
 - Till's own register, not anyone else's: never imitate a reference site or author. Say what the
   thing is and the one or two details that are interesting in themselves, then stop. No lessons
-  ("it taught me"), no rhetorical questions, no story arc, no feelings narrated, and no lines that
-  sound like a CV or a "two truths and a lie" game. The one exception is a single dry joke just
-  before Contact (`script.joke`), Till's own wish: properly funny, never "safe" or about the swim.
+  ("it taught me"), no rhetorical questions, no story arc, no feelings narrated, no lines that
+  sound like a CV or a "two truths and a lie" game, and nothing that sounds put on ("mostly out of
+  curiosity"). No jokes: a dry line before Contact was tried and dropped, by Till's choice.
   Where Till has his own wording (the `till-voice` skill holds his product sentences), use it.
   When Till pushes back, change what he pointed at, proportionally; don't swing to the opposite.
 - The story, in order: the opening line (Till's own wording, keep it as written); Medicine (UCL,
   the rotations, the elective); what annoyed him on every rotation, said plainly as to a friend,
   leading into Bounceback (the team in Vienna, home exercises in physio, then what Bounceback is,
-  no feature list, no hardware); Eigen (side projects in London, the Highbury run club, Max, the
-  CPAP masks, the pivot, what Eigen does, Till's part); Personal; the joke; Contact. No dad, no
+  no feature list, no hardware); Eigen (starting things in London, the Highbury run club, Max, the
+  CPAP masks, the pivot, what Eigen does, Till's part); Personal; Contact. No dad, no
   dancing, Global Health not featured. State facts, never prove them (no test results, no counts
   as a flex). Never call Till an engineer. "Dad", not "father". German says "Physios" and
   "Patienten", no ":innen" forms. Races are named, never timed. Words Till has ruled out: founder
   (as a label), doctor (as a label for himself), "building".
 - Personal is a set of `items`: a short title, one sentence on what Till likes about it, the proof
-  in smaller writing where there is some (leave it out rather than list things), and a row of
-  prints. No "as a kid", no age-by-age storylines.
+  in smaller writing where there is some (leave it out rather than list things), and its prints.
+  The items zigzag down the page, words on one side and prints on the other, alternating; never a
+  sideways row. No "as a kid", no age-by-age storylines.
 - The look is white paper and ballpoint blue (`#2f3394`, Mynerve in capitals): all text is in the
   pen apart from "Till Findl" and the button, and illustrations are pen drawings
   (`WardsDrawing.astro`), never pop-ups or cards. Every photo is a realistic instant print at true
@@ -75,13 +76,16 @@ Till's choice, so never bring it back or keep anything in step with it.
   over: no automatic moves, no snapping, no touch listeners that are not passive (Lenis smooths the
   wheel on a desktop only, `pointer: fine`). Every scroll animation is `scrub: true`, with no lag.
   Medicine pairs each phrase with its own print, which scrolls with its phrase a little slower
-  (`LAG`) and develops as it comes up; nothing drops in or is laid down. The other scenes are a
-  sticky picture with the phrases scrolling past in the normal flow; a picture changes only when a
-  phrase passes it (`data-cue` and `cue()`), and between scenes the pictures leave and arrive with
-  the page. Sticky, never a pin (the Personal row is a sticky stage moved by its section's
-  progress, with the section's extra height in `--row`). The opening holds briefly on a desktop
+  (`LAG`) and develops as it comes up; nothing drops in or is laid down. On a desktop the wards,
+  Bounceback and Eigen are a sticky picture with the phrases scrolling past in the normal flow; a
+  picture changes only while its phrase is being read (`data-cue` and `cue()`, a phrase's top from
+  78% to 40% of the screen), never as soon as the phrase appears. On a phone nothing is sticky (see
+  below). Both are built from the same ordered steps (`wardsSteps()`, the Eigen cues), so the
+  picture always matches its phrase. Sticky, never a pin. The opening holds briefly on a desktop
   (a sticky stage, because a pin re-wraps the element and restarts its CSS animations) and not at
-  all on a phone, where the first swipe simply scrolls it away. Per-phrase `space` gives a pause
+  all on a phone, where the first swipe simply scrolls it away. Triggers are measured again when
+  the page's height really changes (`watchHeight()`), so a window resized after load never makes
+  a picture change for the wrong phrase. Per-phrase `space` gives a pause
   (`more`) or keeps a phrase with the next (`less`). Nothing that moves or changes while scrolling
   may use a live SVG filter, `mix-blend-mode` or an animated CSS `filter`: develop a print by
   fading plain layers (`.chem`, `.cast`, with `will-change: opacity`). Canvas drawing happens only
@@ -93,24 +97,31 @@ Till's choice, so never bring it back or keep anything in step with it.
   with a CSS animation. Letters.astro's and phrase.ts's spans are reached only through `:global`.
   Pen strokes that draw on use `pathLength="1"` and a gap longer than the stroke. Back to top
   swooshes with a blur (along the scroll on a desktop, a plain CSS blur on a phone).
-- On a phone: the sticky picture is a panel of 42% of the screen at the top (paper behind it, a
-  short soft edge that is solid for its first quarter), so the words get more than half the
-  screen, and they start just under it; text never lies over a picture. A phrase reads as one
-  sentence that wraps to the width (designed line breaks are for the desktop column), set from the
-  left, with 20 px side margins. Reading text is at least 18 px (phrases about 28 to 30 px, small
-  words 0.72 of that, scene labels 18 px), and the longest big word must fit an indented line in
-  both languages; make a long German word underlined rather than big. The phone's screens in the
-  drawing are written large enough to read once it has zoomed in.
+- On a phone the page is a zigzag going down, and nothing is sticky or cut off: every cued phrase
+  has its own picture just above it (`.shot`, chosen in `SHOTS`), alternately on the left and the
+  right. The wards and Bounceback are a strip of pen panels (the whole drawing, then close-ups
+  cropped to its phone, `view="phone"`); Eigen has the run club print with its lap, the workshop
+  print and a canvas for each stage of the dots. Each panel starts where the one before it ended
+  (`settle()`) and plays only its own step as it comes up the screen, finished by the time its
+  phrase is read. Phrases are far apart (about a quarter of a screen), so they are read one at a
+  time. A phrase reads as one sentence that wraps to the width (designed line breaks are for the
+  desktop column), set from the left, with 20 px side margins. Reading text is at least 18 px
+  (phrases about 28 to 30 px, small words 0.72 of that, scene labels 18 px), and the longest big
+  word must fit an indented line in both languages; make a long German word underlined rather than
+  big. The phone's screens in the drawing are written large enough to read in a close-up.
 - Checks: jump to exact points (`window.__xp.scrollTo(y)`; `window.__xp.y` is where the page is)
   and capture the start, middle and end of every cue, each Medicine pair and every hand-over
   between scenes, on a phone (emulated as a touch device, so Lenis is off), a small phone, a tablet
-  and a desktop, in both languages, and with reduced motion (it must read as a plain page).
+  and a desktop, in both languages, and with reduced motion (it must read as a plain page). For
+  every cued phrase, capture the moment it sits mid-screen and check the picture shows that
+  phrase's step, not the next one.
   Measure smoothness: fling through the page with real touch events on a phone at 4× CPU
   throttling and record the frame times, long tasks and any non-passive touch or wheel listeners
   (there must be none). Run the blank-frame scan (every quarter screen, measure how much differs
   from the paper), check there is no text under 18 px, nothing past the screen edges and no
   designed line wrapping on a desktop, that every phone screen in the drawing shows and never two
-  at once, and that the photos are loaded before the Personal row moves on a throttled connection.
+  at once in one drawing, and that the photos are loaded before they scroll in on a throttled
+  connection.
   Time the opening from the self-contained preview too (about two seconds, playing once).
 - Comments explain intent and the non-obvious, in full sentences, British spelling. Don't narrate.
 - `README.md` stays current in the same commit as the change it describes.

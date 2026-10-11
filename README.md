@@ -7,15 +7,16 @@ One page in English (`/`) and German (`/de/`), told as scenes you scroll through
 with everything written in ballpoint blue (Mynerve, in capitals) apart from the name and the one
 button. Scrolling is the browser's own, so the page always moves exactly with the finger. The words
 are short handwritten phrases with big and small words (`content/phrase.ts`). Medicine pairs each
-phrase with its own print, which scrolls past beside it a little slower than the words. The other
-scenes keep a picture in place that changes as each phrase passes it: on a wide screen beside the
-phrases, on a phone as a panel at the top with the phrases coming up below it and slipping under
-its soft edge. Every photo is a realistic instant print (`components/Polaroid.astro`) that comes out
-of a pen-sketched camera or develops from dark film. The wards and Bounceback are one pen drawing
+phrase with its own print, which scrolls past beside it a little slower than the words. On a wide
+screen the other scenes keep a picture in place beside the phrases, changing as each phrase is
+read. On a phone nothing stays put: the page is a zigzag going down, each cued phrase with its own
+picture above it, alternately left and right, so the drawing reads as a strip of pen panels. Every
+photo is a realistic instant print (`components/Polaroid.astro`) that comes out of a pen-sketched
+camera or develops from dark film. The wards and Bounceback are a pen drawing
 (`components/WardsDrawing.astro`): a doctor swamped by software windows, a patient who walks off,
 and the phone the windows are swept into. Eigen has the run club and workshop prints and a dot
-morph on a canvas, Personal a row of prints that moves sideways, and a dry line comes before
-Contact. The opening plays on CSS alone, so it starts before the script arrives; after that GSAP
+morph on a canvas, and Personal zigzags down the page, one interest at a time, before Contact.
+The opening plays on CSS alone, so it starts before the script arrives; after that GSAP
 ScrollTrigger ties everything to the scroll position, and on a desktop Lenis smooths the mouse wheel
 (it is never loaded on a touch screen). With reduced motion turned on, or without JavaScript, it
 reads as a plain page made from the same phrases. The fuller facts go to search engines (JSON-LD)

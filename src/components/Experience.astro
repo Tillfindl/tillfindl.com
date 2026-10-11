@@ -6,11 +6,11 @@
 //
 // The words are short handwritten phrases (`page.script`) in the normal page flow, so they move
 // exactly with the reader's finger. Medicine pairs every phrase with its own print, which scrolls
-// past beside it (above it on a phone), a little slower than the words. The other scenes are a
-// picture that stays in place (a sticky `.visual`) with the phrases scrolling past (`.script`), each
-// phrase setting the picture moving as it passes. On a wide screen the phrases pass to the left of
-// the picture; on a phone the picture is a panel at the top of the screen and the phrases come up
-// below it and slip under its soft lower edge, so words and pictures never overlap.
+// past beside it (above it on a phone), a little slower than the words. On a wide screen the other
+// scenes are a picture that stays in place (a sticky `.visual`) with the phrases passing to its left
+// (`.script`), each phrase setting the picture moving as it is read. On a phone nothing stays put:
+// each cued phrase has its own picture just above it (a `.shot`), alternately left and right, so the
+// page zigzags down and words and pictures never overlap. Personal zigzags the same way on both.
 // The hero plays on CSS alone, so it starts before the script loads. Without JavaScript, or with
 // reduced motion, it reads as a plain page (`.plain`) made from the same phrases: the staged layout
 // only applies under `.js` and `prefers-reduced-motion: no-preference`.
@@ -44,6 +44,34 @@ const introB = introRest.join(' ');
 
 /** Where each phrase sits across its column, in turn (left, indented, right), like overlays placed by hand. */
 const PLACES = ['l', 'i', 'r', 'i'] as const;
+
+/**
+ * On a phone, the picture that goes above each cued phrase (`.shot`), so the wards and Bounceback
+ * read as a strip of pen panels and Eigen as a row of prints and dots: the whole drawing, a close-up
+ * of its phone, the run club print with its lap, the workshop print, or the dots.
+ */
+const SHOTS: Record<string, 'drawing' | 'phone' | 'run' | 'work' | 'dots'> = {
+  'wards-1': 'drawing',
+  'wards-2': 'drawing',
+  'wards-3': 'drawing',
+  leave: 'drawing',
+  break: 'drawing',
+  sweep: 'drawing',
+  home: 'phone',
+  'screens-a': 'phone',
+  'screens-b': 'phone',
+  lap: 'run',
+  max: 'work',
+  masks: 'dots',
+  iterate: 'dots',
+  pivot: 'dots',
+};
+/** The shots alternate sides down the page, starting on the left. */
+let shotCount = 0;
+const nextSide = () => (shotCount++ % 2 ? 'r' : 'l');
+
+/** The lap drawn round the run club print, in its 500 × 486 box. */
+const ROUTE = 'M74 372 C18 262 40 118 152 58 C262 2 424 30 472 150 C522 272 452 424 322 458 C200 490 78 452 50 330 C40 288 48 250 66 218';
 
 /** Square crops for the Polaroids, so the person stays in frame. */
 const CROP: Record<string, string> = {
@@ -168,19 +196,24 @@ const CROP: Record<string, string> = {
         </div>
         <div class="script">
           {
-            script.wards.map((p, i) => (
-              <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]} data-space={p.space}>
-                <p class="phr-in" set:html={phraseHtml(p.t[lang])} />
-              </div>
-            ))
-          }
-          <h2 class="label phr"><span class="phr-in">{sections.bounceback[lang]}</span></h2>
-          {
-            script.bounceback.map((p, i) => (
-              <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]} data-space={p.space}>
-                <p class="phr-in" set:html={phraseHtml(p.t[lang])} />
-              </div>
-            ))
+            [...script.wards, null, ...script.bounceback].map((p, i) =>
+              p === null ? (
+                <h2 class="label phr">
+                  <span class="phr-in">{sections.bounceback[lang]}</span>
+                </h2>
+              ) : (
+                <>
+                  {p.cue && SHOTS[p.cue] && (
+                    <div class="shot" data-cue={p.cue} data-kind={SHOTS[p.cue]} data-side={nextSide()}>
+                      <WardsDrawing lang={lang} view={SHOTS[p.cue] === 'phone' ? 'phone' : 'all'} />
+                    </div>
+                  )}
+                  <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]} data-space={p.space}>
+                    <p class="phr-in" set:html={phraseHtml(p.t[lang])} />
+                  </div>
+                </>
+              ),
+            )
           }
         </div>
       </section>
@@ -196,10 +229,7 @@ const CROP: Record<string, string> = {
             <div class="run">
               <div class="run-in">
                 <svg class="route" viewBox="0 0 500 486" aria-hidden="true">
-                  <path
-                    class="route-path"
-                    d="M74 372 C18 262 40 118 152 58 C262 2 424 30 472 150 C522 272 452 424 322 458 C200 490 78 452 50 330 C40 288 48 250 66 218"
-                  ></path>
+                  <path class="route-path" d={ROUTE}></path>
                   <circle class="runner" r="7" cx="74" cy="372"></circle>
                 </svg>
                 <Polaroid
@@ -224,57 +254,84 @@ const CROP: Record<string, string> = {
           <h2 class="label phr"><span class="phr-in">{sections.eigen[lang]}</span></h2>
           {
             script.eigen.map((p, i) => (
-              <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]} data-space={p.space}>
-                <p class="phr-in" set:html={phraseHtml(p.t[lang])} />
-              </div>
+              <>
+                {p.cue && SHOTS[p.cue] === 'run' && (
+                  <div class="shot" data-cue={p.cue} data-kind="run" data-side={nextSide()}>
+                    <div class="run-in">
+                      <svg class="route" viewBox="0 0 500 486" aria-hidden="true">
+                        <path class="route-path" d={ROUTE}></path>
+                        <circle class="runner" r="7" cx="74" cy="372"></circle>
+                      </svg>
+                      <Polaroid
+                        photo={page.eigenPrints.run}
+                        lang={lang}
+                        caption={caption(page.eigenPrints.run)}
+                        position={CROP[page.eigenPrints.run.file]}
+                        sizes="52vw"
+                        film="latent"
+                      />
+                    </div>
+                  </div>
+                )}
+                {p.cue && SHOTS[p.cue] === 'work' && (
+                  <div class="shot" data-cue={p.cue} data-kind="work" data-side={nextSide()}>
+                    <Polaroid photo={page.eigenPrints.workshop} lang={lang} position={CROP[page.eigenPrints.workshop.file]} sizes="52vw" film="latent" />
+                  </div>
+                )}
+                {p.cue && SHOTS[p.cue] === 'dots' && (
+                  <div class="shot" data-cue={p.cue} data-kind="dots" data-side={nextSide()}>
+                    <canvas class="dots-shot" aria-hidden="true"></canvas>
+                  </div>
+                )}
+                <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]} data-space={p.space}>
+                  <p class="phr-in" set:html={phraseHtml(p.t[lang])} />
+                </div>
+              </>
             ))
           }
         </div>
       </section>
 
-      <!-- 6. Personal: a row of prints that moves sideways as you scroll; each develops as it arrives. -->
+      <!-- 6. Personal: one interest after another, zigzagging down the page; each print develops as it comes up. -->
       <section class="scene personal">
-        <div class="row-stage">
-          <div class="track">
-            <div class="p-intro">
-              <h2 class="label">{sections.personal[lang]}</h2>
-              <p class="lead" set:html={phraseHtml(script.personal[lang])} />
-            </div>
-            {
-              items.map((it) => (
-                <div class="group">
-                  <div class="g-text">
-                    <h3>
-                      <Letters text={it.title[lang]} />
-                    </h3>
-                    <p class="love" set:html={rich(it.text[lang])} />
-                    {it.detail && <p class="detail" set:html={rich(it.detail[lang])} />}
-                  </div>
-                  <div class="g-prints">
-                    {it.prints.map((p) => (
-                      <div class:list={['gp', { wide: p.wide }]}>
-                        <Polaroid
-                          photo={p}
-                          lang={lang}
-                          caption={caption(p)}
-                          position={CROP[p.file]}
-                          sizes={p.wide ? '(min-width: 52rem) 26rem, 86vw' : '(min-width: 52rem) 19rem, 62vw'}
-                          film="latent"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))
-            }
-          </div>
+        <div class="p-intro">
+          <h2 class="label">{sections.personal[lang]}</h2>
+          <p class="lead" set:html={phraseHtml(script.personal[lang])} />
         </div>
+        {
+          items.map((it, i) => (
+            <div class:list={['topic', { flip: i % 2 === 1 }]}>
+              <div class="t-text">
+                <h3>
+                  <Letters text={it.title[lang]} />
+                </h3>
+                <p class="love" set:html={rich(it.text[lang])} />
+                {it.detail && <p class="detail" set:html={rich(it.detail[lang])} />}
+              </div>
+              <div class="t-prints">
+                {it.prints.map((p) => (
+                  <div class:list={['gp', { wide: p.wide }]}>
+                    <div class="gp-in">
+                      <Polaroid
+                        photo={p}
+                        lang={lang}
+                        caption={caption(p)}
+                        position={CROP[p.file]}
+                        sizes={p.wide ? '(min-width: 52rem) 34rem, 92vw' : '(min-width: 52rem) 17rem, 45vw'}
+                        film="latent"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))
+        }
       </section>
 
-      <!-- 7. Ending: one dry line, the contact line written in ballpoint, the name as a wordmark. -->
+      <!-- 7. Ending: the contact line written in ballpoint, the name as a wordmark. -->
       <section class="scene ending">
         <div class="end-inner">
-          <p class="joke" set:html={phraseHtml(script.joke[lang])} />
           <h2 class="label">{sections.contact[lang]}</h2>
           <p class="contact-line" set:html={phraseHtml(script.contact[lang], { letters: true })} />
           <div class="end-actions">
@@ -445,7 +502,7 @@ const CROP: Record<string, string> = {
   }
 
   .plain p + p,
-  .g-text p + p {
+  .t-text p + p {
     margin-top: var(--s-3);
   }
 
@@ -458,7 +515,7 @@ const CROP: Record<string, string> = {
   }
 
   .pairs,
-  .g-prints,
+  .t-prints,
   .eigen .v-in {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -474,20 +531,21 @@ const CROP: Record<string, string> = {
     display: none;
   }
 
-  .joke {
-    margin-bottom: var(--s-8);
-  }
-
-  .g-prints {
+  .t-prints {
     margin-top: var(--s-8);
   }
 
-  .group {
+  .topic {
     margin-top: var(--s-12);
   }
 
-  .g-text .detail {
+  .t-text .detail {
     opacity: 0.7;
+  }
+
+  /* The phone's picture panels, only on the staged page. */
+  .shot {
+    display: none;
   }
 
   .xp p :global(a),
@@ -551,6 +609,8 @@ const CROP: Record<string, string> = {
       --med-w: clamp(18rem, 28vw, 30rem);
       --pairs-top: 12svh;
       --pair-gap: 14svh;
+      /* Personal: the space between one interest and the next. */
+      --topic-gap: 22svh;
       /* How much bigger the big words are. */
       --big: 1.6;
       font-size: clamp(1.1rem, 1.5vw, 1.45rem);
@@ -987,37 +1047,19 @@ const CROP: Record<string, string> = {
     }
 
     /*
-     * ----- Personal: one long row, moved sideways by the script -----
-     * The section is as much taller than the screen as the row is wider than it (--row, set by the
-     * script), and the row stays on screen (sticky) while scrolling through it moves the row along.
+     * ----- Personal: one interest after another, zigzagging down the page -----
+     * Each topic is its text beside its prints, on alternating sides. The text stays in view while
+     * its prints go by (sticky within its topic), and the script lets each print lag a little.
      */
 
     :global(.js) .personal {
-      height: calc(var(--stage) + var(--row, 0px));
-    }
-
-    :global(.js) .row-stage {
-      position: sticky;
-      top: 0;
-      display: flex;
-      align-items: center;
-      height: var(--stage);
-      overflow: hidden;
-    }
-
-    /* Its own layer, so moving it never repaints the text and photos inside. */
-    :global(.js) .track {
-      display: flex;
-      align-items: center;
-      gap: 9vw;
-      width: max-content;
-      padding: 0 18vw 0 var(--side);
-      will-change: transform;
+      max-width: 82rem;
+      margin: 0 auto;
+      padding: var(--pairs-top) var(--side) var(--p-bottom);
     }
 
     :global(.js) .p-intro {
-      flex: none;
-      width: min(26rem, 78vw);
+      margin-bottom: var(--topic-gap);
     }
 
     :global(.js) .p-intro .lead {
@@ -1025,64 +1067,66 @@ const CROP: Record<string, string> = {
       line-height: 1.1;
     }
 
-    :global(.js) .group {
-      display: flex;
-      align-items: center;
-      gap: 3.5vw;
-      margin: 0;
+    :global(.js) .topic {
+      display: grid;
+      grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.5fr);
+      align-items: start;
+      column-gap: 5vw;
+      margin: 0 0 var(--topic-gap);
+    }
+
+    :global(.js) .topic.flip {
+      grid-template-columns: minmax(0, 1.5fr) minmax(0, 0.8fr);
+    }
+
+    :global(.js) .topic.flip .t-text {
+      order: 2;
     }
 
     /* Set like the phrases: the title big, the line on what Till loves medium, the proof small. */
-    :global(.js) .g-text {
-      flex: none;
-      width: min(26rem, 72vw);
+    :global(.js) .t-text {
+      position: sticky;
+      top: 30svh;
     }
 
-    :global(.js) .g-text h3 {
+    :global(.js) .t-text h3 {
       margin-bottom: var(--s-4);
       font-size: clamp(2.2rem, 3.5vw, 3.4rem);
       line-height: 1;
     }
 
-    :global(.js) .g-text .love {
+    :global(.js) .t-text .love {
       font-size: clamp(1.35rem, 1.95vw, 1.9rem);
       line-height: 1.15;
     }
 
-    :global(.js) .g-text .detail {
+    :global(.js) .t-text .detail {
       margin-top: var(--s-4);
       font-size: 1.05rem;
     }
 
-    :global(.js) .g-prints {
-      display: flex;
-      align-items: center;
+    /* The prints in staggered rows of three, as if laid on a table; a wide print takes two places. */
+    :global(.js) .t-prints {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 3svh 1.5vw;
       margin: 0;
-      gap: 0;
     }
 
-    /* Prints overlap a little and sit at slightly different heights, as if laid on a table. */
-    :global(.js) .gp {
-      --gw: calc(46svh * 88 / 107);
-      flex: none;
-      width: var(--gw);
+    :global(.js) .gp:nth-child(3n + 2) {
+      margin-top: 7svh;
     }
 
-    /* A wide print is as tall as the square ones, so it is wider. */
+    :global(.js) .gp:nth-child(3n) {
+      margin-top: 2.5svh;
+    }
+
     :global(.js) .gp.wide {
-      --gw: calc(46svh * 108 / 86);
+      grid-column: span 2;
     }
 
-    :global(.js) .gp + .gp {
-      margin-left: calc(var(--gw) * -0.2);
-    }
-
-    :global(.js) .gp:nth-child(even) {
-      transform: translateY(5svh);
-    }
-
-    :global(.js) .gp:nth-child(odd) {
-      transform: translateY(-3svh);
+    :global(.js) .gp-in {
+      position: relative;
     }
 
     /* ----- Ending ----- */
@@ -1103,13 +1147,6 @@ const CROP: Record<string, string> = {
       width: 100%;
       margin: 0 auto;
       padding: var(--s-16) var(--side) var(--s-8);
-    }
-
-    /* The dry line before Contact, set like a phrase. */
-    :global(.js) .joke {
-      margin: 0 0 var(--s-16);
-      font-size: var(--phr-size);
-      line-height: 1.18;
     }
 
     :global(.js) .contact-line {
@@ -1162,10 +1199,10 @@ const CROP: Record<string, string> = {
 
     /*
      * ----- Phones and narrow tablets -----
-     * The picture is a panel in the top half of the screen, on paper, with a soft lower edge. The
-     * phrases come up from the bottom of the screen below it and slip under that edge, so words and
-     * pictures never overlap. When a scene's last phrase has gone, the next scene's panel comes up
-     * behind it and pushes it away, both moving with the page.
+     * Nothing is sticky: the page is a zigzag of pictures and phrases going down. Medicine pairs each
+     * phrase with its print; the wards and Bounceback are a strip of pen panels and Eigen a row of
+     * prints and dots, each panel above its phrase (`.shot`) and alternately on the left and the
+     * right. The phrases are well apart, so they are read one at a time.
      */
 
     @media (max-width: 51.99rem) {
@@ -1173,23 +1210,21 @@ const CROP: Record<string, string> = {
         --side: 20px;
         --pw: min(52vw, 15rem);
         --w0: 1.3s;
-        /*
-         * The picture panel: its height (small enough to leave the words most of the screen), where
-         * its pictures start (clear of the corner links), and its soft edge.
-         */
-        --panel: 42svh;
-        --panel-top: 3.25rem;
-        --skirt: 4svh;
-        /* The phrases: big enough to read at arm's length, starting just under the panel. */
+        /* The phrases: big enough to read at arm's length, and far enough apart to read one by one. */
         --phr-size: clamp(1.75rem, 7.8vw, 2.25rem);
-        --p-top: 6svh;
-        --phr-gap: 9svh;
-        --p-bottom: 8svh;
+        --p-top: 12svh;
+        --phr-gap: 24svh;
+        --p-bottom: 14svh;
         /* As big as the longest big word ("biomechanics") allows on an indented line. */
         --big: 1.34;
+        /* The pictures: Medicine's prints, the pen panels, the phone close-ups, and the prints and dots. */
         --med-w: 62vw;
-        --pairs-top: 6svh;
-        --pair-gap: 10svh;
+        --panel-w: 80vw;
+        --phone-w: 50vw;
+        --shot-w: 62vw;
+        --pairs-top: 10svh;
+        --pair-gap: 22svh;
+        --topic-gap: 20svh;
         /* Phone size, growing on a tablet held upright. */
         font-size: clamp(1.125rem, 2.8vw, 1.4rem);
       }
@@ -1229,31 +1264,13 @@ const CROP: Record<string, string> = {
         top: calc(49% + var(--pw) * 0.608 + 1.25rem);
       }
 
-      :global(.js) .visual {
-        z-index: 2;
-        height: var(--panel);
-        background: var(--bg);
+      /* The desktop's sticky pictures give way to the panels in the script. */
+      :global(.js) .care .visual,
+      :global(.js) .eigen .visual {
+        display: none;
       }
 
-      :global(.js) .visual::after {
-        content: '';
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        height: var(--skirt);
-        /* Solid for its first quarter, so an underline is hidden as soon as the words above it are. */
-        background: linear-gradient(var(--bg) 25%, rgb(240 240 237 / 0));
-        pointer-events: none;
-      }
-
-      :global(.js) .v-in {
-        overflow: hidden;
-      }
-
-      /* In the flow below the panel, under its soft edge. */
       :global(.js) .script {
-        z-index: 1;
         width: auto;
         margin: 0 var(--side);
       }
@@ -1279,6 +1296,11 @@ const CROP: Record<string, string> = {
         text-align: left;
       }
 
+      /* The phrases are further apart on a phone already, so a pause is a little less than double. */
+      :global(.js) .phr[data-space='more'] {
+        margin-bottom: calc(var(--phr-gap) * 1.5);
+      }
+
       :global(.js) .script .label,
       :global(.js) .pairs .label {
         margin-bottom: var(--s-4);
@@ -1287,6 +1309,46 @@ const CROP: Record<string, string> = {
 
       :global(.js) .xp :global(.sm) {
         font-size: 0.72em;
+      }
+
+      /* A panel above its phrase, on the left or the right; its phrase follows close beneath it. */
+      :global(.js) .shot {
+        display: block;
+        width: var(--shot-w);
+        margin: 0 0 var(--s-6);
+      }
+
+      :global(.js) .shot[data-side='r'] {
+        margin-left: auto;
+      }
+
+      :global(.js) .shot[data-kind='drawing'] {
+        width: var(--panel-w);
+      }
+
+      :global(.js) .shot[data-kind='phone'] {
+        width: var(--phone-w);
+      }
+
+      :global(.js) .shot :global(.drawing) {
+        overflow: hidden;
+      }
+
+      /* The lap runs round the print (it is 160% as wide), so the print sits inside the lap's room. */
+      :global(.js) .shot[data-kind='run'] {
+        width: 84vw;
+        padding: 11% 20%;
+      }
+
+      :global(.js) .shot[data-kind='dots'] {
+        width: 80vw;
+        aspect-ratio: 1;
+      }
+
+      :global(.js) .dots-shot {
+        display: block;
+        width: 100%;
+        height: 100%;
       }
 
       /*
@@ -1318,92 +1380,68 @@ const CROP: Record<string, string> = {
         text-align: right;
       }
 
-      /* The drawing fills the panel's width, or its height if that is shorter, and sits in its middle. */
-      :global(.js) .draw-wrap {
-        --dw: min(100vw - 2 * var(--side), (var(--panel) - var(--panel-top) - 0.5rem) * 560 / 520);
-        top: calc(var(--panel-top) + (var(--panel) - var(--panel-top) - var(--dw) * 520 / 560) / 2);
-        left: calc(50% - var(--dw) / 2);
-        right: auto;
-        width: var(--dw);
-        translate: none;
-      }
-
-      /*
-       * Eigen: the run club print in the middle of the panel with its lap round it (the lap is 1.556
-       * print widths tall), the workshop print laid over its upper corner, clear of the caption.
-       */
-      :global(.js) .eigen {
-        --rw: min(50vw, (var(--panel) - var(--panel-top) - 1rem) / 1.556);
-        --rc: calc(var(--panel-top) + (var(--panel) - var(--panel-top)) / 2);
-      }
-
-      :global(.js) .run {
-        left: 50%;
-        top: var(--rc);
-        width: var(--rw);
-      }
-
-      :global(.js) .work {
-        left: calc(50% + var(--rw) * 0.5);
-        top: calc(var(--rc) - var(--rw) * 0.16);
-        width: calc(var(--rw) * 0.78);
-      }
-
-      :global(.js) .dots {
-        left: 0;
-        top: var(--panel-top);
-        width: 100%;
-        height: calc(100% - var(--panel-top));
-      }
-
-      /*
-       * The row sits a little above the middle and its intro at the top of the row, so the intro
-       * comes up soon after the last Eigen phrase rather than half a screen later.
-       */
-      :global(.js) .row-stage {
-        padding-bottom: 16svh;
-      }
-
-      :global(.js) .p-intro {
-        align-self: flex-start;
-      }
-
-      :global(.js) .track {
-        gap: 14vw;
+      /* Personal: each interest's words, then its prints in two staggered columns, zigzagging down. */
+      :global(.js) .personal {
+        padding: var(--pairs-top) var(--side) var(--p-bottom);
       }
 
       :global(.js) .p-intro .lead {
         font-size: clamp(2rem, 8.6vw, 2.6rem);
       }
 
-      :global(.js) .group {
-        gap: 8vw;
+      :global(.js) .topic,
+      :global(.js) .topic.flip {
+        display: block;
       }
 
-      :global(.js) .g-text {
-        width: 80vw;
+      :global(.js) .t-text {
+        position: static;
+      }
+
+      :global(.js) .topic.flip .t-text {
+        text-align: right;
       }
 
       /* As large as the longest single word ("Photography") allows on the narrowest phones. */
-      :global(.js) .g-text h3 {
+      :global(.js) .t-text h3 {
         font-size: clamp(2rem, 10vw, 2.4rem);
       }
 
-      :global(.js) .g-text .love {
+      :global(.js) .t-text .love {
         font-size: 1.45rem;
         line-height: 1.2;
       }
 
-      :global(.js) .g-text .detail {
+      :global(.js) .t-text .detail {
         font-size: 1.15rem;
       }
 
-      :global(.js) .gp {
-        --gw: 62vw;
+      :global(.js) .t-prints {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 4vw 5vw;
+        margin-top: var(--s-12);
       }
 
-      :global(.js) .gp.wide {
-        --gw: 86vw;
+      :global(.js) .gp:nth-child(n) {
+        margin-top: 0;
+      }
+
+      :global(.js) .gp:nth-child(even) {
+        margin-top: 14vw;
+      }
+
+      :global(.js) .topic.flip .gp:nth-child(even) {
+        margin-top: 0;
+      }
+
+      :global(.js) .topic.flip .gp:nth-child(odd) {
+        margin-top: 14vw;
+      }
+
+      :global(.js) .gp.wide,
+      :global(.js) .topic .gp.wide {
+        grid-column: 1 / -1;
+        margin-top: 0;
       }
 
       :global(.js) .p-intro .label,

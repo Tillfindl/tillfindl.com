@@ -7,10 +7,12 @@
  *
  * Every animation is tied straight to the scroll position (scrub: true), with no lag. The words are
  * in the normal page flow and move with the page. In Medicine each phrase has its own print beside
- * it, which scrolls past a little slower than the words. The other scenes are a sticky picture that
- * changes only while one of its phrases passes it (a "cue"); between scenes the pictures leave and
- * arrive with the page. The Personal row is sticky too, and moves sideways by as much as its section
- * has scrolled. Scrolling back plays it all in reverse.
+ * it, which scrolls past a little slower than the words. On a desktop the wards, Bounceback and Eigen
+ * are a sticky picture that changes only while one of its phrases passes it (a "cue"). On a phone
+ * nothing is sticky: each cued phrase has its own panel above it (a "shot"), which starts where the
+ * panel before it ended and plays that phrase's step as it comes up the screen. Both are built from
+ * the same steps. Personal zigzags down the page, its prints developing as they come up. Scrolling
+ * back plays it all in reverse.
  *
  * The hero plays on CSS and needs nothing from here until you scroll. Nothing is rotated. With
  * reduced motion nothing here runs and the page reads as a plain page.
@@ -32,27 +34,33 @@ const BACK = { out: 0.32, in: 0.5, travel: 0.3, blur: 24, phoneBlur: 6 };
 
 type Range = [string, string];
 /**
- * Where a phrase fades in and out, where its pen underlines are drawn, and the stretch over which it
- * sets its picture moving, as ScrollTrigger [start, end] pairs. On a phone the phrases come up from
- * the bottom of the screen and slip under the soft lower edge of the picture panel, so they need no
- * fades, and a phrase sets its picture moving while it crosses the lower half.
+ * Where a phrase fades in and out and where its pen underlines are drawn, as ScrollTrigger [start,
+ * end] pairs; on a desktop, also the stretch over which it sets its picture moving, while it is
+ * being read rather than as soon as it appears. On a phone the phrases need no fades.
  */
-const ZONES: { desktop: { in: Range; out: Range; line: Range; cue: Range }; mobile: { line: Range; cue: Range } } = {
-  desktop: { in: ['top 96%', 'top 76%'], out: ['bottom 26%', 'bottom 6%'], line: ['top 82%', 'top 60%'], cue: ['top 86%', 'top 42%'] },
-  mobile: { line: ['top 92%', 'top 72%'], cue: ['top 90%', 'top 62%'] },
+const ZONES: { desktop: { in: Range; out: Range; line: Range; cue: Range }; mobile: { line: Range } } = {
+  desktop: { in: ['top 96%', 'top 76%'], out: ['bottom 26%', 'bottom 6%'], line: ['top 82%', 'top 60%'], cue: ['top 78%', 'top 40%'] },
+  mobile: { line: ['top 92%', 'top 72%'] },
 };
+/**
+ * On a phone, the stretch over which a panel plays its step: from when it is half on screen until
+ * its middle reaches the middle of the screen, so it has finished by the time its phrase is read.
+ */
+const SHOT_ZONE: Range = ['center 85%', 'center 45%'];
 /**
  * How far a Medicine print lags its phrase, in screen heights either way: it starts this much
  * higher and ends this much lower, so it moves a little slower than the words. Less on a phone,
- * where the print sits just above its phrase.
+ * where the print sits just above its phrase. Personal's prints lag by a little over half as much.
  */
 const LAG = { desktop: 0.1, mobile: 0.03 };
-/** How far the drawing zooms in on its phone, so the screens can be read (on a phone, at most). */
-const PHONE_ZOOM = { desktop: 1.2, mobile: 1.9 };
-/** On a phone, the zoomed-in phone fills at most this much of the picture panel's height. */
-const PHONE_FILL = 0.9;
-/** How many dots make the face and the footprint: fewer on a phone, where each frame costs more. */
-const DOTS = { desktop: 1500, mobile: 650 };
+const PRINT_LAG = 0.6;
+/** How far the desktop drawing zooms in on its phone, so the screens can be read. */
+const PHONE_ZOOM = 1.2;
+/**
+ * How many dots make the face and the footprint, and the pixel density they are drawn at: fewer and
+ * softer on a phone, where each frame costs more and three canvases share the scene.
+ */
+const DOTS = { desktop: { count: 1500, dpr: 2 }, mobile: { count: 650, dpr: 1.5 } };
 /** How long after the page has loaded (the hero has settled by then) every photo is fetched, in ms. */
 const PRELOAD_AFTER = 2500;
 /** The ballpoint blue, as RGB for the dots' canvas. */
@@ -61,8 +69,6 @@ const PEN_RGB = '47 51 148';
 /* Points in the wards drawing (WardsDrawing.astro), in its 560 × 520 units. */
 /** Where the windows are swept to: the middle of the phone. */
 const PHONE_CENTRE = { x: 280, y: 256 };
-/** How tall the phone is. */
-const PHONE_HEIGHT = 304;
 /** The connection's two ends: the doctor's side and the patient's. */
 const LINK_FROM = { x: 236, y: 318 };
 const LINK_TO = { x: 334, y: 318 };
@@ -83,7 +89,9 @@ const $ = <T extends Element = HTMLElement>(s: string, root: ParentNode = docume
 const $$ = <T extends Element = HTMLElement>(s: string, root: ParentNode = document) => [...root.querySelectorAll<T>(s)];
 
 /** The current layout's phrase zones (see ZONES). */
-let zone: { line: Range; cue: Range } = ZONES.desktop;
+let zone: { line: Range } = ZONES.desktop;
+/** Every dot canvas, made once each, so a layout change does not sample its shapes again. */
+const dotCanvases = new Map<HTMLCanvasElement, Dots>();
 
 /** Only on a desktop with a mouse or trackpad. */
 let lenis: Lenis | undefined;
@@ -124,34 +132,58 @@ function start() {
     });
   }
 
-  const desktopQuery = '(min-width: 52rem)';
-  const dots = new Dots($<HTMLCanvasElement>('.dots'), window.matchMedia(desktopQuery).matches ? DOTS.desktop : DOTS.mobile, PEN_RGB);
-
-  // The Personal section is as much taller than the screen as its row is wider, set before
-  // anything is measured.
-  sizeRow();
-  ScrollTrigger.addEventListener('refreshInit', sizeRow);
-
-  // The scenes differ a little between phone and desktop, so they are rebuilt when the layout
-  // changes. All of them are made here, in page order.
+  // The scenes differ between phone and desktop, so they are rebuilt when the layout changes. All
+  // of them are made here, in page order.
   const mm = gsap.matchMedia();
-  mm.add({ desktop: desktopQuery, mobile: '(max-width: 51.99rem)' }, (ctx) => {
+  mm.add({ desktop: '(min-width: 52rem)', mobile: '(max-width: 51.99rem)' }, (ctx) => {
     const desktop = !!ctx.conditions?.desktop;
     zone = desktop ? ZONES.desktop : ZONES.mobile;
     opening(desktop);
     phrases(desktop);
     medicine(desktop);
     care(desktop);
-    eigen(dots);
-    personal();
+    eigen(desktop);
+    personal(desktop);
     ending();
     chrome();
   });
 
-  window.addEventListener('resize', () => dots.resize());
+  window.addEventListener('resize', () => {
+    for (const dots of dotCanvases.values()) dots.resize();
+  });
   // The handwriting font changes how tall the text is, so measure again once it has arrived.
   document.fonts.ready.then(() => ScrollTrigger.refresh());
+  watchHeight();
   preloadPhotos();
+}
+
+/**
+ * Measures every trigger again whenever the page's height really changes, for instance when the
+ * window it sits in is resized after it has loaded; otherwise pictures would change for the wrong
+ * phrase. A phone's address bar showing or hiding does not change it (the page is sized in svh), so
+ * scrolling is never interrupted by a re-measure.
+ */
+function watchHeight() {
+  const main = $('.xp main');
+  let height = main.offsetHeight;
+  let timer = 0;
+  new ResizeObserver(() => {
+    if (Math.abs(main.offsetHeight - height) < 2) return;
+    height = main.offsetHeight;
+    window.clearTimeout(timer);
+    timer = window.setTimeout(() => ScrollTrigger.refresh(), 200);
+  }).observe(main);
+}
+
+/** The dots for `canvas`, made the first time they are asked for. */
+function dotsFor(canvas: HTMLCanvasElement, { count, dpr }: { count: number; dpr: number }) {
+  let dots = dotCanvases.get(canvas);
+  if (!dots) {
+    dots = new Dots(canvas, count, PEN_RGB, dpr);
+    dotCanvases.set(canvas, dots);
+  }
+  dots.resize();
+  return dots;
 }
 
 /** Jumps straight to `y`, with no smoothing. */
@@ -163,10 +195,11 @@ function jump(y: number) {
 
 /**
  * Every photo on the page is fetched and decoded in the background once the hero has settled, a few
- * at a time, so none is decoded while it scrolls into view.
+ * at a time, so none is decoded while it scrolls into view. Photos only the other layout shows (in
+ * a hidden picture) are left alone.
  */
 function preloadPhotos() {
-  const queue = $$<HTMLImageElement>('.xp img');
+  const queue = $$<HTMLImageElement>('.xp img').filter((img) => img.offsetParent !== null);
   const worker = async () => {
     for (let img = queue.shift(); img; img = queue.shift()) {
       img.loading = 'eager';
@@ -200,7 +233,7 @@ function backToTop() {
     const r = el.getBoundingClientRect();
     return r.bottom > 0 && r.top < vh;
   };
-  const leaving = $$('.opening, .pairs .pair, .scene .visual, .script .phr, .personal, .ending').filter(onScreen);
+  const leaving = $$('.opening, .pairs .pair, .scene .visual, .script .phr, .script .shot, .p-intro, .topic, .ending').filter(onScreen);
   const arriving = $$('.opening');
   gsap
     .timeline({
@@ -223,11 +256,31 @@ function backToTop() {
 
 /* ---------- Building blocks ---------- */
 
-/** A timeline scrubbed while `phrase` crosses the screen: the stretch where it sets its picture moving. */
+/** On a desktop, a timeline scrubbed while `phrase` is read: the stretch where it sets its picture moving. */
 function cue(name: string) {
   const phrase = $(`.phr[data-cue="${name}"]`);
   if (!phrase) throw new Error(`No phrase for cue "${name}"`);
-  return gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: phrase, start: zone.cue[0], end: zone.cue[1], scrub: true } });
+  const [start, end] = ZONES.desktop.cue;
+  return gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: phrase, start, end, scrub: true } });
+}
+
+/** On a phone, a timeline scrubbed while the panel `shot` comes up the screen (SHOT_ZONE). */
+const shotTimeline = (shot: Element) =>
+  gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: shot, start: SHOT_ZONE[0], end: SHOT_ZONE[1], scrub: true } });
+
+/** One step of a picture: its name (the cue of the phrase it goes with) and what it adds to a timeline. */
+type Step = [name: string, build: (tl: gsap.core.Timeline) => void];
+
+/**
+ * Applies `steps` at once, as if they had played: on a phone, each panel starts where the panel
+ * before it ended.
+ */
+function settle(steps: Step[]) {
+  for (const [, build] of steps) {
+    const done = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
+    build(done);
+    done.progress(1);
+  }
 }
 
 /** Writes letters between `at` and `at + dur`, one after another, as a pen would. */
@@ -359,22 +412,22 @@ function medicine(desktop: boolean) {
 }
 
 /**
- * 3 and 4. The wards and Bounceback, as one pen drawing. The doctor and the patient are drawn as the
- * scene comes in, joined by a glowing line. Then each phrase moves it on: the windows pile up around
- * the doctor, the patient walks off, the line loses its glow and breaks, the windows are swept into a
- * phone, and Bounceback plays on its screens.
+ * The wards drawing inside `root`, readied to be drawn on, and the steps that move it on, in order:
+ * the doctor and the patient are drawn, joined by a glowing line; the windows pile up around the
+ * doctor; the patient walks off; the line loses its glow and breaks; the windows are swept into a
+ * phone (closing in on it by `zoom`); and Bounceback plays on its screens.
  */
-function care(desktop: boolean) {
-  const scene = $('.care');
-  const drawing = $('.drawing', scene);
-  const figures = $$('.doctor .draw, .patient .draw', scene);
-  const patient = $<SVGGElement>('.patient', scene);
-  const link = $<SVGPathElement>('.link-line', scene);
-  const glows = $$<SVGPathElement>('.link-glow', scene);
-  const wins = $$<SVGGElement>('.win', scene);
-  const phone = $$('.phone > .ink .draw', scene);
-  const screens = $$('.ph', scene);
-  const noteLines = $$('.note-line', scene);
+function wardsSteps(root: ParentNode, zoom: number): Step[] {
+  const drawing = $<SVGSVGElement>('.drawing', root);
+  const figures = $$('.doctor .draw, .patient .draw', drawing);
+  const people = $$('.doctor, .patient, .link', drawing);
+  const patient = $<SVGGElement>('.patient', drawing);
+  const link = $<SVGPathElement>('.link-line', drawing);
+  const glows = $$<SVGPathElement>('.link-glow', drawing);
+  const wins = $$<SVGGElement>('.win', drawing);
+  const phone = $$('.phone > .ink .draw', drawing);
+  const screens = $$('.ph', drawing);
+  const noteLines = $$('.note-line', drawing);
 
   undrawn([...figures, ...phone, ...wins.flatMap((w) => $$('.draw', w))]);
   gsap.set([link, ...glows], { attr: { 'stroke-dasharray': WHOLE, 'stroke-dashoffset': 1 } });
@@ -398,63 +451,17 @@ function care(desktop: boolean) {
   };
   placePatient();
 
-  // Drawn as the scene comes in: the doctor and the patient, then the line between them.
-  const enter = gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: scene, start: 'top 92%', end: 'top 12%', scrub: true } });
-  drawOn(enter, figures, 0, 0.8);
-  enter.to([link, ...glows], { attr: { 'stroke-dashoffset': 0 }, duration: 0.2, ease: 'power1.inOut' }, 0.8);
-
   // The windows pile up with the phrases. The three on "one program for imaging, another for notes,
   // another for prescriptions" come in with those words, in that order.
-  for (const name of ['wards-1', 'wards-2', 'wards-3']) {
+  const pile = (name: string) => (tl: gsap.core.Timeline) => {
     const own = wins.filter((w) => w.dataset.cue === name);
     if (name === 'wards-3') own.sort((a, b) => Number(a.dataset.k) - Number(b.dataset.k));
-    const tl = cue(name);
     own.forEach((w, i) => {
       const at = i / own.length;
       drawOn(tl, $$('.draw', w), at, 1 / own.length);
       tl.to($('.label', w), { opacity: 1, duration: 0.3 / own.length }, at + 0.6 / own.length);
     });
-  }
-
-  // "And once patients went home,": the patient walks off and the line loses its glow.
-  cue('leave').to(walk, { t: 1, duration: 1, ease: 'power1.inOut', onUpdate: placePatient }, 0).to(glows, { opacity: 0, duration: 0.8 }, 0.1);
-  // "they were mostly on their own.": the line breaks.
-  cue('break').to(link, { attr: { 'stroke-dasharray': BROKEN }, duration: 1, ease: 'power2.out' }, 0);
-
-  // "So with my team in Vienna I started Bounceback:": the clutter is swept into one phone, the
-  // people go with it, and the drawing closes in on the phone so its screens can be read. On a
-  // phone it closes in as far as the picture panel allows.
-  const panel = $('.visual', scene).clientHeight;
-  const phonePx = (PHONE_HEIGHT / 560) * (drawing.parentElement?.clientWidth ?? 560);
-  const zoom = desktop ? PHONE_ZOOM.desktop : Math.min(PHONE_ZOOM.mobile, (panel * PHONE_FILL) / phonePx);
-  const sweep = cue('sweep');
-  wins.forEach((w, i) => {
-    const cx = Number(w.dataset.cx);
-    const cy = Number(w.dataset.cy);
-    sweep
-      .fromTo(
-        w,
-        { x: 0, y: 0, scale: 1, svgOrigin: `${cx} ${cy}` },
-        { x: PHONE_CENTRE.x - cx, y: PHONE_CENTRE.y - cy, scale: 0.12, svgOrigin: `${cx} ${cy}`, duration: 0.5, ease: 'power3.in', immediateRender: false },
-        i * 0.02,
-      )
-      .to(w, { opacity: 0, duration: 0.2 }, 0.38 + i * 0.02);
-  });
-  sweep.to(['.doctor', '.patient', '.link'], { opacity: 0, duration: 0.35 }, 0);
-  drawOn(sweep, phone, 0.35, 0.45);
-  sweep.to(
-    drawing,
-    {
-      scale: zoom,
-      transformOrigin: `${(PHONE_CENTRE.x / 560) * 100}% ${(PHONE_CENTRE.y / 520) * 100}%`,
-      duration: 0.5,
-      ease: 'power2.inOut',
-    },
-    0.45,
-  );
-  // "and we started with physio, where recovery depends on the exercises patients do at home.":
-  // the phone shows the day's exercises.
-  cue('home').to(screens[0], { opacity: 1, duration: 0.15 }, 0.2);
+  };
 
   // The phone's screens, one after another. A screen comes in on its outer group and leaves on its
   // inner one, because the phrase that brings it is not always the phrase that takes it away. Each
@@ -464,41 +471,171 @@ function care(desktop: boolean) {
     tl
       .to($('.ph-o', screens[from]), { opacity: 0, x: -10, duration: 0.15 }, at)
       .fromTo(screens[to], { opacity: 0, x: 10 }, { opacity: 1, x: 0, duration: 0.15, immediateRender: false }, at + 0.06);
-  const a = cue('screens-a');
-  swap(a, 0, 1, 0.3);
-  // Filming a set: the figure squats a few times while the recording light blinks.
-  a.to('.squat', { scaleY: 0.84, svgOrigin: '280 318', duration: 0.05, yoyo: true, repeat: 3, ease: 'sine.inOut' }, 0.44).to(
-    '.rec',
-    { opacity: 0.2, duration: 0.035, yoyo: true, repeat: 5 },
-    0.44,
-  );
-  swap(a, 1, 2, 0.7);
-  const b = cue('screens-b');
-  swap(b, 2, 3, 0.3);
-  b.to(noteLines, { opacity: 1, duration: 0.08, stagger: 0.1 }, 0.46);
-  swap(b, 3, 4, 0.85);
+
+  return [
+    [
+      'enter',
+      (tl) => {
+        drawOn(tl, figures, 0, 0.8);
+        tl.to([link, ...glows], { attr: { 'stroke-dashoffset': 0 }, duration: 0.2, ease: 'power1.inOut' }, 0.8);
+      },
+    ],
+    ['wards-1', pile('wards-1')],
+    ['wards-2', pile('wards-2')],
+    ['wards-3', pile('wards-3')],
+    // "And once patients went home,": the patient walks off and the line loses its glow.
+    ['leave', (tl) => tl.to(walk, { t: 1, duration: 1, ease: 'power1.inOut', onUpdate: placePatient }, 0).to(glows, { opacity: 0, duration: 0.8 }, 0.1)],
+    // "they were mostly on their own.": the line breaks.
+    ['break', (tl) => tl.to(link, { attr: { 'stroke-dasharray': BROKEN }, duration: 1, ease: 'power2.out' }, 0)],
+    // "So I put together a team in Vienna,": the clutter is swept into one phone, the people go with
+    // it, and the drawing closes in on the phone.
+    [
+      'sweep',
+      (tl) => {
+        wins.forEach((w, i) => {
+          const cx = Number(w.dataset.cx);
+          const cy = Number(w.dataset.cy);
+          tl.fromTo(
+            w,
+            { x: 0, y: 0, scale: 1, svgOrigin: `${cx} ${cy}` },
+            { x: PHONE_CENTRE.x - cx, y: PHONE_CENTRE.y - cy, scale: 0.12, svgOrigin: `${cx} ${cy}`, duration: 0.5, ease: 'power3.in', immediateRender: false },
+            i * 0.02,
+          ).to(w, { opacity: 0, duration: 0.2 }, 0.38 + i * 0.02);
+        });
+        tl.to(people, { opacity: 0, duration: 0.35 }, 0);
+        drawOn(tl, phone, 0.35, 0.45);
+        if (zoom !== 1) {
+          tl.to(
+            drawing,
+            { scale: zoom, transformOrigin: `${(PHONE_CENTRE.x / 560) * 100}% ${(PHONE_CENTRE.y / 520) * 100}%`, duration: 0.5, ease: 'power2.inOut' },
+            0.45,
+          );
+        }
+      },
+    ],
+    // "and we started with physio, where recovery depends on the exercises patients do at home.":
+    // the phone shows the day's exercises.
+    ['home', (tl) => tl.to(screens[0], { opacity: 1, duration: 0.15 }, 0.2)],
+    [
+      'screens-a',
+      (tl) => {
+        swap(tl, 0, 1, 0.3);
+        // Filming a set: the figure squats a few times while the recording light blinks.
+        tl.to($('.squat', drawing), { scaleY: 0.84, svgOrigin: '280 318', duration: 0.05, yoyo: true, repeat: 3, ease: 'sine.inOut' }, 0.44).to(
+          $('.rec', drawing),
+          { opacity: 0.2, duration: 0.035, yoyo: true, repeat: 5 },
+          0.44,
+        );
+        swap(tl, 1, 2, 0.7);
+      },
+    ],
+    [
+      'screens-b',
+      (tl) => {
+        swap(tl, 2, 3, 0.3);
+        tl.to(noteLines, { opacity: 1, duration: 0.08, stagger: 0.1 }, 0.46);
+        swap(tl, 3, 4, 0.85);
+      },
+    ],
+  ];
+}
+
+/**
+ * 3 and 4. The wards and Bounceback, as a pen drawing. On a desktop it is one sticky drawing: the
+ * people are drawn as the scene comes in, and each phrase plays its step as it is read. On a phone
+ * each cued phrase has its own panel: the drawing as the panel before it left it (the earlier steps
+ * applied at once), playing its own step as it comes up; the first panel draws the people too.
+ */
+function care(desktop: boolean) {
+  const scene = $('.care');
+  if (desktop) {
+    for (const [name, build] of wardsSteps($('.visual', scene), PHONE_ZOOM)) {
+      build(
+        name === 'enter'
+          ? gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: scene, start: 'top 92%', end: 'top 12%', scrub: true } })
+          : cue(name),
+      );
+    }
+    return;
+  }
+  for (const shot of $$('.shot', scene)) {
+    const steps = wardsSteps(shot, 1);
+    const own = steps.findIndex(([name]) => name === shot.dataset.cue);
+    const first = steps[own - 1]?.[0] === 'enter' ? own - 1 : own;
+    settle(steps.slice(0, first));
+    const tl = shotTimeline(shot);
+    steps.slice(first, own + 1).forEach(([, build], i) => {
+      const part = gsap.timeline({ defaults: { ease: 'none' } });
+      build(part);
+      tl.add(part, i);
+    });
+  }
+}
+
+/** Readies the lap round the run club print in `root`, and returns the step that draws it, with its runner. */
+function lap(root: ParentNode) {
+  const path = $<SVGPathElement>('.route-path', root);
+  const runner = $<SVGCircleElement>('.runner', root);
+  const len = path.getTotalLength();
+  gsap.set(path, { attr: { 'stroke-dasharray': `${len} ${len * 2}`, 'stroke-dashoffset': len } });
+  gsap.set(runner, { opacity: 0 });
+  const at = { route: 0 };
+  // The runner keeps to its place on the lap.
+  const place = () => {
+    const p = path.getPointAtLength(len * at.route);
+    runner.setAttribute('cx', String(p.x));
+    runner.setAttribute('cy', String(p.y));
+  };
+  return (tl: gsap.core.Timeline, start: number, dur: number) =>
+    tl
+      .to(runner, { opacity: 1, duration: 0.05 }, start)
+      .to(path, { attr: { 'stroke-dashoffset': 0 }, duration: dur }, start)
+      .to(at, { route: 1, duration: dur, onUpdate: place }, start);
 }
 
 /**
  * 5. Eigen: the run club print develops and a lap is drawn round it; the workshop print comes in
- * over its corner with Max; then the prints give way to the dots: a face for the CPAP masks, the
- * custom versions, and the footprint.
+ * with Max; then the dots: a face for the CPAP masks, the custom versions, and the footprint. On a
+ * desktop the prints share one sticky picture and give way to the dots; on a phone each has its own
+ * panel above its phrase, and each stage of the dots its own canvas.
  */
-function eigen(dots: Dots) {
+function eigen(desktop: boolean) {
   const scene = $('.eigen');
-  const run = $('.run .pola', scene);
-  const work = $('.work .pola', scene);
-  const canvas = $('.dots', scene);
-  const path = $<SVGPathElement>('.route-path', scene);
-  const runner = $<SVGCircleElement>('.runner', scene);
-  const len = path.getTotalLength();
+  if (!desktop) {
+    for (const shot of $$('.shot', scene)) {
+      const tl = shotTimeline(shot);
+      const pola = shot.querySelector('.pola');
+      if (shot.dataset.kind === 'run' && pola) {
+        tl.add(develop(pola, 0.6), 0);
+        write(tl, $$('.pen-cap .ch', pola), 0.45, 0.3);
+        lap(shot)(tl, 0.35, 0.65);
+      } else if (shot.dataset.kind === 'work' && pola) {
+        tl.add(develop(pola, 1), 0);
+      } else if (shot.dataset.kind === 'dots') {
+        const dots = dotsFor($<HTMLCanvasElement>('canvas', shot), DOTS.mobile);
+        const name = shot.dataset.cue;
+        const state = { gather: name === 'masks' ? 0 : 1, variant: name === 'pivot' ? 3 : 0, morph: 0 };
+        const draw = () => dots.draw(state);
+        draw();
+        if (name === 'masks') tl.to(state, { gather: 1, duration: 1, ease: 'power2.out', onUpdate: draw }, 0);
+        if (name === 'iterate') tl.to(state, { variant: 3, duration: 1, onUpdate: draw }, 0);
+        if (name === 'pivot') tl.to(state, { morph: 1, duration: 1, ease: 'power1.inOut', onUpdate: draw }, 0);
+      }
+    }
+    return;
+  }
 
-  gsap.set(path, { attr: { 'stroke-dasharray': `${len} ${len * 2}`, 'stroke-dashoffset': len } });
-  gsap.set([canvas, runner], { opacity: 0 });
+  const visual = $('.visual', scene);
+  const run = $('.run .pola', visual);
+  const work = $('.work .pola', visual);
+  const canvas = $<HTMLCanvasElement>('.dots', visual);
+  const dots = dotsFor(canvas, DOTS.desktop);
+  const drawLap = lap(visual);
+  gsap.set(canvas, { opacity: 0 });
 
   // While the scene is on screen and the dots are showing, they follow whatever the phrases have
   // set; Dots only draws when that has changed, so dots at rest cost nothing.
-  const state = { gather: 0, variant: 0, morph: 0, route: 0 };
+  const state = { gather: 0, variant: 0, morph: 0 };
   const draw = () => {
     if (Number(gsap.getProperty(canvas, 'opacity')) > 0) dots.draw(state);
   };
@@ -508,24 +645,15 @@ function eigen(dots: Dots) {
     end: 'bottom top',
     onToggle: (self) => (self.isActive ? gsap.ticker.add(draw) : gsap.ticker.remove(draw)),
   });
-  // The runner keeps to its place on the lap.
-  const placeRunner = () => {
-    const p = path.getPointAtLength(len * state.route);
-    runner.setAttribute('cx', String(p.x));
-    runner.setAttribute('cy', String(p.y));
-  };
 
   const first = cue('eigen-1').add(develop(run, 0.8), 0);
   write(first, $$('.pen-cap .ch', run), 0.6, 0.4);
-  cue('lap')
-    .to(runner, { opacity: 1, duration: 0.05 }, 0)
-    .to(path, { attr: { 'stroke-dashoffset': 0 }, duration: 1 }, 0)
-    .to(state, { route: 1, duration: 1, onUpdate: placeRunner }, 0);
+  drawLap(cue('lap'), 0, 1);
   // The workshop print comes in where it lies, and develops.
-  cue('max').fromTo('.work-in', { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0).add(develop(work, 0.7), 0.3);
+  cue('max').fromTo($('.work-in', visual), { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0).add(develop(work, 0.7), 0.3);
   // The prints give way to the dots. Their children move, so nothing else drives those elements.
   cue('masks')
-    .to(['.run-in > *', '.work-in > *'], { y: '-110vh', duration: 0.45, ease: 'power3.in', stagger: 0.05 }, 0)
+    .to($$('.run-in > *, .work-in > *', visual), { y: '-110vh', duration: 0.45, ease: 'power3.in', stagger: 0.05 }, 0)
     .to(canvas, { opacity: 1, duration: 0.25 }, 0.3)
     .to(state, { gather: 1, duration: 0.6, ease: 'power2.out' }, 0.35);
   // Quick iterations: the mask flicks through its versions. Then the pivot: the face streams into a footprint.
@@ -533,37 +661,28 @@ function eigen(dots: Dots) {
   cue('pivot').to(state, { morph: 1, duration: 1, ease: 'power1.inOut' }, 0);
 }
 
-/** How far the Personal row moves sideways. */
-const rowDistance = () => Math.max(0, $('.personal .track').scrollWidth - window.innerWidth);
-/** The Personal section is this much taller than the screen, so moving the row takes that much scrolling. */
-const sizeRow = () => $('.personal').style.setProperty('--row', `${rowDistance()}px`);
-
 /**
- * 6. Personal: the row stays on screen (a sticky stage) and moves sideways by as much as the section
- * has scrolled. Each interest's title is written as it comes in, and each print develops as it
- * crosses the screen.
+ * 6. Personal: one interest after another, zigzagging down the page. Each title is written as it
+ * comes up, and each print develops as it comes up the screen, lagging its words a little, as in
+ * Medicine.
  */
-function personal() {
+function personal(desktop: boolean) {
   const scene = $('.personal');
-  const track = $('.track', scene);
-
-  gsap
-    .timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: scene, start: 'top 95%', end: 'top 45%', scrub: true } })
-    .from($$('.p-intro > *', scene), { opacity: 0, duration: 0.6, stagger: 0.3 }, 0);
-
-  const slide = gsap.to(track, {
-    x: () => -rowDistance(),
-    ease: 'none',
-    scrollTrigger: { trigger: scene, start: 'top top', end: 'bottom bottom', scrub: true, invalidateOnRefresh: true },
-  });
-  const along = (trigger: Element, start: string, end: string) =>
-    gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger, containerAnimation: slide, start, end, scrub: true } });
-
-  for (const h of $$('.g-text h3', scene)) write(along(h, 'left 95%', 'left 60%'), $$('.ch', h), 0, 1);
-  // Each print has developed by the time it is a little way in, so the last ones finish too.
-  for (const pola of $$('.gp .pola', scene)) {
-    const tl = along(pola, 'left 100%', 'right 88%').add(develop(pola, 1), 0);
-    write(tl, $$('.pen-cap .ch', pola), 0.75, 0.25);
+  const lag = (desktop ? LAG.desktop : LAG.mobile) * PRINT_LAG;
+  for (const h of $$('.t-text h3', scene)) {
+    write(gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: h, start: 'top 88%', end: 'top 62%', scrub: true } }), $$('.ch', h), 0, 1);
+  }
+  for (const gp of $$('.gp', scene)) {
+    const inner = $('.gp-in', gp);
+    const pola = $('.pola', gp);
+    gsap.fromTo(
+      inner,
+      { y: () => -lag * window.innerHeight },
+      { y: () => lag * window.innerHeight, ease: 'none', scrollTrigger: { trigger: gp, start: 'top bottom', end: 'bottom top', scrub: true, invalidateOnRefresh: true } },
+    );
+    const tl = gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: gp, start: 'top 95%', end: 'top 50%', scrub: true } });
+    tl.add(develop(pola, 0.8), 0);
+    write(tl, $$('.pen-cap .ch', pola), 0.65, 0.35);
   }
 }
 

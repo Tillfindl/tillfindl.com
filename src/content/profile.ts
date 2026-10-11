@@ -10,7 +10,7 @@
  * Voice: professional and plain. The why runs through the scenes (the wards lead to Bounceback,
  * the run club to Max and Eigen) without ever announcing itself as a story. No lessons, no
  * rhetorical questions. Facts, never proof. Never call Till an engineer; "dad", not "father". No
- * em dashes, no race times, nothing private. One dry line before Contact, by Till's choice.
+ * em dashes, no race times, nothing private, no jokes.
  *
  * Inline markup: [label](url) for a link (see rich.ts); the phrases' own markup is in phrase.ts.
  */
@@ -49,13 +49,14 @@ export interface Photo {
    */
   wide?: boolean;
 }
+
 /** One thing in the personal section: a short title, what Till loves about it, the proof, and its prints. */
 export interface Item {
   title: L;
   text: L;
   /** The proof, in smaller writing; left out where it would only be a list. */
   detail?: L;
-  /** The prints in its row, in order. */
+  /** Its prints, in order. */
   prints: Photo[];
 }
 
@@ -77,7 +78,6 @@ export interface Script {
   bounceback: Phrase[];
   eigen: Phrase[];
   personal: L;
-  joke: L;
   contact: L;
 }
 
@@ -217,7 +217,7 @@ export const page = {
     eigen: [
       {
         cue: 'eigen-1',
-        t: { en: 'In London I always had / a ^side project^ going, / _mostly out of_ curiosity.', de: 'In London hatte ich immer / ein ^Nebenprojekt^ / am Laufen, / _meistens aus_ Neugier.' },
+        t: { en: 'In London / I kept ^starting^ things.', de: 'In London habe ich / ständig etwas ^Neues^ / angefangen.' },
       },
       {
         cue: 'lap',
@@ -242,17 +242,11 @@ export const page = {
       },
       { cue: 'pivot', t: { en: 'Then we ^pivoted^ / to running,', de: 'Dann haben wir auf Laufen / ^umgeschwenkt^,' } },
       { t: { en: '_and that became_ ^Eigen^.', de: '_und daraus wurde_ ^Eigen^.' } },
+      { t: { en: 'It looks at / how someone / ~actually runs~:', de: 'Eigen schaut, / wie jemand / ~wirklich läuft~:' } },
       {
         t: {
-          en: 'Most runners choose shoes / by brand or by feel / in a shop,',
-          de: 'Die meisten / suchen Laufschuhe / nach Marke oder Gefühl / im Geschäft aus,',
-        },
-      },
-      { t: { en: 'so Eigen looks at / how someone / ~actually runs~:', de: 'also schaut Eigen, / wie jemand / ~wirklich läuft~:' } },
-      {
-        t: {
-          en: 'a 3D foot scan / and a short running video, / matched to the shoes / that suit them.',
-          de: 'ein 3D-Fußscan / und ein kurzes Laufvideo, / abgeglichen / mit den Schuhen, / die dazu passen.',
+          en: 'a 3D foot scan / and a short / running video, / matched to the shoes / that suit them.',
+          de: 'ein 3D-Fußscan / und ein kurzes / Laufvideo, / abgeglichen / mit den Schuhen, / die dazu passen.',
         },
       },
       {
@@ -264,17 +258,12 @@ export const page = {
       { t: { en: `_[eigen-running.com](${links.eigen})_`, de: `_[eigen-running.com](${links.eigen})_` } },
     ],
     personal: { en: 'What I ^like^ doing / outside of work.', de: 'Was ich außerhalb der Arbeit / ^gern^ mache.' },
-    /** The one dry line before Contact, Till's own choice. */
-    joke: {
-      en: 'Yes, I finished / medical school. / No, I won’t look / at your ^rash^.',
-      de: 'Ja, ich habe Medizin / fertig studiert. / Nein, ich schaue mir / deinen ^Ausschlag^ nicht an.',
-    },
     contact: {
       en: 'If you’d like to ^contact^ me, / LinkedIn is the easiest way / to reach me.',
       de: 'Wenn du mich ^kontaktieren^ möchtest, / erreichst du mich am einfachsten / über ^LinkedIn^.',
     },
   }),
-  /** The personal section: a sport or interest each, with its row of prints. */
+  /** The personal section: a sport or interest each, with its prints. */
   items: typed<Item[]>([
     {
       title: { en: 'Triathlon', de: 'Triathlon' },

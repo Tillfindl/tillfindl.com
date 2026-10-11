@@ -118,11 +118,15 @@ export class Dots {
   /** How much larger each dot is than R_BACK and R_FRONT say, for the number of dots. */
   private grain: number;
 
-  /** `ink` is the dots' colour as space-separated RGB, e.g. '47 51 148'. */
+  /**
+   * `ink` is the dots' colour as space-separated RGB, e.g. '47 51 148'. `maxDpr` caps the canvas's
+   * pixel density: soft dots look the same at less, and a smaller canvas costs less to draw.
+   */
   constructor(
     private canvas: HTMLCanvasElement,
     count: number,
     private ink = '23 22 20',
+    private maxDpr = 2,
   ) {
     this.ctx = canvas.getContext('2d')!;
     this.grain = Math.sqrt(R_COUNT / count);
@@ -149,7 +153,7 @@ export class Dots {
 
   /** Matches the canvas to its size on screen; nothing happens if that has not changed (a phone's address bar resizes the window often). */
   resize() {
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = Math.min(window.devicePixelRatio || 1, this.maxDpr);
     const w = this.canvas.clientWidth;
     const h = this.canvas.clientHeight;
     if (w === this.w && h === this.h && dpr === this.dpr) return;
