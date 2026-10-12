@@ -105,10 +105,6 @@ const photos = {
   },
   hockey: { file: 'hockey-fisheye.jpg', alt: { en: 'Till in the UCL Yetis locker room before a game', de: 'Till in der Kabine der UCL Yetis vor einem Spiel' } },
   run: { file: 'ironman-run.jpg', alt: { en: 'Till running, black and white', de: 'Till beim Laufen, schwarz-weiß' } },
-  sister: {
-    file: 'ice-hockey-sister.jpg',
-    alt: { en: 'Till in his UCL ice hockey jersey with his sister after a game', de: 'Till im UCL-Eishockeytrikot mit seiner Schwester nach einem Spiel' },
-  },
   summer: {
     file: 'summer-austria.jpg',
     alt: { en: 'Till and a friend in lederhosen in the Austrian mountains', de: 'Till und ein Freund in Lederhosen in den österreichischen Bergen' },
@@ -116,7 +112,6 @@ const photos = {
   bike: { file: 'bike-sunset.jpg', alt: { en: 'A road bike on a lane in an Alpine valley at sunset', de: 'Ein Rennrad auf einem Weg in einem Alpental bei Sonnenuntergang' } },
   skiPodium: { file: 'ski-podium.jpg', alt: { en: 'Till on top of the podium at a ski race in falling snow', de: 'Till ganz oben am Podest eines Skirennens im Schneefall' } },
   skiCarve: { file: 'ski-carve.jpg', alt: { en: 'A skier in yellow carving a turn in fresh snow', de: 'Ein Skifahrer in Gelb zieht einen Carvingschwung im Neuschnee' } },
-  snowcat: { file: 'snowcat.jpg', alt: { en: 'A snowcat among snowy trees in bright sun', de: 'Eine Pistenraupe zwischen verschneiten Bäumen in strahlender Sonne' } },
   transition: {
     file: 'ironman-transition.jpg',
     alt: { en: 'Friends in the transition area before an Ironman, between rows of bikes in morning fog', de: 'Freunde in der Wechselzone vor einem Ironman, zwischen Reihen von Rädern im Morgennebel' },
@@ -166,17 +161,17 @@ export const page = {
    */
   script: typed<Script>({
     medicine: [
-      { print: photos.portico, t: { en: '^Six years^ of medicine / at ^UCL^,', de: '^Sechs Jahre^ Medizin / am ^UCL^,' } },
+      { print: photos.portico, t: { en: '^Six years^ / of medicine / at ^UCL^,', de: '^Sechs Jahre^ / Medizin am ^UCL^,' } },
       {
         print: photos.medSchool,
         t: {
-          en: '_with clinical rotations at_ / University College Hospital, / the Royal Free, / Great Ormond Street, / Queen Square and Moorfields,',
-          de: '_mit klinischen Rotationen am_ / University College Hospital, / Royal Free, / Great Ormond Street, / Queen Square und Moorfields',
+          en: '_with clinical rotations at_ / University College Hospital, / the Whittington Hospital, / Great Ormond Street, / Queen Square / and Moorfields,',
+          de: '_mit klinischen Rotationen am_ / University College Hospital, / Whittington Hospital, / Great Ormond Street, / Queen Square / und Moorfields'
         },
       },
       {
         print: photos.theatre,
-        t: { en: '_and a final elective in_ orthopaedics / in ^Kuala Lumpur^.', de: '_und einer abschließenden Famulatur_ / in der Orthopädie / in ^Kuala Lumpur^.' },
+        t: { en: '_and a final elective in_ / orthopaedics / in ^Kuala Lumpur^.', de: '_und einer abschließenden Famulatur_ / in der Orthopädie / in ^Kuala Lumpur^.' },
       },
     ],
     wards: [
@@ -188,8 +183,8 @@ export const page = {
       {
         cue: 'wards-3',
         t: {
-          en: 'one program for ~imaging~, / another for ~notes~, / another for ~prescriptions~.',
-          de: 'ein Programm / für die ~Bildgebung~, / eines für ~Notizen~, / eines für ~Verschreibungen~.',
+          en: 'one program for ~imaging~, / one for ~notes~, / one for ~prescriptions~.',
+          de: 'ein Programm / für die ~Bildgebung~, / eines für ~Notizen~, / eines für / ~Verschreibungen~.',
         },
       },
       { cue: 'leave', t: { en: 'And once patients / went home,', de: 'Und sobald Patienten / nach Hause gingen,' } },
@@ -200,18 +195,18 @@ export const page = {
       {
         cue: 'home',
         t: {
-          en: 'and we started / with ^physio^, / where recovery depends / on the exercises / patients do at home.',
-          de: 'und wir haben mit der / ~Physiotherapie~ / angefangen, / wo die Genesung / von den Übungen / abhängt, / die Patienten / zu Hause machen.',
+          en: '_and we chose_ ^physio^, / because it has / so many problems.',
+          de: '_und wir haben uns für die_ / ~Physiotherapie~ / entschieden, / weil es dort / so viele / Probleme gibt.',
         },
       },
       {
         cue: 'screens-a',
         t: {
-          en: '^Bounceback^ / is software / for physio practices / that keeps patients / and their physio ~connected~ / between appointments,',
-          de: '^Bounceback^ / ist Software / für Physiopraxen, / die Patienten und Physios / zwischen den Terminen / ~verbindet~',
+          en: '^Bounceback^ / is software / for physio practices / that keeps patients / and their physio / ~connected~ / between appointments,',
+          de: '^Bounceback^ / ist Software / für Physiopraxen, / die Patienten / und Physios / zwischen den Terminen / ~verbindet~',
         },
       },
-      { cue: 'screens-b', t: { en: 'and runs the rest / of the practice too.', de: 'und auf der auch / der Rest der Praxis läuft.' } },
+      { cue: 'screens-b', t: { en: 'and runs the rest / of the practice too.', de: 'und auf der / auch der Rest / der Praxis läuft.' } },
       { t: { en: `_[bounceback.at](${links.bounceback})_`, de: `_[bounceback.at](${links.bounceback})_` } },
     ],
     eigen: [
@@ -223,7 +218,7 @@ export const page = {
         cue: 'max',
         t: {
           en: '_where I met_ ^Max^, / a robotics engineer / from ETH Zurich.',
-          de: '_wo ich_ ^Max^ / _kennengelernt habe_, / einen Robotikingenieur / von der ETH Zürich.',
+          de: '_wo ich_ ^Max^ / _kennengelernt habe_, / _einen_ Robotikingenieur / von der ETH Zürich.',
         },
       },
       {
@@ -239,14 +234,14 @@ export const page = {
       },
       {
         t: {
-          en: 'From a 3D foot scan / and a short running video, / it finds the shoes / that suit how someone ~runs~.',
-          de: 'Aus einem 3D-Fußscan / und einem kurzen Laufvideo / findet Eigen die Schuhe, / die zum ~Laufstil~ passen.',
+          en: 'From a 3D foot scan / and a short / running video, / it finds the shoes / that suit / how someone ~runs~.',
+          de: 'Aus einem 3D-Fußscan / und einem kurzen / Laufvideo / findet Eigen / die Schuhe, / die zum ~Laufstil~ passen.',
         },
       },
       {
         t: {
-          en: 'I look after / the ^product^ / _and the_ ^biomechanics^ / behind it.',
-          de: 'Ich kümmere mich / um das ^Produkt^ / _und die_ ^Biomechanik^ / dahinter.',
+          en: 'I look after / the ^product^ / _and the_ / ^biomechanics^ / behind it.',
+          de: 'Ich kümmere mich / um das ^Produkt^ / _und die_ / ^Biomechanik^ / dahinter.',
         },
       },
       { t: { en: `_[eigen-running.com](${links.eigen})_`, de: `_[eigen-running.com](${links.eigen})_` } },
@@ -278,7 +273,7 @@ export const page = {
         de: 'Mit dem Eishockeyteam des UCL hatte ich die beste Zeit meines Lebens.',
       },
       detail: { en: 'Played for the UCL Yetis in BUIHA Division 1.', de: 'Für die UCL Yetis in der BUIHA Division 1 gespielt.' },
-      prints: [photos.yetis, photos.hockey, photos.sister],
+      prints: [photos.yetis, photos.hockey],
     },
     {
       title: { en: 'Skiing', de: 'Skifahren' },
@@ -287,7 +282,7 @@ export const page = {
         en: 'FIS races and Viennese youth champion; qualified ski instructor (LS2).',
         de: 'FIS-Rennen und Wiener Jugendmeister; ausgebildeter Skilehrer (LS2).',
       },
-      prints: [photos.skiCarve, photos.ski, photos.skiPodium, photos.snowcat],
+      prints: [photos.skiCarve, photos.ski, photos.skiPodium],
     },
     {
       title: { en: 'Photography and film', de: 'Fotografie und Film' },
@@ -397,7 +392,7 @@ export const facts = {
     },
   ],
   background: [
-    'MBBS Medicine, University College London, September 2020 to July 2026: a six-year degree with three years of pre-clinical training and three years of full-time clinical rotations across all core specialties. Clinical placements at University College Hospital and the Royal Free, with specialist time at Queen Square (neurology), Great Ormond Street (paediatrics) and Moorfields (ophthalmology).',
+    'MBBS Medicine, University College London, September 2020 to July 2026: a six-year degree with three years of pre-clinical training and three years of full-time clinical rotations across all core specialties. Clinical placements at University College Hospital and the Whittington Hospital, with specialist time at Queen Square (neurology), Great Ormond Street (paediatrics) and Moorfields (ophthalmology).',
     'Orthopaedics elective in Kuala Lumpur, spring and summer 2026, after four days at two eye hospitals in Bangalore.',
     'Custom CPAP mask project, London, 2024 to 2025, as project leader: custom 3D-printed CPAP masks from smartphone 3D facial scans, using an automated scan-to-mask shaping pipeline. The precursor to Eigen.',
     'Intercalated BSc Medical Sciences with Global Health, UCL, 2022 to 2023. Thesis: Economic evaluations of diabetic retinopathy screening models in the era of digital medicine and AI, a scoping review.',

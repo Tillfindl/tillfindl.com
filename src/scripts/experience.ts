@@ -5,17 +5,20 @@
  * finger and the browser can scroll on its own thread; on a phone or tablet nothing here even
  * listens to touches. Lenis only smooths a mouse wheel's steps on a desktop.
  *
- * Every animation is tied straight to the scroll position (scrub: true), with no lag. The words are
- * in the normal page flow and move with the page. In Medicine each phrase has its own print beside
- * it, which scrolls past a little slower than the words. On a desktop the wards, Bounceback and Eigen
- * are a sticky picture that changes only while one of its phrases passes it (a "cue"). On a phone the
- * wards drawing stays too, near the top, and each phrase comes up to rest just under it, fading as
- * the next arrives, while Eigen's cued phrases each have their own panel above them (a "shot"),
- * playing that phrase's step as it comes up the screen. Personal zigzags down the page, its prints
- * developing as they come up. Scrolling back plays it all in reverse.
+ * Every animation is tied straight to the scroll position (scrub: true), with no lag. The words and
+ * pictures are in the normal page flow and move with the page, together. They are uncovered by
+ * wipes as they come in at the bottom of the screen (words from the left, prints from their side,
+ * the scene names across their width), so everything is whole by the time it is read and nothing
+ * is waited for. In Medicine each phrase has its own print beside it. On a desktop the wards,
+ * Bounceback and Eigen are a sticky picture that changes only while one of its phrases passes it (a
+ * "cue"). On a phone the wards drawing stays too, near the top, and each phrase comes up to rest
+ * just under it, fading as the next arrives, while Eigen's cued phrases each have their own panel
+ * above them (a "shot"), playing that phrase's step as it comes up the screen. Personal zigzags down
+ * the page. Scrolling back plays it all in reverse.
  *
- * The hero plays on CSS and needs nothing from here until you scroll. Nothing is rotated. With
- * reduced motion nothing here runs and the page reads as a plain page.
+ * The opening plays on CSS and needs nothing from here until you scroll, when it is cleared within
+ * a quarter of a screen. Nothing is rotated. With reduced motion nothing here runs and the page
+ * reads as a plain page.
  */
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -25,23 +28,34 @@ import { Dots } from './dots';
 gsap.registerPlugin(ScrollTrigger);
 
 /** How smooth a mouse wheel is on a desktop (Lenis lerp): higher follows the wheel more tightly. */
-const LERP = 0.12;
+const LERP = 0.16;
 /**
  * The trip back to the top: how long the page swooshes out and in, how far (in screens), and how
  * much it blurs, along the scroll with a wheel and as a plain blur on a phone (in pixels).
  */
 const BACK = { out: 0.32, in: 0.5, travel: 0.3, blur: 24, phoneBlur: 6 };
+/** How far the first scroll goes (in screens) before the opening has cleared. */
+const OPENING_OUT = 0.25;
 
 type Range = [string, string];
 /**
- * Where a phrase fades in and out and where its pen underlines are drawn, as ScrollTrigger [start,
- * end] pairs; on a desktop, also the stretch over which it sets its picture moving, while it is
- * being read rather than as soon as it appears. On a phone the phrases need no fades.
+ * Where words are wiped in, where a phrase is wiped out again (on a desktop, near the top) and where
+ * its pen underlines are drawn, as ScrollTrigger [start, end] pairs. Everything is uncovered while
+ * it comes in at the bottom of the screen, so it is whole by the time it is read; nothing is waited
+ * for. On a desktop, also the stretch over which a phrase sets its picture moving, while it is read.
  */
-const ZONES: { desktop: { in: Range; out: Range; line: Range; cue: Range }; mobile: { line: Range } } = {
-  desktop: { in: ['top 96%', 'top 76%'], out: ['bottom 26%', 'bottom 6%'], line: ['top 82%', 'top 60%'], cue: ['top 78%', 'top 40%'] },
-  mobile: { line: ['top 92%', 'top 72%'] },
+const ZONES: { desktop: { in: Range; out: Range; line: Range; cue: Range }; mobile: { in: Range; line: Range } } = {
+  desktop: { in: ['top 100%', 'top 84%'], out: ['bottom 24%', 'bottom 6%'], line: ['top 90%', 'top 74%'], cue: ['top 78%', 'top 40%'] },
+  mobile: { in: ['top 100%', 'top 84%'], line: ['top 92%', 'top 76%'] },
 };
+/** Where a print is uncovered and develops: from its top at the bottom of the screen to 60% up. */
+const PRINT_ZONE: Range = ['top 100%', 'top 60%'];
+/**
+ * The room a wipe's clip leaves round what it uncovers (top, right, bottom, left, in % of the
+ * element's box), so the parts that poke out of it are never cut: big letters and underlines, a
+ * print's shadow, the lap round the run club print.
+ */
+const PAD = { text: [12, 6, 26, 6], print: [12, 16, 28, 16], lap: [16, 18, 28, 18] } satisfies Record<string, Pad>;
 /**
  * On a phone, the stretch over which an Eigen panel plays its step: from when it is half on screen
  * until its middle reaches the middle of the screen, so it has finished by the time its phrase is read.
@@ -59,13 +73,6 @@ const REST_AFTER = 0.12;
  * starts fading at the first distance and has gone by the second.
  */
 const REST_FADE = [0.2, 0.04] as const;
-/**
- * How far a Medicine print lags its phrase, in screen heights either way: it starts this much
- * higher and ends this much lower, so it moves a little slower than the words. Less on a phone,
- * where the print sits just above its phrase. Personal's prints lag by a little over half as much.
- */
-const LAG = { desktop: 0.1, mobile: 0.03 };
-const PRINT_LAG = 0.6;
 /** How far the desktop drawing zooms in on its phone, so the screens can be read. */
 const PHONE_ZOOM = 1.2;
 /**
@@ -103,7 +110,7 @@ const $ = <T extends Element = HTMLElement>(s: string, root: ParentNode = docume
 const $$ = <T extends Element = HTMLElement>(s: string, root: ParentNode = document) => [...root.querySelectorAll<T>(s)];
 
 /** The current layout's phrase zones (see ZONES). */
-let zone: { line: Range } = ZONES.desktop;
+let zone: { in: Range; line: Range } = ZONES.desktop;
 /** Every dot canvas, made once each, so a layout change does not sample its shapes again. */
 const dotCanvases = new Map<HTMLCanvasElement, Dots>();
 
@@ -154,10 +161,11 @@ function start() {
     zone = desktop ? ZONES.desktop : ZONES.mobile;
     opening(desktop);
     phrases(desktop);
+    headings();
     medicine(desktop);
     care(desktop);
     eigen(desktop);
-    personal(desktop);
+    personal();
     ending();
     chrome();
   });
@@ -345,6 +353,49 @@ function drawOn(tl: gsap.core.Timeline, strokes: Element[], at: number, dur: num
   });
 }
 
+/** Room round an element for a clip (see PAD), and the edge a wipe starts from or ends at. */
+type Pad = [top: number, right: number, bottom: number, left: number];
+type Side = 'left' | 'right' | 'top' | 'bottom';
+
+/**
+ * A clip that shows all of an element, with `pad` of room round it, or, given a side, none of it:
+ * the clip shut against the outer edge of the room on that side, where a wipe from that side starts
+ * or a wipe towards it ends. The values are always written out in full, because GSAP cannot blend
+ * a clip path it has to read from the stylesheet.
+ */
+function clip([pt, pr, pb, pl]: Pad, side?: Side) {
+  const [t, r, b, l] = [pt, pr, pb, pl].map((v) => `${-v}%`);
+  if (side === 'left') return `inset(${t} ${100 + pl}% ${b} ${l})`;
+  if (side === 'right') return `inset(${t} ${r} ${b} ${100 + pr}%)`;
+  if (side === 'top') return `inset(${t} ${r} ${100 + pt}% ${l})`;
+  if (side === 'bottom') return `inset(${100 + pb}% ${r} ${b} ${l})`;
+  return `inset(${t} ${r} ${b} ${l})`;
+}
+
+/** Uncovers `el` from its `from` edge between `at` and `at + dur`. */
+function wipeIn(tl: gsap.core.Timeline, el: Element, from: Side, pad: Pad, at: number, dur: number) {
+  tl.fromTo(el, { clipPath: clip(pad, from) }, { clipPath: clip(pad), duration: dur, ease: 'power2.out' }, at);
+}
+
+/** Covers `el` up again towards its `toward` edge between `at` and `at + dur`. */
+function wipeOut(tl: gsap.core.Timeline, el: Element, toward: Side, pad: Pad, at: number, dur: number) {
+  tl.fromTo(el, { clipPath: clip(pad) }, { clipPath: clip(pad, toward), duration: dur, ease: 'power2.in', immediateRender: false }, at);
+}
+
+/**
+ * Uncovers a print from its `from` edge between `at` and `at + dur`, by sliding the paper cover in
+ * `wrap` (`.cover`, see the styles) away towards the opposite edge. Only the cover moves, so the
+ * photo under it is never repainted.
+ */
+function uncover(tl: gsap.core.Timeline, wrap: Element, from: Side, at: number, dur: number) {
+  const away = { left: { xPercent: 101 }, right: { xPercent: -101 }, top: { yPercent: 101 }, bottom: { yPercent: -101 } }[from];
+  tl.fromTo($('.cover', wrap), { x: 0, y: 0, xPercent: 0, yPercent: 0 }, { ...away, duration: dur, ease: 'power2.out' }, at);
+}
+
+/** A timeline scrubbed while `trigger` moves through `range`. */
+const scrubbed = (trigger: Element, [start, end]: Range) =>
+  gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger, start, end, scrub: true } });
+
 /* ---------- Around every scene ---------- */
 
 /** The progress line along the top, and the name in the corner once the opening has gone. */
@@ -359,7 +410,7 @@ function chrome() {
   const hudName = $('.hud-name');
   gsap.set(hudName, { autoAlpha: 0 });
   ScrollTrigger.create({
-    start: () => window.innerHeight * 0.5,
+    start: () => window.innerHeight * OPENING_OUT,
     refreshPriority: -2,
     onEnter: () => gsap.to(hudName, { autoAlpha: 1, duration: 0.4 }),
     onLeaveBack: () => gsap.to(hudName, { autoAlpha: 0, duration: 0.3 }),
@@ -367,67 +418,81 @@ function chrome() {
 }
 
 /**
- * Every phrase draws its pen underlines as it arrives, one after another. On a desktop, where the
- * phrases lie over the pictures, they also fade in as they come up and out as they leave; the fade
- * in is on the phrase and the fade out on its inner element, so the two never drive the same
- * property.
+ * Every phrase is wiped in from the left as it comes in at the bottom of the screen: on a desktop
+ * line by line, each as its line arrives, and on a phone as one block, by sliding its paper cover
+ * away (cheaper on a phone than a moving clip). Its pen underlines are drawn just after. On a
+ * desktop it is wiped out again towards the right as it leaves at the top. The wipes in and out
+ * drive different elements (the lines, the phrase's body), so no element is driven by two scroll
+ * animations; the resting phrases on a phone fade on their own inner part.
  */
 function phrases(desktop: boolean) {
-  for (const phrase of $$('.script .phr')) {
+  for (const phrase of $$('.script .phr, .pairs .phr')) {
+    const body = phrase.querySelector('.phr-w');
+    if (!body) continue;
     if (desktop) {
-      const { in: fadeIn, out: fadeOut } = ZONES.desktop;
-      gsap.fromTo(phrase, { opacity: 0 }, { opacity: 1, ease: 'none', scrollTrigger: { trigger: phrase, start: fadeIn[0], end: fadeIn[1], scrub: true } });
-      gsap.fromTo(
-        $('.phr-in', phrase),
-        { opacity: 1 },
-        { opacity: 0, ease: 'none', scrollTrigger: { trigger: phrase, start: fadeOut[0], end: fadeOut[1], scrub: true } },
-      );
+      for (const ln of $$('.ln', body)) wipeIn(scrubbed(ln, zone.in), ln, 'left', PAD.text, 0, 1);
+      wipeOut(scrubbed(phrase, ZONES.desktop.out), body, 'right', PAD.text, 0, 1);
+    } else {
+      uncover(scrubbed(phrase, zone.in), body, 'left', 0, 1);
     }
     const lines = $$('.u-line', phrase);
     if (!lines.length) continue;
-    const tl = gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: phrase, start: zone.line[0], end: zone.line[1], scrub: true } });
+    const tl = scrubbed(phrase, zone.line);
     // Explicit from and to values: GSAP cannot blend a clip path it has to read from the stylesheet.
     lines.forEach((line, i) => tl.fromTo(line, { clipPath: 'inset(0% 100% 0% 0%)' }, { clipPath: 'inset(0% 0% 0% 0%)', duration: 1 }, i * 0.85));
+  }
+}
+
+/**
+ * Each scene's name is wiped in across its width as it comes in, and its pen line drawn under it
+ * just after. The trigger is the heading, never its inner part, which rests (is sticky) on a phone.
+ */
+function headings() {
+  for (const name of $$('.h-name')) {
+    const tl = scrubbed(name.closest('h2') ?? name, zone.in);
+    wipeIn(tl, name, 'left', PAD.text, 0, 0.7);
+    tl.fromTo($('.h-line', name), { clipPath: 'inset(-50% 100% -50% 0%)' }, { clipPath: 'inset(-50% 0% -50% 0%)', duration: 0.5 }, 0.5);
   }
 }
 
 /* ---------- The scenes ---------- */
 
 /**
- * 1. The opening plays on CSS. On a desktop it holds briefly while scrolling clears it: the notes
- * drift apart and fade, and the print steps back. On a phone it does not hold, so the first swipe
- * simply scrolls it away. The elements with CSS animations (the letters, the logo, the print) are
- * left alone, because an animation's fill would override what GSAP writes; their wrappers move.
+ * 1. The opening plays on CSS, and is cleared quickly by the first scroll, on a desktop and a phone
+ * alike: within OPENING_OUT of a screen the two halves of the note slide out to their sides, the
+ * portrait is covered up from the bottom (its paper cover slides up over it) and the name fades. The elements with CSS animations (the letters,
+ * the logo, the print) are left alone, because an animation's fill would override what GSAP writes;
+ * their wrappers move.
  */
 function opening(desktop: boolean) {
-  if (!desktop) return;
-  const scene = $('.opening');
+  const out = desktop ? '-12vw' : '-45vw';
   gsap
-    .timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: scene, start: 'top top', end: 'bottom bottom', scrub: true } })
-    .fromTo('.o-pen-a p', { x: 0, opacity: 1 }, { x: '-4vw', opacity: 0, immediateRender: false }, 0)
-    .fromTo('.o-pen-b p', { x: 0, opacity: 1 }, { x: '4vw', opacity: 0, immediateRender: false }, 0)
-    .fromTo('.eject', { scale: 1, y: 0 }, { scale: 0.9, y: '-4vh', immediateRender: false }, 0)
-    .fromTo('.o-head', { opacity: 1 }, { opacity: 0, duration: 0.5, immediateRender: false }, 0);
+    .timeline({
+      defaults: { ease: 'power2.in' },
+      scrollTrigger: { trigger: '.opening', start: 'top top', end: () => `+=${window.innerHeight * OPENING_OUT}`, scrub: true, invalidateOnRefresh: true },
+    })
+    .fromTo('.o-pen-a p', { x: 0, opacity: 1 }, { x: out, opacity: 0, immediateRender: false }, 0)
+    .fromTo('.o-pen-b p', { x: 0, opacity: 1 }, { x: out.replace('-', ''), opacity: 0, immediateRender: false }, 0)
+    .fromTo('.o-print .cover', { x: 0, xPercent: 0, yPercent: 101 }, { yPercent: 0, immediateRender: false }, 0)
+    .fromTo('.o-head', { opacity: 1 }, { opacity: 0, duration: 0.6, ease: 'none', immediateRender: false }, 0);
 }
 
 /**
- * 2. Medicine: each phrase with its own print. The print scrolls past with its phrase but a little
- * slower (LAG), develops as it comes up the screen, and has its caption written last. Nothing is
- * laid down or pinned: the pairs simply go by with the page.
+ * 2. Medicine: each phrase with its own print. The print is uncovered from its outer side as it
+ * comes up the screen (from the right when it sits on the right, and so on), develops, and has its
+ * caption written last. It moves with its phrase: nothing lags, drops in or is laid down.
  */
 function medicine(desktop: boolean) {
-  const lag = desktop ? LAG.desktop : LAG.mobile;
   for (const pair of $$('.medicine .pair')) {
     const print = $('.pp-in', pair);
     const pola = $('.pola', print);
-    gsap.fromTo(
-      print,
-      { y: () => -lag * window.innerHeight },
-      { y: () => lag * window.innerHeight, ease: 'none', scrollTrigger: { trigger: pair, start: 'top bottom', end: 'bottom top', scrub: true, invalidateOnRefresh: true } },
-    );
-    const tl = gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: print, start: 'top 95%', end: 'top 45%', scrub: true } });
-    tl.add(develop(pola, 0.8), 0);
-    write(tl, $$('.pen-cap .ch', pola), 0.65, 0.35);
+    // A print sits on the right on a desktop and on the left on a phone, the other way round in a
+    // flipped pair.
+    const right = desktop !== pair.classList.contains('flip');
+    const tl = scrubbed(print, PRINT_ZONE);
+    uncover(tl, print, right ? 'right' : 'left', 0, 0.45);
+    tl.add(develop(pola, 0.8), 0.1);
+    write(tl, $$('.pen-cap .ch', pola), 0.75, 0.25);
   }
 }
 
@@ -616,10 +681,11 @@ function lap(root: ParentNode) {
 }
 
 /**
- * 5. Eigen: the run club print develops and a lap is drawn round it; the workshop print comes in
- * with Max; then the dots: a face for the CPAP masks with their custom versions, and the
- * footprint. On a desktop the prints share one sticky picture and give way to the dots; on a phone
- * each has its own panel above its phrase, and the dots a canvas for each of their two stages.
+ * 5. Eigen: the run club print is uncovered, develops and has a lap drawn round it; at "where I met
+ * Max" it is wiped away as the workshop print is uncovered in its place, just as big; then that
+ * gives way to the dots: a face for the CPAP masks with their custom versions, and the footprint.
+ * On a desktop the prints share one sticky picture; on a phone each has its own panel above its
+ * phrase, uncovered from its side, and the dots a canvas for each of their two stages.
  */
 function eigen(desktop: boolean) {
   const scene = $('.eigen');
@@ -627,6 +693,7 @@ function eigen(desktop: boolean) {
     for (const shot of $$('.shot', scene)) {
       const tl = shotTimeline(shot);
       const pola = shot.querySelector('.pola');
+      if (pola) uncover(scrubbed(shot, zone.in), shot, shot.dataset.side === 'r' ? 'right' : 'left', 0, 1);
       if (shot.dataset.kind === 'run' && pola) {
         tl.add(develop(pola, 0.6), 0);
         write(tl, $$('.pen-cap .ch', pola), 0.45, 0.3);
@@ -669,16 +736,25 @@ function eigen(desktop: boolean) {
     onToggle: (self) => (self.isActive ? gsap.ticker.add(draw) : gsap.ticker.remove(draw)),
   });
 
-  // The run club print develops and the lap is drawn round it.
-  const first = cue('lap').add(develop(run, 0.6), 0);
-  write(first, $$('.pen-cap .ch', run), 0.45, 0.3);
+  // Each print is uncovered on its inner wrapper and covered up again on its outer one, so no
+  // element is driven by two scroll animations. The run club print comes in from the right,
+  // develops, and has its lap drawn round it.
+  const first = cue('lap');
+  wipeIn(first, $('.run-in', visual), 'right', PAD.lap, 0, 0.35);
+  first.add(develop(run, 0.6), 0.1);
+  write(first, $$('.pen-cap .ch', run), 0.5, 0.3);
   drawLap(first, 0.35, 0.65);
-  // The workshop print comes in where it lies, and develops.
-  cue('max').fromTo($('.work-in', visual), { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0).add(develop(work, 0.7), 0.3);
-  // The prints give way to the dots. Their children move, so nothing else drives those elements.
-  // A face gathers, and its mask flicks through the custom versions.
-  cue('masks')
-    .to($$('.run-in > *, .work-in > *', visual), { y: '-110vh', duration: 0.3, ease: 'power3.in', stagger: 0.04 }, 0)
+  // Where Max comes in, the run club print and its lap are wiped away to the left as the workshop
+  // print is uncovered from the right in the same place, and develops.
+  const max = cue('max');
+  wipeOut(max, $('.run', visual), 'left', PAD.lap, 0, 0.45);
+  wipeIn(max, $('.work-in', visual), 'right', PAD.print, 0, 0.45);
+  max.add(develop(work, 0.6), 0.2);
+  // The workshop print is wiped away upwards, and a face gathers from the dots, its mask flicking
+  // through the custom versions.
+  const masks = cue('masks');
+  wipeOut(masks, $('.work', visual), 'top', PAD.print, 0, 0.3);
+  masks
     .to(canvas, { opacity: 1, duration: 0.18 }, 0.2)
     .to(state, { gather: 1, duration: 0.4, ease: 'power2.out' }, 0.24)
     .to(state, { variant: 3, duration: 0.36 }, 0.64);
@@ -687,27 +763,22 @@ function eigen(desktop: boolean) {
 }
 
 /**
- * 6. Personal: one interest after another, zigzagging down the page. Each title is written as it
- * comes up, and each print develops as it comes up the screen, lagging its words a little, as in
- * Medicine.
+ * 6. Personal: one interest after another, zigzagging down the page. Its title, its line and its
+ * proof are wiped in as they come in, and each print is uncovered from the bottom and develops as it
+ * comes up the screen. The words and the prints move together with the page: nothing is sticky and
+ * nothing lags.
  */
-function personal(desktop: boolean) {
+function personal() {
   const scene = $('.personal');
-  const lag = (desktop ? LAG.desktop : LAG.mobile) * PRINT_LAG;
-  for (const h of $$('.t-text h3', scene)) {
-    write(gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: h, start: 'top 88%', end: 'top 62%', scrub: true } }), $$('.ch', h), 0, 1);
+  for (const el of $$('.p-intro .lead, .t-text h3, .t-text .love, .t-text .detail', scene)) {
+    wipeIn(scrubbed(el, zone.in), el, 'left', PAD.text, 0, 1);
   }
   for (const gp of $$('.gp', scene)) {
-    const inner = $('.gp-in', gp);
     const pola = $('.pola', gp);
-    gsap.fromTo(
-      inner,
-      { y: () => -lag * window.innerHeight },
-      { y: () => lag * window.innerHeight, ease: 'none', scrollTrigger: { trigger: gp, start: 'top bottom', end: 'bottom top', scrub: true, invalidateOnRefresh: true } },
-    );
-    const tl = gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: gp, start: 'top 95%', end: 'top 50%', scrub: true } });
-    tl.add(develop(pola, 0.8), 0);
-    write(tl, $$('.pen-cap .ch', pola), 0.65, 0.35);
+    const tl = scrubbed(gp, PRINT_ZONE);
+    uncover(tl, $('.gp-in', gp), 'bottom', 0, 0.45);
+    tl.add(develop(pola, 0.8), 0.1);
+    write(tl, $$('.pen-cap .ch', pola), 0.75, 0.25);
   }
 }
 

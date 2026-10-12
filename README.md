@@ -6,18 +6,22 @@ Pages at [tillfindl.com](https://tillfindl.com). The domain is registered on Clo
 One page in English (`/`) and German (`/de/`), told as scenes you scroll through, on white paper
 with everything written in ballpoint blue (Mynerve, in capitals) apart from the name and the one
 button. Scrolling is the browser's own, so the page always moves exactly with the finger. The words
-are short handwritten phrases with big and small words (`content/phrase.ts`). Medicine pairs each
-phrase with its own print, which scrolls past beside it a little slower than the words. On a wide
-screen the other scenes keep a picture in place beside the phrases, changing as each phrase is
-read. On a phone the page is a zigzag going down, Eigen's cued phrases each with its own picture
-above it, alternately left and right; the wards drawing stays near the top instead, and its
-phrases come up one at a time to rest beneath it while it animates. Every
-photo is a realistic instant print (`components/Polaroid.astro`) that comes out of a pen-sketched
-camera or develops from dark film. The wards and Bounceback are a pen drawing
-(`components/WardsDrawing.astro`): a doctor swamped by software windows, a patient who walks off,
-and the phone the windows are swept into. Eigen has the run club and workshop prints and a dot
-morph on a canvas, and Personal zigzags down the page, one interest at a time, before Contact.
-The opening plays on CSS alone, so it starts before the script arrives; after that GSAP
+are short handwritten phrases with big and small words (`content/phrase.ts`), set large, and each
+scene opens with its name written big. Everything is uncovered by wipes as it comes in at the
+bottom of the screen (words from the left, prints from their side as a paper cover slides off
+them), so it is whole by the time it is read. Medicine pairs each phrase with its own print. On a
+wide screen the other scenes keep a picture in place beside the phrases, changing as each phrase
+is read. On a phone the page is a zigzag going down, Eigen's cued phrases each with its own
+picture above it, alternately left and right; the wards drawing stays near the top instead, and
+its phrases come up one at a time to rest beneath it while it animates. Every photo is a
+realistic instant print (`components/Polaroid.astro`) that develops from dark film. The wards and
+Bounceback are a pen drawing (`components/WardsDrawing.astro`): a doctor swamped by software
+windows, a patient who walks off, and the phone the windows are swept into. Eigen has the run club
+print inside a running-track lap, then Max's workshop print in its place, and a dot morph on a
+canvas; Personal zigzags down the page, one interest at a time with its prints in an even grid,
+before Contact. The opening is the loading animation: the name, the portrait uncovered as it
+develops, and the note writing itself in. It plays on CSS alone, so it starts before the script
+arrives, and the first scroll clears it at once; after that GSAP
 ScrollTrigger ties everything to the scroll position, and on a desktop Lenis smooths the mouse wheel
 (it is never loaded on a touch screen). With reduced motion turned on, or without JavaScript, it
 reads as a plain page made from the same phrases. The fuller facts go to search engines (JSON-LD)

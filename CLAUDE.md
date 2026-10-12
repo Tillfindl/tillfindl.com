@@ -41,8 +41,8 @@ Till's choice, so never bring it back or keep anything in step with it.
   and the technical detail carry the weight; the words stay plain.
 - Write for a stranger or an AI assistant who has never heard of Till or Bounceback: explain
   what things are, in the order they happened, and let one sentence lead into the next. Say what
-  problem a thing was for (the wards' computers, home exercises in physio, CPAP masks that fit
-  badly and leak, running shoes picked by brand), plainly, then what it is.
+  problem a thing was for (the wards' computers, the many problems in physio, CPAP masks that
+  leak), plainly and briefly, then what it is.
 - Till's own register, not anyone else's: never imitate a reference site or author. Say what the
   thing is and the one or two details that are interesting in themselves, then stop. No lessons
   ("it taught me"), no rhetorical questions, no story arc, no feelings narrated, no lines that
@@ -51,47 +51,69 @@ Till's choice, so never bring it back or keep anything in step with it.
   Where Till has his own wording (the `till-voice` skill holds his product sentences), use it.
   When Till pushes back, change what he pointed at, proportionally; don't swing to the opposite.
 - The story, in order: the opening line (Till's own wording, keep it as written); Medicine (UCL,
-  the rotations, the elective); what annoyed him on every rotation, said plainly as to a friend,
-  leading into Bounceback (the team in Vienna, home exercises in physio, then what Bounceback is,
-  no feature list, no hardware); Eigen (the run club in Highbury, Max, the CPAP masks, the pivot,
-  what Eigen does, Till's part), kept short: a line for each, explaining only what a stranger needs,
-  by Till's choice; Personal; Contact. No dad, no dancing, Global Health not featured. State facts, never prove them (no test results, no counts
-  as a flex). Never call Till an engineer. "Dad", not "father". German says "Physios" and
+  the rotations at University College Hospital, the Whittington, Great Ormond Street, Queen Square
+  and Moorfields, never the Royal Free; the elective); what annoyed him on every rotation, said
+  plainly as to a friend, leading into Bounceback (the team in Vienna, why physio: it has so many
+  problems, in one short line, then what Bounceback is, no feature list, no hardware); Eigen (the
+  run club in Highbury, Max, the CPAP masks, the pivot, what Eigen does, Till's part), kept short:
+  a line for each, explaining only what a stranger needs, by Till's choice; Personal; Contact. No
+  dad, no dancing, Global Health not featured. State facts, never prove them (no test results, no
+  counts as a flex). Never call Till an engineer. "Dad", not "father". German says "Physios" and
   "Patienten", no ":innen" forms. Races are named, never timed. Words Till has ruled out: founder
   (as a label), doctor (as a label for himself), "building".
 - Personal is a set of `items`: a short title, one sentence on what Till likes about it, the proof
   in smaller writing where there is some (leave it out rather than list things), and its prints.
   The items zigzag down the page, words on one side and prints on the other, alternating; never a
-  sideways row. No "as a kid", no age-by-age storylines.
+  sideways row. The prints sit in an even grid of two with aligned rows (a wide print takes a
+  row), never staggered; the words and prints scroll together, nothing sticky and nothing lagging
+  (sticky words that rose and then travelled with the page felt wrong). No photos of family. No
+  "as a kid", no age-by-age storylines.
 - The look is white paper and ballpoint blue (`#2f3394`, Mynerve in capitals): all text is in the
   pen apart from "Till Findl" and the button, and illustrations are pen drawings
   (`WardsDrawing.astro`), never pop-ups or cards. Every photo is a realistic instant print at true
   proportions that develops from dark film: Polaroid 600 (88 × 107 mm frame, 79 mm square image),
   or a wide print (108 × 86 mm, 99 × 62 mm image) for group photos marked `wide`. Each print is its
   own stacking context (`isolation: isolate`), so its film layers never show through a print laid
-  over it. Never rotate photos, no cursor effects, no buttons or scroll hint in the hero. Captions
-  name a place or race only when it is certain. Reveal text by words, letters or phrases, never by
-  split lines. Keep designed lines short enough not to wrap on a desktop at any width (900 px up).
+  over it. Never rotate photos, no cursor effects, no buttons or scroll hint in the hero, and no
+  camera or other gadget in the opening. Captions name a place or race only when it is certain.
+  Type is large and pictures generous, by Till's choice: on a desktop the phrases are about 3vw,
+  the scene names (Medicine, Bounceback, Eigen, Personal, Contact) about 5.5vw with a pen line
+  under them, Personal's titles about 4vw; words and pictures sit in from the edges (`--inset`,
+  7vw), the phrase column about 43vw with the picture on the right, so nothing hugs the left edge.
+  Keep designed lines short enough not to wrap on a desktop at any width (900 px up); re-split a
+  line rather than shrink the type.
 - Motion: it has to feel smooth on a phone first. Scrolling is the browser's own and is never taken
   over: no automatic moves, no snapping, no touch listeners that are not passive (Lenis smooths the
-  wheel on a desktop only, `pointer: fine`). Every scroll animation is `scrub: true`, with no lag.
-  Medicine pairs each phrase with its own print, which scrolls with its phrase a little slower
-  (`LAG`) and develops as it comes up; nothing drops in or is laid down. On a desktop the wards,
-  Bounceback and Eigen are a sticky picture with the phrases scrolling past in the normal flow; a
+  wheel on a desktop only, `pointer: fine`). Every scroll animation is `scrub: true`, with no lag,
+  and words and pictures move together with the page; nothing lags its words. The motion is wipes
+  and reveals, varied but one family, and everything is uncovered while it comes in at the bottom
+  of the screen, whole by the time it is 20% up: never something to wait for. Lines are wiped in
+  from the left (on a desktop line by line, and wiped out to the right again near the top), the
+  scene names across their width with their pen line drawn after, prints uncovered from their
+  outer side (Personal's from the bottom) while they develop, and in Eigen one print is wiped away
+  as the next is uncovered. A print is uncovered by its paper cover sliding off (`.cover` in a
+  `.covered` wrapper, and the phone's phrases the same way): only the cover's position changes,
+  where a moving clip over a photo repaints it every frame and made the phone stutter; clip paths
+  are for words and small things. Medicine pairs each phrase with its own print. On a desktop the
+  wards, Bounceback and Eigen are a sticky picture with the phrases scrolling past in the normal
+  flow; a
   picture changes only while its phrase is being read (`data-cue` and `cue()`, a phrase's top from
   78% to 40% of the screen), never as soon as the phrase appears. On a phone only the wards drawing
   stays (see below). Both are built from the same ordered steps (`wardsSteps()`, the Eigen cues), so
-  the picture always matches its phrase. Sticky, never a pin. The opening holds briefly on a desktop
-  (a sticky stage, because a pin re-wraps the element and restarts its CSS animations) and not at
-  all on a phone, where the first swipe simply scrolls it away. Triggers are measured again when
-  the page's height really changes (`watchHeight()`), so a window resized after load never makes
-  a picture change for the wrong phrase. Per-phrase `space` gives a pause
+  the picture always matches its phrase. Sticky, never a pin. The opening is the loading animation,
+  on CSS alone so it starts before the script: the name rises in, the portrait is uncovered and
+  develops, and the note writes itself in, each letter fading over a long, overlapping time so a
+  soft edge runs through the words (no pen, no camera, no dots: Till wants it smooth). It never
+  holds: the first scroll clears it within a quarter screen (`OPENING_OUT`). Triggers are measured
+  again when the page's height really changes (`watchHeight()`), so a window resized after load
+  never makes a picture change for the wrong phrase. Per-phrase `space` gives a pause
   (`more`) or keeps a phrase with the next (`less`). Nothing that moves or changes while scrolling
   may use a live SVG filter, `mix-blend-mode` or an animated CSS `filter`: develop a print by
   fading plain layers (`.chem`, `.cast`, with `will-change: opacity`). Canvas drawing happens only
   when its picture changes. Photos are fetched and decoded in the background after the hero. No
-  element is driven by two scroll animations (use an inner wrapper, like `.phr-in`, `.pp-in` and
-  `.ph-o`), and when two close phrases change the same thing (the phone's screens), the later one
+  element is driven by two scroll animations (use an inner wrapper, like `.phr-in` and `.phr-w`,
+  `.run` and `.run-in`, and `.ph-o`), and when two close phrases change the same thing (the phone's
+  screens), the later one
   waits for the earlier to finish. Animate clip paths with explicit from and to values; don't
   animate x or y on an element centred with the CSS `translate` property, or opacity on an element
   with a CSS animation. Letters.astro's and phrase.ts's spans are reached only through `:global`.
@@ -99,8 +121,9 @@ Till's choice, so never bring it back or keep anything in step with it.
   swooshes with a blur (along the scroll on a desktop, a plain CSS blur on a phone).
 - On a phone the page is a zigzag going down, and nothing is cut off. Medicine and Eigen pair each
   cued phrase with its own picture just above it (`.shot`, chosen in `SHOTS`), alternately on the
-  left and the right: the run club print with its lap, the workshop print, and a canvas for each of
-  the dots' two stages. The wards and Bounceback are one drawing that animates as one, never a
+  left and the right: the run club print inside its lap, the workshop print, and a canvas for each
+  of the dots' two stages. The lap is a running-track loop drawn clear of the print on every side
+  (`TRACK`), never behind it. The wards and Bounceback are one drawing that animates as one, never a
   strip of repeated panels (Till found those popping up again and again): it scrolls in with its
   first phrase and stays near the top, and each phrase comes up with the finger and rests just
   beneath it (a sticky `.phr-in` inside its `.phr`, which is as tall as the phrase plus the stretch
@@ -112,7 +135,7 @@ Till's choice, so never bring it back or keep anything in step with it.
   drawing. Phrases are far apart (about a quarter of a screen), so they are read one at a
   time. A phrase reads as one sentence that wraps to the width (designed line breaks are for the
   desktop column), set from the left, with 20 px side margins. Reading text is at least 18 px
-  (phrases about 28 to 30 px, small words 0.72 of that, scene labels 18 px), and the longest big
+  (phrases about 28 to 30 px, small words 0.72 of that, scene names 11vw), and the longest big
   word must fit an indented line in both languages; make a long German word underlined rather than
   big. The phone's screens in the drawing are written large enough to read in a close-up.
 - Checks: jump to exact points (`window.__xp.scrollTo(y)`; `window.__xp.y` is where the page is)
@@ -129,8 +152,10 @@ Till's choice, so never bring it back or keep anything in step with it.
   from the paper), check there is no text under 18 px, nothing past the screen edges and no
   designed line wrapping on a desktop, that every phone screen in the drawing shows and never two
   at once in one drawing, and that the photos are loaded before they scroll in on a throttled
-  connection.
-  Time the opening from the self-contained preview too (about two seconds, playing once).
+  connection. Check that every wiped line, name and print is whole by the time it is 20% up from
+  the bottom, scrolling down in small steps as a reader does (big jumps can catch a wipe mid-way).
+  Time the opening from the self-contained preview too (about two seconds, playing once), and its
+  frames at exact moments (pause the CSS animations and set their time) to see the writing flow.
 - Comments explain intent and the non-obvious, in full sentences, British spelling. Don't narrate.
 - `README.md` stays current in the same commit as the change it describes.
 - `public/CNAME` must keep holding `tillfindl.com`, or the custom domain drops off on deploy.
