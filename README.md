@@ -9,8 +9,9 @@ button. Scrolling is the browser's own, so the page always moves exactly with th
 are short handwritten phrases with big and small words (`content/phrase.ts`). Medicine pairs each
 phrase with its own print, which scrolls past beside it a little slower than the words. On a wide
 screen the other scenes keep a picture in place beside the phrases, changing as each phrase is
-read. On a phone nothing stays put: the page is a zigzag going down, each cued phrase with its own
-picture above it, alternately left and right, so the drawing reads as a strip of pen panels. Every
+read. On a phone the page is a zigzag going down, Eigen's cued phrases each with its own picture
+above it, alternately left and right; the wards drawing stays near the top instead, and its
+phrases come up one at a time to rest beneath it while it animates. Every
 photo is a realistic instant print (`components/Polaroid.astro`) that comes out of a pen-sketched
 camera or develops from dark film. The wards and Bounceback are a pen drawing
 (`components/WardsDrawing.astro`): a doctor swamped by software windows, a patient who walks off,

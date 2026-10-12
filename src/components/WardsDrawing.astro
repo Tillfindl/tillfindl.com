@@ -7,19 +7,13 @@
 //
 // Nothing here uses an SVG filter: a live filter is redrawn on every frame the drawing moves, which
 // is what made scrolling past it stutter on a phone. The glow is two wide, faint strokes instead.
-// Nothing has an id either, so the drawing can appear several times on a page: on a phone it is a
-// strip of panels, one per phrase, and the close-ups of the phone (`view="phone"`) crop to it.
 import { page, type Lang } from '../content/profile';
 
 interface Props {
   lang: Lang;
-  /** The whole drawing, or a close-up of the phone. */
-  view?: 'all' | 'phone';
 }
 
-const { lang, view = 'all' } = Astro.props;
-/** The phone's rectangle with a little margin, for the close-ups. */
-const VIEWS = { all: '0 0 560 520', phone: '196 96 168 320' };
+const { lang } = Astro.props;
 const x = page;
 const up = (s: string) => s.toUpperCase();
 
@@ -94,7 +88,7 @@ const noteTop = 146 + (note.length - 1) * 16 + 26;
 const noteY = (entry: number) => noteTop + noteRow++ * 14 + entry * 8;
 ---
 
-<svg class:list={['drawing', view]} viewBox={VIEWS[view]} aria-hidden="true">
+<svg class="drawing" viewBox="0 0 560 520" aria-hidden="true">
   <!-- The connection, behind everything: a soft glow (a wide and a wider faint stroke) and the pen line itself. -->
   <g class="link">
     <path class="link-glow wide" pathLength="1" d="M236 318 C268 296 302 296 334 318"></path>

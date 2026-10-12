@@ -8,11 +8,11 @@
  * Every animation is tied straight to the scroll position (scrub: true), with no lag. The words are
  * in the normal page flow and move with the page. In Medicine each phrase has its own print beside
  * it, which scrolls past a little slower than the words. On a desktop the wards, Bounceback and Eigen
- * are a sticky picture that changes only while one of its phrases passes it (a "cue"). On a phone
- * nothing is sticky: each cued phrase has its own panel above it (a "shot"), which starts where the
- * panel before it ended and plays that phrase's step as it comes up the screen. Both are built from
- * the same steps. Personal zigzags down the page, its prints developing as they come up. Scrolling
- * back plays it all in reverse.
+ * are a sticky picture that changes only while one of its phrases passes it (a "cue"). On a phone the
+ * wards drawing stays too, near the top, and each phrase comes up to rest just under it, fading as
+ * the next arrives, while Eigen's cued phrases each have their own panel above them (a "shot"),
+ * playing that phrase's step as it comes up the screen. Personal zigzags down the page, its prints
+ * developing as they come up. Scrolling back plays it all in reverse.
  *
  * The hero plays on CSS and needs nothing from here until you scroll. Nothing is rotated. With
  * reduced motion nothing here runs and the page reads as a plain page.
@@ -43,10 +43,22 @@ const ZONES: { desktop: { in: Range; out: Range; line: Range; cue: Range }; mobi
   mobile: { line: ['top 92%', 'top 72%'] },
 };
 /**
- * On a phone, the stretch over which a panel plays its step: from when it is half on screen until
- * its middle reaches the middle of the screen, so it has finished by the time its phrase is read.
+ * On a phone, the stretch over which an Eigen panel plays its step: from when it is half on screen
+ * until its middle reaches the middle of the screen, so it has finished by the time its phrase is read.
  */
 const SHOT_ZONE: Range = ['center 85%', 'center 45%'];
+/**
+ * On a phone, the stretch over which a phrase of the wards and Bounceback plays its step in the
+ * drawing: from when it has come this far up the screen (the phrase before it has faded by then)
+ * until it has rested under the drawing for this much more scrolling, in screen heights.
+ */
+const REST_FROM = 'top 68%';
+const REST_AFTER = 0.12;
+/**
+ * How close the next phrase comes below a resting one (in screen heights) as that one fades: it
+ * starts fading at the first distance and has gone by the second.
+ */
+const REST_FADE = [0.2, 0.04] as const;
 /**
  * How far a Medicine print lags its phrase, in screen heights either way: it starts this much
  * higher and ends this much lower, so it moves a little slower than the words. Less on a phone,
@@ -69,6 +81,8 @@ const PEN_RGB = '47 51 148';
 /* Points in the wards drawing (WardsDrawing.astro), in its 560 × 520 units. */
 /** Where the windows are swept to: the middle of the phone. */
 const PHONE_CENTRE = { x: 280, y: 256 };
+/** The phone's top and height with a little margin, which the phone's close-up fits. */
+const PHONE_BOX = { top: 96, height: 320 };
 /** The connection's two ends: the doctor's side and the patient's. */
 const LINK_FROM = { x: 236, y: 318 };
 const LINK_TO = { x: 334, y: 318 };
@@ -264,24 +278,30 @@ function cue(name: string) {
   return gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: phrase, start, end, scrub: true } });
 }
 
+/** Where a phrase that rests under a picture on a phone comes to rest: its sticky top, in pixels. */
+const restLine = (inner: Element) => parseFloat(getComputedStyle(inner).top);
+
+/**
+ * On a phone, a timeline scrubbed while `name`'s phrase comes up to rest under the picture
+ * (REST_FROM, REST_AFTER). The phrase's own box (`.phr`) is the trigger, never its sticky inner
+ * part, whose place depends on the scroll.
+ */
+function restCue(name: string) {
+  const phrase = $(`.phr[data-cue="${name}"]`);
+  if (!phrase) throw new Error(`No phrase for cue "${name}"`);
+  const inner = $('.phr-in', phrase);
+  return gsap.timeline({
+    defaults: { ease: 'none' },
+    scrollTrigger: { trigger: phrase, start: REST_FROM, end: () => `top ${restLine(inner) - REST_AFTER * window.innerHeight}px`, scrub: true },
+  });
+}
+
 /** On a phone, a timeline scrubbed while the panel `shot` comes up the screen (SHOT_ZONE). */
 const shotTimeline = (shot: Element) =>
   gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: shot, start: SHOT_ZONE[0], end: SHOT_ZONE[1], scrub: true } });
 
 /** One step of a picture: its name (the cue of the phrase it goes with) and what it adds to a timeline. */
 type Step = [name: string, build: (tl: gsap.core.Timeline) => void];
-
-/**
- * Applies `steps` at once, as if they had played: on a phone, each panel starts where the panel
- * before it ended.
- */
-function settle(steps: Step[]) {
-  for (const [, build] of steps) {
-    const done = gsap.timeline({ paused: true, defaults: { ease: 'none' } });
-    build(done);
-    done.progress(1);
-  }
-}
 
 /** Writes letters between `at` and `at + dur`, one after another, as a pen would. */
 function write(tl: gsap.core.Timeline, chars: Element[], at: number, dur: number) {
@@ -415,9 +435,10 @@ function medicine(desktop: boolean) {
  * The wards drawing inside `root`, readied to be drawn on, and the steps that move it on, in order:
  * the doctor and the patient are drawn, joined by a glowing line; the windows pile up around the
  * doctor; the patient walks off; the line loses its glow and breaks; the windows are swept into a
- * phone (closing in on it by `zoom`); and Bounceback plays on its screens.
+ * phone and the drawing closes in on it (by `zoom.scale`, about `zoom.origin`); and Bounceback plays
+ * on its screens.
  */
-function wardsSteps(root: ParentNode, zoom: number): Step[] {
+function wardsSteps(root: ParentNode, zoom: { scale: number; origin: string }): Step[] {
   const drawing = $<SVGSVGElement>('.drawing', root);
   const figures = $$('.doctor .draw, .patient .draw', drawing);
   const people = $$('.doctor, .patient, .link', drawing);
@@ -504,13 +525,7 @@ function wardsSteps(root: ParentNode, zoom: number): Step[] {
         });
         tl.to(people, { opacity: 0, duration: 0.35 }, 0);
         drawOn(tl, phone, 0.35, 0.45);
-        if (zoom !== 1) {
-          tl.to(
-            drawing,
-            { scale: zoom, transformOrigin: `${(PHONE_CENTRE.x / 560) * 100}% ${(PHONE_CENTRE.y / 520) * 100}%`, duration: 0.5, ease: 'power2.inOut' },
-            0.45,
-          );
-        }
+        tl.to(drawing, { scale: zoom.scale, transformOrigin: zoom.origin, duration: 0.5, ease: 'power2.inOut' }, 0.45);
       },
     ],
     // "and we started with physio, where recovery depends on the exercises patients do at home.":
@@ -526,7 +541,7 @@ function wardsSteps(root: ParentNode, zoom: number): Step[] {
           { opacity: 0.2, duration: 0.035, yoyo: true, repeat: 5 },
           0.44,
         );
-        swap(tl, 1, 2, 0.7);
+        swap(tl, 1, 2, 0.8);
       },
     ],
     [
@@ -541,35 +556,42 @@ function wardsSteps(root: ParentNode, zoom: number): Step[] {
 }
 
 /**
- * 3 and 4. The wards and Bounceback, as a pen drawing. On a desktop it is one sticky drawing: the
- * people are drawn as the scene comes in, and each phrase plays its step as it is read. On a phone
- * each cued phrase has its own panel: the drawing as the panel before it left it (the earlier steps
- * applied at once), playing its own step as it comes up; the first panel draws the people too.
+ * 3 and 4. The wards and Bounceback, as one pen drawing that stays in place while its phrases pass.
+ * The people are drawn as the scene comes in, and each phrase plays its step: on a desktop while it
+ * is read beside the drawing, on a phone as it comes up to rest beneath it. On a phone the phrase
+ * resting there fades as the next one closes on it, so only one is read at a time and none ever
+ * passes under the drawing; there the drawing closes in further on its phone, which then reaches a
+ * little below it (`--phone-fill`), and Bounceback's phrases rest that much lower.
  */
 function care(desktop: boolean) {
   const scene = $('.care');
+  const visual = $('.visual', scene);
+  const enter = (end: string) =>
+    gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: scene, start: 'top 92%', end, scrub: true } });
   if (desktop) {
-    for (const [name, build] of wardsSteps($('.visual', scene), PHONE_ZOOM)) {
-      build(
-        name === 'enter'
-          ? gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: scene, start: 'top 92%', end: 'top 12%', scrub: true } })
-          : cue(name),
-      );
-    }
+    const zoom = { scale: PHONE_ZOOM, origin: `${(PHONE_CENTRE.x / 560) * 100}% ${(PHONE_CENTRE.y / 520) * 100}%` };
+    for (const [name, build] of wardsSteps(visual, zoom)) build(name === 'enter' ? enter('top 12%') : cue(name));
     return;
   }
-  for (const shot of $$('.shot', scene)) {
-    const steps = wardsSteps(shot, 1);
-    const own = steps.findIndex(([name]) => name === shot.dataset.cue);
-    const first = steps[own - 1]?.[0] === 'enter' ? own - 1 : own;
-    settle(steps.slice(0, first));
-    const tl = shotTimeline(shot);
-    steps.slice(first, own + 1).forEach(([, build], i) => {
-      const part = gsap.timeline({ defaults: { ease: 'none' } });
-      build(part);
-      tl.add(part, i);
-    });
-  }
+  // The phone fills `fill` times the drawing's height, its top staying at the drawing's top: the
+  // origin is the point a scale about which leaves the phone's top edge where the drawing's is.
+  const fill = parseFloat(getComputedStyle(scene).getPropertyValue('--phone-fill')) || 1;
+  const scale = (fill * 520) / PHONE_BOX.height;
+  const originY = (PHONE_BOX.top * scale) / (scale - 1);
+  const zoom = { scale, origin: `${(PHONE_CENTRE.x / 560) * 100}% ${(originY / 520) * 100}%` };
+  for (const [name, build] of wardsSteps(visual, zoom)) build(name === 'enter' ? enter('top 40%') : restCue(name));
+
+  const slots = $$('.script .phr', scene);
+  slots.slice(0, -1).forEach((slot, i) => {
+    const inner = $('.phr-in', slot);
+    // Measured from where the phrase rests: its sticky top plus its height.
+    const at = (k: number) => () => `top ${restLine(inner) + inner.offsetHeight + k * window.innerHeight}px`;
+    gsap.fromTo(
+      inner,
+      { opacity: 1 },
+      { opacity: 0, ease: 'none', scrollTrigger: { trigger: slots[i + 1], start: at(REST_FADE[0]), end: at(REST_FADE[1]), scrub: true } },
+    );
+  });
 }
 
 /** Readies the lap round the run club print in `root`, and returns the step that draws it, with its runner. */
@@ -595,9 +617,9 @@ function lap(root: ParentNode) {
 
 /**
  * 5. Eigen: the run club print develops and a lap is drawn round it; the workshop print comes in
- * with Max; then the dots: a face for the CPAP masks, the custom versions, and the footprint. On a
- * desktop the prints share one sticky picture and give way to the dots; on a phone each has its own
- * panel above its phrase, and each stage of the dots its own canvas.
+ * with Max; then the dots: a face for the CPAP masks with their custom versions, and the
+ * footprint. On a desktop the prints share one sticky picture and give way to the dots; on a phone
+ * each has its own panel above its phrase, and the dots a canvas for each of their two stages.
  */
 function eigen(desktop: boolean) {
   const scene = $('.eigen');
@@ -613,13 +635,14 @@ function eigen(desktop: boolean) {
         tl.add(develop(pola, 1), 0);
       } else if (shot.dataset.kind === 'dots') {
         const dots = dotsFor($<HTMLCanvasElement>('canvas', shot), DOTS.mobile);
-        const name = shot.dataset.cue;
-        const state = { gather: name === 'masks' ? 0 : 1, variant: name === 'pivot' ? 3 : 0, morph: 0 };
+        const masks = shot.dataset.cue === 'masks';
+        const state = { gather: masks ? 0 : 1, variant: masks ? 0 : 3, morph: 0 };
         const draw = () => dots.draw(state);
         draw();
-        if (name === 'masks') tl.to(state, { gather: 1, duration: 1, ease: 'power2.out', onUpdate: draw }, 0);
-        if (name === 'iterate') tl.to(state, { variant: 3, duration: 1, onUpdate: draw }, 0);
-        if (name === 'pivot') tl.to(state, { morph: 1, duration: 1, ease: 'power1.inOut', onUpdate: draw }, 0);
+        // The face gathers and its mask flicks through the custom versions; then, on the pivot, the
+        // face streams into a footprint.
+        if (masks) tl.to(state, { gather: 1, duration: 0.55, ease: 'power2.out', onUpdate: draw }, 0).to(state, { variant: 3, duration: 0.45, onUpdate: draw }, 0.55);
+        else tl.to(state, { morph: 1, duration: 1, ease: 'power1.inOut', onUpdate: draw }, 0);
       }
     }
     return;
@@ -646,18 +669,20 @@ function eigen(desktop: boolean) {
     onToggle: (self) => (self.isActive ? gsap.ticker.add(draw) : gsap.ticker.remove(draw)),
   });
 
-  const first = cue('eigen-1').add(develop(run, 0.8), 0);
-  write(first, $$('.pen-cap .ch', run), 0.6, 0.4);
-  drawLap(cue('lap'), 0, 1);
+  // The run club print develops and the lap is drawn round it.
+  const first = cue('lap').add(develop(run, 0.6), 0);
+  write(first, $$('.pen-cap .ch', run), 0.45, 0.3);
+  drawLap(first, 0.35, 0.65);
   // The workshop print comes in where it lies, and develops.
   cue('max').fromTo($('.work-in', visual), { opacity: 0 }, { opacity: 1, duration: 0.3 }, 0).add(develop(work, 0.7), 0.3);
   // The prints give way to the dots. Their children move, so nothing else drives those elements.
+  // A face gathers, and its mask flicks through the custom versions.
   cue('masks')
-    .to($$('.run-in > *, .work-in > *', visual), { y: '-110vh', duration: 0.45, ease: 'power3.in', stagger: 0.05 }, 0)
-    .to(canvas, { opacity: 1, duration: 0.25 }, 0.3)
-    .to(state, { gather: 1, duration: 0.6, ease: 'power2.out' }, 0.35);
-  // Quick iterations: the mask flicks through its versions. Then the pivot: the face streams into a footprint.
-  cue('iterate').to(state, { variant: 3, duration: 1 }, 0);
+    .to($$('.run-in > *, .work-in > *', visual), { y: '-110vh', duration: 0.3, ease: 'power3.in', stagger: 0.04 }, 0)
+    .to(canvas, { opacity: 1, duration: 0.18 }, 0.2)
+    .to(state, { gather: 1, duration: 0.4, ease: 'power2.out' }, 0.24)
+    .to(state, { variant: 3, duration: 0.36 }, 0.64);
+  // The pivot: the face streams into a footprint.
   cue('pivot').to(state, { morph: 1, duration: 1, ease: 'power1.inOut' }, 0);
 }
 

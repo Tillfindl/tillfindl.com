@@ -216,37 +216,31 @@ export const page = {
     ],
     eigen: [
       {
-        cue: 'eigen-1',
-        t: { en: 'In London / I kept ^starting^ things.', de: 'In London habe ich / ständig etwas ^Neues^ / angefangen.' },
-      },
-      {
         cue: 'lap',
-        space: 'more',
-        t: { en: 'For two years I hosted / _a_ ^Sunday run club^ / in Highbury.', de: 'Zwei Jahre lang / habe ich in Highbury / _einen_ ^Sonntagslauf^ / organisiert.' },
+        t: { en: 'In London I hosted / _a_ ^Sunday run club^ / in Highbury,', de: 'In London / habe ich in Highbury / _einen_ ^Sonntagslauf^ / organisiert,' },
       },
-      { space: 'less', t: { en: 'Some of my best friends / came from it,', de: 'Einige meiner / besten Freunde / kommen von dort,' } },
       {
         cue: 'max',
-        t: { en: '_and so did_ ^Max^, / a robotics engineer / from ETH Zurich.', de: '_und auch_ ^Max^, / Robotikingenieur / von der ETH Zürich.' },
+        t: {
+          en: '_where I met_ ^Max^, / a robotics engineer / from ETH Zurich.',
+          de: '_wo ich_ ^Max^ / _kennengelernt habe_, / einen Robotikingenieur / von der ETH Zürich.',
+        },
       },
       {
         cue: 'masks',
-        t: { en: 'Our first project together / was ^CPAP masks^ / for sleep apnoea.', de: 'Unser erstes / gemeinsames Projekt / waren ^CPAP-Masken^ / gegen Schlafapnoe.' },
-      },
-      {
-        cue: 'iterate',
         t: {
-          en: 'Standard masks / often fit badly and ~leak~, / so we 3D-printed / ^custom^ ones / from a face scan / on a phone.',
-          de: 'Standardmasken / sitzen oft schlecht / und sind ~undicht~, / also haben wir / ~maßgefertigte~ / aus einem Gesichtsscan / am Handy 3D-gedruckt.',
+          en: 'Our first project / was ^CPAP masks^ / for sleep apnoea, / 3D-printed / from a face scan / so they wouldn’t ~leak~.',
+          de: 'Unser erstes Projekt / waren ^CPAP-Masken^ / gegen Schlafapnoe, / nach einem Gesichtsscan / 3D-gedruckt, / damit sie ~dicht~ sitzen.',
         },
       },
-      { cue: 'pivot', t: { en: 'Then we ^pivoted^ / to running,', de: 'Dann haben wir auf Laufen / ^umgeschwenkt^,' } },
-      { t: { en: '_and that became_ ^Eigen^.', de: '_und daraus wurde_ ^Eigen^.' } },
-      { t: { en: 'It looks at / how someone / ~actually runs~:', de: 'Eigen schaut, / wie jemand / ~wirklich läuft~:' } },
+      {
+        cue: 'pivot',
+        t: { en: 'Then we ^pivoted^ / to running, / _and that became_ ^Eigen^.', de: 'Dann haben wir / auf Laufen / ~umgeschwenkt~, / _und daraus wurde_ ^Eigen^.' },
+      },
       {
         t: {
-          en: 'a 3D foot scan / and a short / running video, / matched to the shoes / that suit them.',
-          de: 'ein 3D-Fußscan / und ein kurzes / Laufvideo, / abgeglichen / mit den Schuhen, / die dazu passen.',
+          en: 'From a 3D foot scan / and a short running video, / it finds the shoes / that suit how someone ~runs~.',
+          de: 'Aus einem 3D-Fußscan / und einem kurzen Laufvideo / findet Eigen die Schuhe, / die zum ~Laufstil~ passen.',
         },
       },
       {

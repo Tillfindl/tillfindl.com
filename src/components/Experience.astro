@@ -8,9 +8,10 @@
 // exactly with the reader's finger. Medicine pairs every phrase with its own print, which scrolls
 // past beside it (above it on a phone), a little slower than the words. On a wide screen the other
 // scenes are a picture that stays in place (a sticky `.visual`) with the phrases passing to its left
-// (`.script`), each phrase setting the picture moving as it is read. On a phone nothing stays put:
-// each cued phrase has its own picture just above it (a `.shot`), alternately left and right, so the
-// page zigzags down and words and pictures never overlap. Personal zigzags the same way on both.
+// (`.script`), each phrase setting the picture moving as it is read. On a phone the wards drawing
+// stays in place too, near the top, and its phrases come up one at a time to rest beneath it; Eigen's
+// cued phrases each have their own picture just above it (a `.shot`), alternately left and right, so
+// the page zigzags down and words and pictures never overlap. Personal zigzags the same way on both.
 // The hero plays on CSS alone, so it starts before the script loads. Without JavaScript, or with
 // reduced motion, it reads as a plain page (`.plain`) made from the same phrases: the staged layout
 // only applies under `.js` and `prefers-reduced-motion: no-preference`.
@@ -46,24 +47,13 @@ const introB = introRest.join(' ');
 const PLACES = ['l', 'i', 'r', 'i'] as const;
 
 /**
- * On a phone, the picture that goes above each cued phrase (`.shot`), so the wards and Bounceback
- * read as a strip of pen panels and Eigen as a row of prints and dots: the whole drawing, a close-up
- * of its phone, the run club print with its lap, the workshop print, or the dots.
+ * On a phone, the picture that goes above each of Eigen's cued phrases (`.shot`): the run club print
+ * with its lap, the workshop print, or the dots. (The wards drawing stays in place instead.)
  */
-const SHOTS: Record<string, 'drawing' | 'phone' | 'run' | 'work' | 'dots'> = {
-  'wards-1': 'drawing',
-  'wards-2': 'drawing',
-  'wards-3': 'drawing',
-  leave: 'drawing',
-  break: 'drawing',
-  sweep: 'drawing',
-  home: 'phone',
-  'screens-a': 'phone',
-  'screens-b': 'phone',
+const SHOTS: Record<string, 'run' | 'work' | 'dots'> = {
   lap: 'run',
   max: 'work',
   masks: 'dots',
-  iterate: 'dots',
   pivot: 'dots',
 };
 /** The shots alternate sides down the page, starting on the left. */
@@ -202,16 +192,9 @@ const CROP: Record<string, string> = {
                   <span class="phr-in">{sections.bounceback[lang]}</span>
                 </h2>
               ) : (
-                <>
-                  {p.cue && SHOTS[p.cue] && (
-                    <div class="shot" data-cue={p.cue} data-kind={SHOTS[p.cue]} data-side={nextSide()}>
-                      <WardsDrawing lang={lang} view={SHOTS[p.cue] === 'phone' ? 'phone' : 'all'} />
-                    </div>
-                  )}
-                  <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]} data-space={p.space}>
-                    <p class="phr-in" set:html={phraseHtml(p.t[lang])} />
-                  </div>
-                </>
+                <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]} data-space={p.space}>
+                  <p class="phr-in" set:html={phraseHtml(p.t[lang])} />
+                </div>
               ),
             )
           }
@@ -1199,10 +1182,11 @@ const CROP: Record<string, string> = {
 
     /*
      * ----- Phones and narrow tablets -----
-     * Nothing is sticky: the page is a zigzag of pictures and phrases going down. Medicine pairs each
-     * phrase with its print; the wards and Bounceback are a strip of pen panels and Eigen a row of
-     * prints and dots, each panel above its phrase (`.shot`) and alternately on the left and the
-     * right. The phrases are well apart, so they are read one at a time.
+     * The page is a zigzag of pictures and phrases going down. Medicine pairs each phrase with its
+     * print, and Eigen has its prints and dots, each panel above its phrase (`.shot`) and
+     * alternately on the left and the right. The wards and Bounceback are one drawing that stays near
+     * the top while its phrases come to rest beneath it, one at a time. The phrases are well apart,
+     * so they are read one at a time.
      */
 
     @media (max-width: 51.99rem) {
@@ -1217,10 +1201,8 @@ const CROP: Record<string, string> = {
         --p-bottom: 14svh;
         /* As big as the longest big word ("biomechanics") allows on an indented line. */
         --big: 1.34;
-        /* The pictures: Medicine's prints, the pen panels, the phone close-ups, and the prints and dots. */
+        /* The pictures: Medicine's prints, and Eigen's prints and dots. */
         --med-w: 62vw;
-        --panel-w: 80vw;
-        --phone-w: 50vw;
         --shot-w: 62vw;
         --pairs-top: 10svh;
         --pair-gap: 22svh;
@@ -1264,8 +1246,7 @@ const CROP: Record<string, string> = {
         top: calc(49% + var(--pw) * 0.608 + 1.25rem);
       }
 
-      /* The desktop's sticky pictures give way to the panels in the script. */
-      :global(.js) .care .visual,
+      /* Eigen's sticky picture gives way to the panels in its script. */
       :global(.js) .eigen .visual {
         display: none;
       }
@@ -1273,6 +1254,76 @@ const CROP: Record<string, string> = {
       :global(.js) .script {
         width: auto;
         margin: 0 var(--side);
+      }
+
+      /*
+       * The wards and Bounceback: the drawing stays near the top while its phrases come up one at a
+       * time and rest just beneath it, each fading as the next arrives (the script does that), so no
+       * phrase ever passes under the drawing. Each phrase is a box (.phr) as tall as the phrase plus
+       * the stretch it rests for, and its inner part sticks at the resting line within it.
+       */
+      :global(.js) .care {
+        /* The drawing's width (its height, --band, follows), and how far down it sits, clear of the name. */
+        --dw: min(100vw - 2 * var(--side), 40svh * 560 / 520);
+        --band: calc(var(--dw) * 520 / 560);
+        --band-top: 3.75rem;
+        /* How much of the drawing's height its phone fills once the drawing has closed in on it. */
+        --phone-fill: 1.17;
+        /* Where a phrase rests: just under the drawing, and from Bounceback on under the bigger phone. */
+        --dock: calc(var(--band-top) + var(--band) + var(--s-6));
+        --dock-b: calc(var(--dock) + var(--band) * (var(--phone-fill) - 1));
+        /* How far the page scrolls while a phrase rests, before the next one comes up to it. */
+        --dwell: 44svh;
+        /* The last line's height (the link, on one line), so it leaves together with the drawing. */
+        --last-h: calc(var(--phr-size) * 1.18);
+      }
+
+      /* Clipped to the screen, so the windows swept to the phone never reach past its edges. */
+      :global(.js) .care .v-in {
+        overflow: clip;
+      }
+
+      :global(.js) .care .draw-wrap {
+        top: var(--band-top);
+        right: auto;
+        left: 50%;
+        width: var(--dw);
+        translate: -50% 0;
+      }
+
+      /*
+       * Pulled up over the drawing, with the first phrase at the resting line, so the two stop
+       * together; the room after the last phrase lets it leave together with the drawing.
+       */
+      :global(.js) .care .script {
+        margin: calc(-1 * var(--stage)) var(--side) 0;
+        padding: var(--dock) 0 calc(var(--stage) - var(--dock-b) - var(--last-h));
+      }
+
+      :global(.js) .care .phr,
+      :global(.js) .care .script .label {
+        margin: 0;
+      }
+
+      :global(.js) .care .phr-in {
+        position: sticky;
+        top: var(--dock);
+      }
+
+      :global(.js) .care .script .label .phr-in,
+      :global(.js) .care .script .label ~ .phr .phr-in {
+        top: var(--dock-b);
+      }
+
+      :global(.js) .care .phr::after {
+        content: '';
+        display: block;
+        height: var(--dwell);
+      }
+
+      /* Bounceback's name rests only briefly before its first phrase. */
+      :global(.js) .care .script .label::after {
+        height: calc(var(--dwell) * 0.4);
       }
 
       /*
@@ -1320,18 +1371,6 @@ const CROP: Record<string, string> = {
 
       :global(.js) .shot[data-side='r'] {
         margin-left: auto;
-      }
-
-      :global(.js) .shot[data-kind='drawing'] {
-        width: var(--panel-w);
-      }
-
-      :global(.js) .shot[data-kind='phone'] {
-        width: var(--phone-w);
-      }
-
-      :global(.js) .shot :global(.drawing) {
-        overflow: hidden;
       }
 
       /* The lap runs round the print (it is 160% as wide), so the print sits inside the lap's room. */

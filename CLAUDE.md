@@ -53,9 +53,9 @@ Till's choice, so never bring it back or keep anything in step with it.
 - The story, in order: the opening line (Till's own wording, keep it as written); Medicine (UCL,
   the rotations, the elective); what annoyed him on every rotation, said plainly as to a friend,
   leading into Bounceback (the team in Vienna, home exercises in physio, then what Bounceback is,
-  no feature list, no hardware); Eigen (starting things in London, the Highbury run club, Max, the
-  CPAP masks, the pivot, what Eigen does, Till's part); Personal; Contact. No dad, no
-  dancing, Global Health not featured. State facts, never prove them (no test results, no counts
+  no feature list, no hardware); Eigen (the run club in Highbury, Max, the CPAP masks, the pivot,
+  what Eigen does, Till's part), kept short: a line for each, explaining only what a stranger needs,
+  by Till's choice; Personal; Contact. No dad, no dancing, Global Health not featured. State facts, never prove them (no test results, no counts
   as a flex). Never call Till an engineer. "Dad", not "father". German says "Physios" and
   "Patienten", no ":innen" forms. Races are named, never timed. Words Till has ruled out: founder
   (as a label), doctor (as a label for himself), "building".
@@ -79,9 +79,9 @@ Till's choice, so never bring it back or keep anything in step with it.
   (`LAG`) and develops as it comes up; nothing drops in or is laid down. On a desktop the wards,
   Bounceback and Eigen are a sticky picture with the phrases scrolling past in the normal flow; a
   picture changes only while its phrase is being read (`data-cue` and `cue()`, a phrase's top from
-  78% to 40% of the screen), never as soon as the phrase appears. On a phone nothing is sticky (see
-  below). Both are built from the same ordered steps (`wardsSteps()`, the Eigen cues), so the
-  picture always matches its phrase. Sticky, never a pin. The opening holds briefly on a desktop
+  78% to 40% of the screen), never as soon as the phrase appears. On a phone only the wards drawing
+  stays (see below). Both are built from the same ordered steps (`wardsSteps()`, the Eigen cues), so
+  the picture always matches its phrase. Sticky, never a pin. The opening holds briefly on a desktop
   (a sticky stage, because a pin re-wraps the element and restarts its CSS animations) and not at
   all on a phone, where the first swipe simply scrolls it away. Triggers are measured again when
   the page's height really changes (`watchHeight()`), so a window resized after load never makes
@@ -97,13 +97,19 @@ Till's choice, so never bring it back or keep anything in step with it.
   with a CSS animation. Letters.astro's and phrase.ts's spans are reached only through `:global`.
   Pen strokes that draw on use `pathLength="1"` and a gap longer than the stroke. Back to top
   swooshes with a blur (along the scroll on a desktop, a plain CSS blur on a phone).
-- On a phone the page is a zigzag going down, and nothing is sticky or cut off: every cued phrase
-  has its own picture just above it (`.shot`, chosen in `SHOTS`), alternately on the left and the
-  right. The wards and Bounceback are a strip of pen panels (the whole drawing, then close-ups
-  cropped to its phone, `view="phone"`); Eigen has the run club print with its lap, the workshop
-  print and a canvas for each stage of the dots. Each panel starts where the one before it ended
-  (`settle()`) and plays only its own step as it comes up the screen, finished by the time its
-  phrase is read. Phrases are far apart (about a quarter of a screen), so they are read one at a
+- On a phone the page is a zigzag going down, and nothing is cut off. Medicine and Eigen pair each
+  cued phrase with its own picture just above it (`.shot`, chosen in `SHOTS`), alternately on the
+  left and the right: the run club print with its lap, the workshop print, and a canvas for each of
+  the dots' two stages. The wards and Bounceback are one drawing that animates as one, never a
+  strip of repeated panels (Till found those popping up again and again): it scrolls in with its
+  first phrase and stays near the top, and each phrase comes up with the finger and rests just
+  beneath it (a sticky `.phr-in` inside its `.phr`, which is as tall as the phrase plus the stretch
+  it rests for), fading as the next one closes on it, so one is read at a time and none ever
+  passes under the drawing (a band the words slide under was tried and dropped). A phrase plays
+  its step as it comes to rest (`restCue()`); the triggers are the `.phr` boxes, never the sticky
+  part. The drawing closes in on its phone until the phone reaches a little below it
+  (`--phone-fill`), where Bounceback's phrases rest lower, and the last phrase leaves with the
+  drawing. Phrases are far apart (about a quarter of a screen), so they are read one at a
   time. A phrase reads as one sentence that wraps to the width (designed line breaks are for the
   desktop column), set from the left, with 20 px side margins. Reading text is at least 18 px
   (phrases about 28 to 30 px, small words 0.72 of that, scene labels 18 px), and the longest big
@@ -113,8 +119,10 @@ Till's choice, so never bring it back or keep anything in step with it.
   and capture the start, middle and end of every cue, each Medicine pair and every hand-over
   between scenes, on a phone (emulated as a touch device, so Lenis is off), a small phone, a tablet
   and a desktop, in both languages, and with reduced motion (it must read as a plain page). For
-  every cued phrase, capture the moment it sits mid-screen and check the picture shows that
-  phrase's step, not the next one.
+  every cued phrase, capture the moment it sits mid-screen (on a phone, for the wards and
+  Bounceback, the moment it comes to rest under the drawing, and the moment before) and check the
+  picture shows that phrase's step, not the next one, and that only one resting phrase can be read
+  at a time.
   Measure smoothness: fling through the page with real touch events on a phone at 4× CPU
   throttling and record the frame times, long tasks and any non-passive touch or wheel listeners
   (there must be none). Run the blank-frame scan (every quarter screen, measure how much differs
