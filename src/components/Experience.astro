@@ -102,16 +102,14 @@ const CROP: Record<string, string> = {
   'ironman-swim.jpg': '45% 40%',
   'ironman-transition.jpg': '50% 45%',
   'yetis-team.jpg': '50% 40%',
-  'ski-gate.jpg': '72% 50%',
   'ski-podium.jpg': '50% 30%',
+  'ski-duo.jpg': '55% 60%',
+  'ski-summit-selfie.jpg': '50% 40%',
+  'pond-hockey.jpg': '50% 50%',
+  'summer-austria-shoulders.jpg': '50% 35%',
   'ski-carve.jpg': '50% 52%',
-  'bike-sunset.jpg': '50% 60%',
   'hockey-fisheye.jpg': '50% 50%',
-  'summer-austria.jpg': '50% 60%',
-  'lofoten-cabins.jpg': '50% 45%',
-  'defender-river.jpg': '45% 50%',
   'dolomites.jpg': '50% 62%',
-  'nashville.jpg': '45% 55%',
   'hallstatt.jpg': '50% 50%',
 };
 ---
@@ -244,7 +242,7 @@ const CROP: Record<string, string> = {
             </div>
             <div class="work">
               <div class="work-in">
-                <Polaroid photo={page.eigenPrints.workshop} lang={lang} position={CROP[page.eigenPrints.workshop.file]} sizes="(min-width: 52rem) 26vw, 84vw" film="latent" />
+                <Polaroid photo={page.eigenPrints.workshop} lang={lang} position={CROP[page.eigenPrints.workshop.file]} sizes="(min-width: 52rem) 20vw, 62vw" film="latent" />
               </div>
             </div>
             <canvas class="dots" aria-hidden="true"></canvas>
@@ -277,7 +275,7 @@ const CROP: Record<string, string> = {
                 {p.cue && SHOTS[p.cue] === 'work' && (
                   <div class="shot" data-cue={p.cue} data-kind="work" data-side={nextSide()}>
                     <div class="covered">
-                      <Polaroid photo={page.eigenPrints.workshop} lang={lang} position={CROP[page.eigenPrints.workshop.file]} sizes="84vw" film="latent" />
+                      <Polaroid photo={page.eigenPrints.workshop} lang={lang} position={CROP[page.eigenPrints.workshop.file]} sizes="62vw" film="latent" />
                       <i class="cover" aria-hidden="true"></i>
                     </div>
                   </div>
@@ -332,6 +330,15 @@ const CROP: Record<string, string> = {
             </div>
           ))
         }
+        <!-- A last print on its own, a little after the interests, before Contact. -->
+        <div class="coda">
+          <div class="gp">
+            <div class="gp-in covered">
+              <Polaroid photo={page.coda} lang={lang} caption={caption(page.coda)} position={CROP[page.coda.file]} sizes="(min-width: 52rem) 26vw, 62vw" film="latent" />
+              <i class="cover" aria-hidden="true"></i>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- 7. Ending: the contact line written in ballpoint, the name as a wordmark. -->
@@ -625,8 +632,12 @@ const CROP: Record<string, string> = {
       --med-s: clamp(14rem, 25vw, 28rem);
       --pairs-top: 6svh;
       --pair-gap: 14svh;
-      /* Eigen: the run club and workshop prints' width, never taller than the screen allows. */
-      --eigen-w: min(25vw, 52svh);
+      /*
+       * Eigen: the run club print's width and the smaller workshop print's, never taller than the
+       * screen allows.
+       */
+      --eigen-w: min(27vw, 54svh);
+      --eigen-s: min(19vw, 40svh);
       /* Personal: the space between one interest and the next, and the width of its words. */
       --topic-gap: 22svh;
       --topic-text: 30vw;
@@ -1023,6 +1034,7 @@ const CROP: Record<string, string> = {
 
     :global(.js) .work {
       z-index: 2;
+      width: var(--eigen-s);
     }
 
     /*
@@ -1144,6 +1156,17 @@ const CROP: Record<string, string> = {
       align-self: center;
     }
 
+    /* The last print stands on its own, set in towards the right, before Contact. */
+    :global(.js) .coda {
+      display: flex;
+      justify-content: flex-end;
+      padding-right: 12vw;
+    }
+
+    :global(.js) .coda .gp {
+      width: clamp(14rem, 24vw, 26rem);
+    }
+
     :global(.js) .gp-in {
       position: relative;
     }
@@ -1243,8 +1266,8 @@ const CROP: Record<string, string> = {
         --med-w: 72vw;
         --med-l: 84vw;
         --med-s: 60vw;
-        --run-w: 66vw;
-        --shot-w: 84vw;
+        --run-w: 70vw;
+        --shot-w: 62vw;
         --inset: var(--side);
         --pairs-top: 10svh;
         --pair-gap: 22svh;
@@ -1488,6 +1511,14 @@ const CROP: Record<string, string> = {
       :global(.js) .t-prints {
         gap: 4vw;
         margin-top: var(--s-12);
+      }
+
+      :global(.js) .coda {
+        padding-right: 4vw;
+      }
+
+      :global(.js) .coda .gp {
+        width: 62vw;
       }
 
       :global(.js) .contact-line {

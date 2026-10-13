@@ -66,7 +66,9 @@ Till's choice, so never bring it back or keep anything in step with it.
   The items zigzag down the page, words on one side and prints on the other, alternating; never a
   sideways row. The prints sit in an even grid of two with aligned rows (a wide print takes a
   row), never staggered; the words and prints scroll together, nothing sticky and nothing lagging
-  (sticky words that rose and then travelled with the page felt wrong). No photos of family. No
+  (sticky words that rose and then travelled with the page felt wrong). After the last interest
+  one print stands on its own before Contact (`coda`). Which photos are used, where and at what
+  size is Till's pick; ask before adding or moving one. No photos of family. No
   "as a kid", no age-by-age storylines.
 - The look is white paper and ballpoint blue (`#2f3394`, Mynerve in capitals): all text is in the
   pen apart from "Till Findl" and the button, and illustrations are pen drawings

@@ -91,7 +91,7 @@ const typed = <T>(value: T) => value;
 
 const photos = {
   medSchool: {
-    size: 's',
+    size: 'm',
     file: 'ucl-medical-school.jpg',
     alt: {
       en: 'Till in graduation gown at the entrance of the Royal Free and University College Medical School',
@@ -104,45 +104,41 @@ const photos = {
     file: 'theatre-kl.jpg',
     alt: { en: 'Till with the surgical team in an orthopaedic theatre in Kuala Lumpur', de: 'Till mit dem OP-Team in einem orthopädischen OP in Kuala Lumpur' },
   },
-  swim: { size: 's', file: 'ironman-swim.jpg', alt: { en: 'Till leaving the water at Ironman Kalmar', de: 'Till beim Schwimmausstieg beim Ironman Kalmar' } },
-  ski: {
-    size: 'l',
-    file: 'ski-gate.jpg',
-    alt: { en: 'Till racing giant slalom, just past a gate', de: 'Till im Riesentorlauf, knapp hinter einem Tor' },
-    position: '75% 50%',
-  },
+  swim: { size: 'm', file: 'ironman-swim.jpg', alt: { en: 'Till leaving the water at Ironman Kalmar', de: 'Till beim Schwimmausstieg beim Ironman Kalmar' } },
   hockey: { size: 'm', file: 'hockey-fisheye.jpg', alt: { en: 'Till in the UCL Yetis locker room before a game', de: 'Till in der Kabine der UCL Yetis vor einem Spiel' } },
   run: { size: 'm', file: 'ironman-run.jpg', alt: { en: 'Till running, black and white', de: 'Till beim Laufen, schwarz-weiß' } },
-  summer: {
-    size: 'm',
-    file: 'summer-austria.jpg',
-    alt: { en: 'Till and a friend in lederhosen in the Austrian mountains', de: 'Till und ein Freund in Lederhosen in den österreichischen Bergen' },
-  },
-  bike: { size: 's', file: 'bike-sunset.jpg', alt: { en: 'A road bike on a lane in an Alpine valley at sunset', de: 'Ein Rennrad auf einem Weg in einem Alpental bei Sonnenuntergang' } },
-  skiPodium: { size: 's', file: 'ski-podium.jpg', alt: { en: 'Till on top of the podium at a ski race in falling snow', de: 'Till ganz oben am Podest eines Skirennens im Schneefall' } },
   skiCarve: { size: 'm', file: 'ski-carve.jpg', alt: { en: 'A skier in yellow carving a turn in fresh snow', de: 'Ein Skifahrer in Gelb zieht einen Carvingschwung im Neuschnee' } },
+  skiPodium: { size: 'm', file: 'ski-podium.jpg', alt: { en: 'Till on top of the podium at a ski race in falling snow', de: 'Till ganz oben am Podest eines Skirennens im Schneefall' } },
   transition: {
-    size: 'l',
+    size: 'm',
     file: 'ironman-transition.jpg',
     alt: { en: 'Friends in the transition area before an Ironman, between rows of bikes in morning fog', de: 'Freunde in der Wechselzone vor einem Ironman, zwischen Reihen von Rädern im Morgennebel' },
   },
   yetis: { size: 'l', file: 'yetis-team.jpg', alt: { en: 'The UCL Yetis ice hockey team on the ice, black and white', de: 'Das Eishockeyteam der UCL Yetis auf dem Eis, schwarz-weiß' }, wide: true },
-  runClub: { file: 'run-club.jpg', alt: { en: 'The Sunday run club getting ready outside a house in London', de: 'Der Sonntagslauf beim Aufwärmen vor einem Haus in London' } },
+  runClub: { size: 'l', file: 'run-club.jpg', alt: { en: 'The Sunday run club getting ready outside a house in London', de: 'Der Sonntagslauf beim Aufwärmen vor einem Haus in London' } },
   workshop: {
+    size: 's',
     file: 'workshop.jpg',
     alt: { en: 'Someone in an “Overengineered? absolutely” T-shirt at a workshop bench', de: 'Jemand in einem T-Shirt mit „Overengineered? absolutely“ an einer Werkbank' },
   },
-  lofotenCabins: {
-    size: 'm',
-    file: 'lofoten-cabins.jpg',
-    alt: { en: 'Red fishing cabins below a snowy peak in the Lofoten Islands', de: 'Rote Fischerhütten unter einem verschneiten Gipfel auf den Lofoten' },
+  pondHockey: { size: 'l', file: 'pond-hockey.jpg', alt: { en: 'Ice hockey on a frozen lake', de: 'Eishockey auf einem zugefrorenen See' } },
+  skiDuo: { size: 'm', file: 'ski-duo.jpg', alt: { en: 'Two skiers in yellow jackets posing on a piste', de: 'Zwei Skifahrer in gelben Jacken posieren auf der Piste' } },
+  skiSelfie: {
+    size: 's',
+    file: 'ski-summit-selfie.jpg',
+    alt: { en: 'A ski selfie in a yellow jacket and mirrored goggles', de: 'Ein Ski-Selfie in gelber Jacke und verspiegelter Brille' },
   },
-  lofotenAurora: { size: 'l', file: 'lofoten-aurora.jpg', alt: { en: 'Northern lights over a snowy peak in the Lofoten Islands', de: 'Nordlicht über einem verschneiten Gipfel auf den Lofoten' } },
-  hallstatt: { size: 's', file: 'hallstatt.jpg', alt: { en: 'Hallstatt in falling snow, with boathouses on the lake', de: 'Hallstatt im Schneefall, mit Bootshäusern am See' } },
-  defender: { size: 'm', file: 'defender-river.jpg', alt: { en: 'A white Defender crossing a river below green mountains', de: 'Ein weißer Defender durchquert einen Fluss vor grünen Bergen' } },
-  reindeer: { size: 's', file: 'reindeer.jpg', alt: { en: 'A white reindeer in the snow', de: 'Ein weißes Rentier im Schnee' } },
-  dolomites: { size: 'l', file: 'dolomites.jpg', alt: { en: 'Till carrying a friend on his shoulders in a meadow in the Dolomites', de: 'Till trägt einen Freund auf den Schultern, auf einer Wiese in den Dolomiten' } },
-  nashville: { size: 'm', file: 'nashville.jpg', alt: { en: 'Till and a friend on Broadway in Nashville at night', de: 'Till und ein Freund nachts auf dem Broadway in Nashville' } },
+  shoulders: {
+    file: 'summer-austria-shoulders.jpg',
+    alt: {
+      en: 'Till sitting on a friend’s shoulders, both in lederhosen, laughing',
+      de: 'Till sitzt lachend auf den Schultern eines Freundes, beide in Lederhosen',
+    },
+  },
+  lofotenAurora: { size: 'm', file: 'lofoten-aurora.jpg', alt: { en: 'Northern lights over a snowy peak in the Lofoten Islands', de: 'Nordlicht über einem verschneiten Gipfel auf den Lofoten' } },
+  hallstatt: { size: 'm', file: 'hallstatt.jpg', alt: { en: 'Hallstatt in falling snow, with boathouses on the lake', de: 'Hallstatt im Schneefall, mit Bootshäusern am See' } },
+  reindeer: { size: 'm', file: 'reindeer.jpg', alt: { en: 'A white reindeer in the snow', de: 'Ein weißes Rentier im Schnee' } },
+  dolomites: { size: 'm', file: 'dolomites.jpg', alt: { en: 'Till carrying a friend on his shoulders in a meadow in the Dolomites', de: 'Till trägt einen Freund auf den Schultern, auf einer Wiese in den Dolomiten' } },
 } satisfies Record<string, Photo>;
 
 export const page = {
@@ -275,7 +271,7 @@ export const page = {
         en: `[Ironman Kalmar](${links.ironmanKalmar}) and Ironman Tallinn, and marathons including [Amsterdam](${links.amsterdamMarathon}).`,
         de: `[Ironman Kalmar](${links.ironmanKalmar}) und Ironman Tallinn, dazu Marathons, darunter [Amsterdam](${links.amsterdamMarathon}).`,
       },
-      prints: [photos.transition, photos.bike, photos.run, photos.swim],
+      prints: [photos.run, photos.swim, photos.transition],
     },
     {
       title: { en: 'Ice hockey', de: 'Eishockey' },
@@ -284,7 +280,7 @@ export const page = {
         de: 'Mit dem Eishockeyteam des UCL hatte ich die beste Zeit meines Lebens.',
       },
       detail: { en: 'Played for the UCL Yetis in BUIHA Division 1.', de: 'Für die UCL Yetis in der BUIHA Division 1 gespielt.' },
-      prints: [photos.yetis, photos.hockey],
+      prints: [photos.yetis, photos.pondHockey, photos.hockey],
     },
     {
       title: { en: 'Skiing', de: 'Skifahren' },
@@ -293,7 +289,7 @@ export const page = {
         en: 'FIS races and Viennese youth champion; qualified ski instructor (LS2).',
         de: 'FIS-Rennen und Wiener Jugendmeister; ausgebildeter Skilehrer (LS2).',
       },
-      prints: [photos.skiCarve, photos.ski, photos.skiPodium],
+      prints: [photos.skiCarve, photos.skiPodium, photos.skiDuo, photos.skiSelfie],
     },
     {
       title: { en: 'Photography and film', de: 'Fotografie und Film' },
@@ -301,16 +297,7 @@ export const page = {
         en: 'I like having something to look back on from trips and past experiences.',
         de: 'Ich mag es, von Reisen und Erlebnissen etwas zu haben, auf das ich zurückschauen kann.',
       },
-      prints: [
-        photos.lofotenCabins,
-        photos.lofotenAurora,
-        photos.hallstatt,
-        photos.defender,
-        photos.reindeer,
-        photos.dolomites,
-        photos.nashville,
-        photos.summer,
-      ],
+      prints: [photos.dolomites, photos.hallstatt, photos.lofotenAurora, photos.reindeer],
     },
   ]),
   /**
@@ -325,14 +312,14 @@ export const page = {
     'ironman-swim.jpg': { en: 'Ironman Kalmar', de: 'Ironman Kalmar' },
     'ironman-transition.jpg': { en: 'Ironman Tallinn', de: 'Ironman Tallinn' },
     'yetis-team.jpg': { en: 'UCL Yetis', de: 'UCL Yetis' },
-    'lofoten-cabins.jpg': { en: 'Lofoten', de: 'Lofoten' },
     'lofoten-aurora.jpg': { en: 'Lofoten', de: 'Lofoten' },
     'hallstatt.jpg': { en: 'Hallstatt', de: 'Hallstatt' },
     'dolomites.jpg': { en: 'Dolomites', de: 'Dolomiten' },
-    'nashville.jpg': { en: 'Nashville', de: 'Nashville' },
   } as Record<string, L>,
   /** The run club print and the workshop print in the Eigen scene. */
   eigenPrints: { run: photos.runClub, workshop: photos.workshop },
+  /** A last print on its own after Personal, before Contact. */
+  coda: photos.shoulders,
   /** The software windows' labels in the wards drawing. */
   windows: [
     { en: 'Imaging', de: 'Bildgebung' },
