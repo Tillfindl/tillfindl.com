@@ -4,19 +4,11 @@
 // write. A photo marked `wide` (a group shot a square would cut) is a wide instant print instead:
 // a 108 × 86 mm frame with a 99 × 62 mm image, 4.5 mm from the sides and 7 mm from the top. The
 // film's look is a fixed filter on the photo (lifted blacks, softer colour) and plain layers over it
-// (a vignette, a little gloss, the frame's edge over the image). `.chem` is the dark, undeveloped
-// film and `.cast` the flat, cool picture that comes through it. Developing only fades those two,
-// and no layer uses a blend mode, so a print costs nothing to repaint while the page scrolls.
-//
-// `film` says how the print develops: 'developed' (default) is finished; 'latent' starts as dark
-// film that scripts/experience.ts develops; 'auto' develops by itself on load (the hero), on CSS
-// alone so it doesn't wait for the script. 'latent' and 'auto' only apply with motion allowed and
-// the script expected (`.js`); otherwise every print is simply developed. The caption is split into
-// letters here, at build time, so it can be written one letter at a time.
+// (a vignette, a little gloss, the frame's edge over the image). No layer uses a blend mode, so a
+// print costs nothing to repaint while the page scrolls. Every print is shown developed.
 import { Image } from 'astro:assets';
 import type { Lang, Photo } from '../content/profile';
 import { photo } from '../content/images';
-import Letters from './Letters.astro';
 
 interface Props {
   photo: Photo;
@@ -27,15 +19,14 @@ interface Props {
   position?: string;
   sizes: string;
   eager?: boolean;
-  film?: 'developed' | 'latent' | 'auto';
   /** A lighter film look: fuller colour and less of the warm cast (the portrait at the start). */
   vivid?: boolean;
 }
 
-const { photo: p, lang, caption, position = p.position ?? '50% 50%', sizes, eager = false, film = 'developed', vivid = false } = Astro.props;
+const { photo: p, lang, caption, position = p.position ?? '50% 50%', sizes, eager = false, vivid = false } = Astro.props;
 ---
 
-<figure class:list={['pola', film, { wide: p.wide, vivid }]}>
+<figure class:list={['pola', { wide: p.wide, vivid }]}>
   <div class="film">
     <Image
       src={photo(p.file)}
@@ -46,12 +37,10 @@ const { photo: p, lang, caption, position = p.position ?? '50% 50%', sizes, eage
       loading={eager ? 'eager' : 'lazy'}
       draggable="false"
     />
-    <i class="cast"></i>
-    <i class="chem"></i>
   </div>
   {
     caption && (
-      <figcaption class="pen-cap" aria-hidden="true" style={`--n: ${caption.length}`}><Letters text={caption} /></figcaption>
+      <figcaption class="pen-cap" aria-hidden="true" style={`--n: ${caption.length}`}>{caption}</figcaption>
     )
   }
 </figure>
@@ -130,27 +119,6 @@ const { photo: p, lang, caption, position = p.position ?? '50% 50%', sizes, eage
     filter: contrast(0.98) brightness(1.03) saturate(1.12) sepia(0.03);
   }
 
-  .film i {
-    position: absolute;
-    inset: 0;
-  }
-
-  /*
-   * While it develops the picture comes through flat and cool before its colours arrive: a blue-grey
-   * veil over it, which the script fades out.
-   */
-  .cast {
-    z-index: 1;
-    background: #56707e;
-    opacity: 0;
-  }
-
-  .chem {
-    z-index: 2;
-    background: radial-gradient(ellipse at 40% 35%, #24302f, #121717);
-    opacity: 0;
-  }
-
   /* Vignette, then gloss and the frame's edge lying over the image. */
   .film::before {
     content: '';
@@ -190,56 +158,5 @@ const { photo: p, lang, caption, position = p.position ?? '50% 50%', sizes, eage
   .wide .pen-cap {
     top: 85.5%;
     font-size: clamp(3.6cqw, calc(95cqw / var(--n, 8)), 6.4cqw);
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    /*
-     * Dark, undeveloped film over a flat, cool picture, until the script develops it. Each fading
-     * layer is its own compositor layer, so developing never repaints the print or the row it is in.
-     */
-    :global(.js) .latent .chem,
-    :global(.js) .latent .cast,
-    :global(.js) .auto .chem,
-    :global(.js) .auto .cast {
-      will-change: opacity;
-    }
-
-    :global(.js) .latent .chem {
-      opacity: 1;
-    }
-
-    :global(.js) .latent .cast {
-      opacity: 0.6;
-    }
-
-    /*
-     * The hero print develops by itself: the dark film clears from about half a second in, the
-     * picture comes through flat and cool, and its colour arrives by about 1.6 seconds.
-     */
-    :global(.js) .auto .chem {
-      animation: clear 0.9s cubic-bezier(0.55, 0, 0.75, 0.6) 0.5s both;
-    }
-
-    :global(.js) .auto .cast {
-      animation: cast 0.8s ease-in-out 0.8s both;
-    }
-  }
-
-  @keyframes clear {
-    from {
-      opacity: 1;
-    }
-    to {
-      opacity: 0;
-    }
-  }
-
-  @keyframes cast {
-    from {
-      opacity: 0.6;
-    }
-    to {
-      opacity: 0;
-    }
   }
 </style>

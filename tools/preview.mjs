@@ -28,8 +28,23 @@ function inline(html) {
     const css = readFileSync(join(DIST, href), 'utf8').replace(/url\((\/_astro\/[^)]+)\)/g, (_, u) => `url(${dataUri(u)})`);
     return `<style>${css}</style>`;
   });
-  // The page's script (one bundled module, no imports).
-  html = html.replace(/<script type="module" src="([^"]+)"><\/script>/g, (_, src) => `<script type="module">${readFileSync(join(DIST, src), 'utf8')}</script>`);
+  // The page's script (one bundled module). Eigen's animations are a chunk it imports when the
+  // scene comes near; here that chunk runs up front from its own inline module and hands over its
+  // exports, and the point clouds it fetches ride along as base64 (kit/assets.ts reads them).
+  html = html.replace(/<script type="module" src="([^"]+)"><\/script>/g, (_, src) => {
+    let js = readFileSync(join(DIST, src), 'utf8');
+    let eigen = '';
+    js = js.replace(/import\(`\.\/(eigen\.[\w-]+\.js)`\)/, (_, chunk) => {
+      const code = readFileSync(join(DIST, '_astro', chunk), 'utf8').replace(/export\{([^}]*)\};?\s*$/, (_, list) => {
+        const pairs = list.split(',').map((e) => e.split(' as ')).map(([local, name]) => `${name ?? local}:${local}`);
+        return `window.__eigenKit={${pairs.join(',')}};`;
+      });
+      const bins = Object.fromEntries(['face', 'cpap', 'foot', 'foot-lo', 'foot-skeleton'].map((n) => [`${n}.bin`, readFileSync(join(DIST, 'eigen', `${n}.bin`)).toString('base64')]));
+      eigen = `<script>window.__EIGEN_ASSETS=${JSON.stringify(bins)};</script><script type="module">${code}</script>`;
+      return 'Promise.resolve(window.__eigenKit)';
+    });
+    return `${eigen}<script type="module">${js}</script>`;
+  });
   // Photos: one variant each instead of the whole srcset.
   html = html.replace(/<img\b[^>]*>/g, (tag) => {
     const set = tag.match(/srcset="([^"]+)"/)?.[1];

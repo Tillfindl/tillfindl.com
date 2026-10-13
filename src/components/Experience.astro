@@ -1,8 +1,8 @@
 ---
 // The site: Till's story staged as scenes you scroll through (src/scripts/experience.ts drives
 // them). The look is white paper with everything written in ballpoint blue, apart from the name and
-// the one button. Every photo is a real Polaroid that develops as it arrives, and the wards and
-// Bounceback are a pen drawing.
+// the one button. Every photo is a real Polaroid, the wards and Bounceback are a pen drawing, and
+// Eigen ends in its own animations (scripts/eigen), drawn in the same pen.
 //
 // The words are short handwritten phrases (`page.script`) in the normal page flow, so they move
 // exactly with the reader's finger. Medicine pairs every phrase with its own print, which scrolls
@@ -48,13 +48,15 @@ const PLACES = ['l', 'i', 'r', 'i'] as const;
 
 /**
  * On a phone, the picture that goes above each of Eigen's cued phrases (`.shot`): the run club print
- * with its lap, the workshop print, or the dots. (The wards drawing stays in place instead.)
+ * with its lap, the workshop print, the face with its CPAP mask, the foot scan (which the face
+ * streams into), or the treadmill. (The wards drawing stays in place instead.)
  */
-const SHOTS: Record<string, 'run' | 'work' | 'dots'> = {
+const SHOTS: Record<string, 'run' | 'work' | 'face' | 'scan' | 'store'> = {
   lap: 'run',
   max: 'work',
-  masks: 'dots',
-  pivot: 'dots',
+  masks: 'face',
+  pivot: 'scan',
+  store: 'store',
 };
 /** The shots alternate sides down the page, starting on the left. */
 let shotCount = 0;
@@ -89,6 +91,11 @@ function trackPath() {
   return { d, x: f(pts[0][0]), y: f(pts[0][1]) };
 }
 const ROUTE = trackPath();
+/**
+ * How many prints a topic's rows hold: three when it has exactly three square prints, so they make
+ * one row; otherwise two (a wide print takes a row of its own).
+ */
+const cols = (prints: Photo[]) => (prints.length === 3 && !prints.some((p) => p.wide) ? 3 : 2);
 const ROUTE_BOX = `0 0 ${TRACK.w} ${TRACK.h}`;
 
 /** Square crops for the Polaroids, so the person stays in frame. */
@@ -103,10 +110,8 @@ const CROP: Record<string, string> = {
   'ironman-transition.jpg': '50% 45%',
   'yetis-team.jpg': '50% 40%',
   'ski-podium.jpg': '50% 30%',
-  'ski-duo.jpg': '55% 60%',
   'ski-summit-selfie.jpg': '50% 40%',
   'pond-hockey.jpg': '50% 50%',
-  'summer-austria-shoulders.jpg': '50% 35%',
   'ski-carve.jpg': '50% 52%',
   'hockey-fisheye.jpg': '50% 50%',
   'dolomites.jpg': '50% 62%',
@@ -135,17 +140,16 @@ const CROP: Record<string, string> = {
     </header>
 
     <main>
-      <!-- 1. Opening: the name, then the note writes itself in either side of the portrait, which is uncovered from the top and develops. -->
+      <!-- 1. Opening: the name, then the note writes itself in either side of the portrait, which fades in. -->
       <section class="scene opening" id="top" style={`--na: ${[...introA].length}`}>
         <div class="stage">
           <div class="o-head"><h1 class="logo">{person.name}</h1></div>
           <div class="o-pen o-pen-a"><p><Letters text={introA} /></p></div>
           <div class="o-photo">
-            <div class="o-print covered">
+            <div class="o-print">
               <div class="print">
-                <Polaroid photo={page.portrait} lang={lang} position={CROP[page.portrait.file]} sizes="(min-width: 52rem) 24rem, 60vw" eager film="auto" vivid />
+                <Polaroid photo={page.portrait} lang={lang} position={CROP[page.portrait.file]} sizes="(min-width: 52rem) 24rem, 60vw" eager vivid />
               </div>
-              <i class="cover" aria-hidden="true"></i>
             </div>
           </div>
           <div class="o-pen o-pen-b"><p><Letters text={introB} /></p></div>
@@ -162,22 +166,14 @@ const CROP: Record<string, string> = {
           <h2 class="label phr"><span class="phr-in"><span class="h-name">{sections.medicine[lang]}<i class="h-line" aria-hidden="true"></i></span></span></h2>
           {
             script.medicine.map((p, i) => (
-              <div class:list={['pair', p.print?.size ?? 'm', { flip: i % 2 === 1 }]}>
+              <div class:list={['pair', { flip: i % 2 === 1 }]}>
                 <div class="phr">
                   <p class="phr-in"><span class="phr-w" set:html={phraseHtml(p.t[lang])} /></p>
                 </div>
                 {p.print && (
                   <div class="pp">
-                    <div class="pp-in covered">
-                      <Polaroid
-                        photo={p.print}
-                        lang={lang}
-                        caption={caption(p.print)}
-                        position={CROP[p.print.file]}
-                        sizes="(min-width: 52rem) 32vw, 74vw"
-                        film="latent"
-                      />
-                      <i class="cover" aria-hidden="true"></i>
+                    <div class="pp-in">
+                      <Polaroid photo={p.print} lang={lang} caption={caption(p.print)} position={CROP[p.print.file]} sizes="(min-width: 52rem) 32vw, 74vw" />
                     </div>
                   </div>
                 )}
@@ -216,7 +212,7 @@ const CROP: Record<string, string> = {
         </div>
       </section>
 
-      <!-- 5. Eigen: the run club print with a lap drawn round it, the workshop print, then dots form a face with a mask and stream into a footprint. -->
+      <!-- 5. Eigen: the run club print with a lap drawn round it, the workshop print, then a face in dots with a CPAP mask, which streams into Eigen's foot scan, and the treadmill. -->
       <section class="scene eigen">
         <div class="plain">
           <h2 class="label">{sections.eigen[lang]}</h2>
@@ -236,16 +232,16 @@ const CROP: Record<string, string> = {
                   caption={caption(page.eigenPrints.run)}
                   position={CROP[page.eigenPrints.run.file]}
                   sizes="(min-width: 52rem) 26vw, 66vw"
-                  film="latent"
                 />
               </div>
             </div>
             <div class="work">
               <div class="work-in">
-                <Polaroid photo={page.eigenPrints.workshop} lang={lang} position={CROP[page.eigenPrints.workshop.file]} sizes="(min-width: 52rem) 20vw, 62vw" film="latent" />
+                <Polaroid photo={page.eigenPrints.workshop} lang={lang} position={CROP[page.eigenPrints.workshop.file]} sizes="(min-width: 52rem) 20vw, 62vw" />
               </div>
             </div>
-            <canvas class="dots" aria-hidden="true"></canvas>
+            <div class="e-dots" aria-hidden="true"><div class="host"></div></div>
+            <div class="e-lines" aria-hidden="true"><div class="host"></div></div>
           </div>
         </div>
         <div class="script">
@@ -260,29 +256,18 @@ const CROP: Record<string, string> = {
                         <path class="route-path" d={ROUTE.d}></path>
                         <circle class="runner" r="3.6" cx={ROUTE.x} cy={ROUTE.y}></circle>
                       </svg>
-                      <Polaroid
-                        photo={page.eigenPrints.run}
-                        lang={lang}
-                        caption={caption(page.eigenPrints.run)}
-                        position={CROP[page.eigenPrints.run.file]}
-                        sizes="66vw"
-                        film="latent"
-                      />
+                      <Polaroid photo={page.eigenPrints.run} lang={lang} caption={caption(page.eigenPrints.run)} position={CROP[page.eigenPrints.run.file]} sizes="66vw" />
                     </div>
-                    <i class="cover" aria-hidden="true"></i>
                   </div>
                 )}
                 {p.cue && SHOTS[p.cue] === 'work' && (
                   <div class="shot" data-cue={p.cue} data-kind="work" data-side={nextSide()}>
-                    <div class="covered">
-                      <Polaroid photo={page.eigenPrints.workshop} lang={lang} position={CROP[page.eigenPrints.workshop.file]} sizes="62vw" film="latent" />
-                      <i class="cover" aria-hidden="true"></i>
-                    </div>
+                    <Polaroid photo={page.eigenPrints.workshop} lang={lang} position={CROP[page.eigenPrints.workshop.file]} sizes="62vw" />
                   </div>
                 )}
-                {p.cue && SHOTS[p.cue] === 'dots' && (
-                  <div class="shot" data-cue={p.cue} data-kind="dots" data-side={nextSide()}>
-                    <canvas class="dots-shot" aria-hidden="true"></canvas>
+                {p.cue && ['face', 'scan', 'store'].includes(SHOTS[p.cue]) && (
+                  <div class="shot" data-cue={p.cue} data-kind={SHOTS[p.cue]} aria-hidden="true">
+                    <div class="host"></div>
                   </div>
                 )}
                 <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]} data-space={p.space}>
@@ -294,7 +279,7 @@ const CROP: Record<string, string> = {
         </div>
       </section>
 
-      <!-- 6. Personal: one interest after another, zigzagging down the page; each print develops as it comes up. -->
+      <!-- 6. Personal: one interest after another, zigzagging down the page, each with its prints in even rows. -->
       <section class="scene personal">
         <div class="p-intro">
           <h2 class="label"><span class="h-name">{sections.personal[lang]}<i class="h-line" aria-hidden="true"></i></span></h2>
@@ -310,19 +295,17 @@ const CROP: Record<string, string> = {
                 <p class="love" set:html={rich(it.text[lang])} />
                 {it.detail && <p class="detail" set:html={rich(it.detail[lang])} />}
               </div>
-              <div class="t-prints">
+              <div class="t-prints" data-cols={cols(it.prints)}>
                 {it.prints.map((p) => (
-                  <div class:list={['gp', p.wide ? 'l' : (p.size ?? 'm'), { wide: p.wide }]}>
-                    <div class="gp-in covered">
+                  <div class:list={['gp', { wide: p.wide }]}>
+                    <div class="gp-in">
                       <Polaroid
                         photo={p}
                         lang={lang}
                         caption={caption(p)}
                         position={CROP[p.file]}
-                        sizes={p.wide ? '(min-width: 52rem) 51vw, 90vw' : p.size === 'l' ? '(min-width: 52rem) 40vw, 70vw' : '(min-width: 52rem) 25vw, 44vw'}
-                        film="latent"
+                        sizes={p.wide ? '(min-width: 52rem) 51vw, 90vw' : cols(it.prints) === 3 ? '(min-width: 52rem) 17vw, 30vw' : '(min-width: 52rem) 25vw, 44vw'}
                       />
-                      <i class="cover" aria-hidden="true"></i>
                     </div>
                   </div>
                 ))}
@@ -330,22 +313,13 @@ const CROP: Record<string, string> = {
             </div>
           ))
         }
-        <!-- A last print on its own, a little after the interests, before Contact. -->
-        <div class="coda">
-          <div class="gp">
-            <div class="gp-in covered">
-              <Polaroid photo={page.coda} lang={lang} caption={caption(page.coda)} position={CROP[page.coda.file]} sizes="(min-width: 52rem) 26vw, 62vw" film="latent" />
-              <i class="cover" aria-hidden="true"></i>
-            </div>
-          </div>
-        </div>
       </section>
 
       <!-- 7. Ending: the contact line written in ballpoint, the name as a wordmark. -->
       <section class="scene ending">
         <div class="end-inner">
           <h2 class="label"><span class="h-name">{sections.contact[lang]}<i class="h-line" aria-hidden="true"></i></span></h2>
-          <p class="contact-line" set:html={phraseHtml(script.contact[lang], { letters: true })} />
+          <p class="contact-line" set:html={phraseHtml(script.contact[lang])} />
           <div class="end-actions">
             {
               links.linkedin ? (
@@ -435,11 +409,11 @@ const CROP: Record<string, string> = {
 
   .progress,
   .h-line,
-  .cover,
   .script,
   .draw-wrap,
   .route,
-  .dots,
+  .e-dots,
+  .e-lines,
   .end-mark {
     display: none;
   }
@@ -628,8 +602,6 @@ const CROP: Record<string, string> = {
       --head: clamp(2.6rem, 5.5vw, 6.5rem);
       /* Medicine: a print's width, the space above the first pair, and between pairs. */
       --med-w: clamp(16rem, 32vw, 36rem);
-      --med-l: clamp(18rem, 37vw, 42rem);
-      --med-s: clamp(14rem, 25vw, 28rem);
       --pairs-top: 6svh;
       --pair-gap: 14svh;
       /*
@@ -775,32 +747,8 @@ const CROP: Record<string, string> = {
     }
 
     /*
-     * A print's cover: paper laid over it, which the script slides away to uncover the print. Only
-     * the cover's position changes, which costs nothing to draw, where a moving clip would repaint
-     * the photo under it on every frame. Its wrapper clips it, with room for the print's shadow
-     * (taken back by the negative margins, so the layout stays as it was). It starts out of the
-     * way, so without the script the prints still show.
-     */
-    :global(.js) .covered {
-      position: relative;
-      overflow: hidden;
-      margin: -12px -24px -44px;
-      padding: 12px 24px 44px;
-    }
-
-    :global(.js) .cover {
-      display: block;
-      position: absolute;
-      inset: 0;
-      z-index: 3;
-      background: var(--bg);
-      transform: translateX(101%);
-      will-change: transform;
-    }
-
-    /*
      * The overlay markup (phrase.ts): lines, big words, small connecting words, and pen underlines.
-     * Each line is only as wide as its words, so the wipe that reveals it runs across the words.
+     * Each line is only as wide as its words.
      */
     :global(.js) .xp :global(.ln) {
       display: block;
@@ -845,8 +793,8 @@ const CROP: Record<string, string> = {
     /* ----- Opening: plays on CSS, from the moment the page starts arriving ----- */
 
     /*
-     * The opening is the loading animation: the name rises in, the portrait is uncovered from the
-     * top and develops, and the note writes itself in either side of it. It does not hold: the
+     * The opening is the loading animation: the name rises in, the portrait fades in as it settles,
+     * and the note writes itself in either side of it. It does not hold: the
      * first scroll moves the page, and the script clears the opening within the first quarter
      * screen.
      */
@@ -883,9 +831,8 @@ const CROP: Record<string, string> = {
       translate: -50% -50%;
     }
 
-    /* Uncovered from the top while it develops; the clip reaches past the print, so its shadow shows. */
     :global(.js) .print {
-      animation: uncover 0.9s cubic-bezier(0.65, 0, 0.35, 1) 0.2s both;
+      animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 0.25s both;
     }
 
     :global(.js) .o-pen {
@@ -937,19 +884,10 @@ const CROP: Record<string, string> = {
       }
     }
 
-    @keyframes uncover {
-      from {
-        clip-path: inset(-12% -20% 100% -20%);
-      }
-      to {
-        clip-path: inset(-12% -20% -30% -20%);
-      }
-    }
-
     /*
      * ----- Medicine: each phrase beside its own print, on alternating sides -----
-     * Nothing here is sticky: the pairs scroll past with the page, and the script moves each print
-     * a little slower than its phrase (on .pp-in, so the layout stays put).
+     * Nothing here is sticky: the pairs scroll past with the page, and each print fades in with its
+     * phrase (on .pp-in, so the layout stays put).
      */
 
     :global(.js) .pairs {
@@ -973,15 +911,6 @@ const CROP: Record<string, string> = {
 
     :global(.js) .pair.flip {
       grid-template-columns: var(--med-w) minmax(0, 1fr);
-    }
-
-    /* Medicine's prints are not all one size: a large one, a small one, a medium one. */
-    :global(.js) .pair.l {
-      --med-w: var(--med-l);
-    }
-
-    :global(.js) .pair.s {
-      --med-w: var(--med-s);
     }
 
     :global(.js) .pair.flip .pp {
@@ -1010,7 +939,7 @@ const CROP: Record<string, string> = {
       translate: 0 -50%;
     }
 
-    /* ----- Eigen: the prints and the dots on the right ----- */
+    /* ----- Eigen: the prints and the animations on the right ----- */
 
     :global(.js) .eigen .v-in {
       display: block;
@@ -1063,13 +992,30 @@ const CROP: Record<string, string> = {
       fill: var(--pen);
     }
 
-    :global(.js) .dots {
+    /*
+     * The dots (the face, its mask and the foot scan) and the treadmill drawing share the right
+     * half, one after the other. The drawing's canvas is opaque paper, so its box is the paper too.
+     */
+    :global(.js) .e-dots,
+    :global(.js) .e-lines {
       display: block;
       position: absolute;
       left: 50%;
       top: 0;
       width: 46%;
       height: 100%;
+    }
+
+    :global(.js) .e-lines {
+      top: 14%;
+      height: 72%;
+      opacity: 0;
+    }
+
+    :global(.js) .e-dots .host,
+    :global(.js) .e-lines .host {
+      position: absolute;
+      inset: 0;
     }
 
     /*
@@ -1126,7 +1072,10 @@ const CROP: Record<string, string> = {
       font-size: clamp(1.2rem, 1.35vw, 1.5rem);
     }
 
-    /* The prints in an even grid of two, rows aligned; a wide print takes the whole row. */
+    /*
+     * A topic's prints in complete, even rows, one gap between them all: rows of two, or one row of
+     * three; a wide print takes a row of its own.
+     */
     :global(.js) .t-prints {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1134,37 +1083,13 @@ const CROP: Record<string, string> = {
       margin: 0;
     }
 
-    /*
-     * The prints are not all one size: a large print takes a whole row (a portrait one most of it,
-     * set to one side), a small one sits smaller in the middle of its place.
-     */
-    :global(.js) .gp.l {
+    :global(.js) .t-prints[data-cols='3'] {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 2vw;
+    }
+
+    :global(.js) .gp.wide {
       grid-column: 1 / -1;
-    }
-
-    :global(.js) .gp.l:not(.wide) {
-      width: 62%;
-    }
-
-    :global(.js) .topic.flip .gp.l:not(.wide) {
-      justify-self: end;
-    }
-
-    :global(.js) .gp.s {
-      width: 70%;
-      justify-self: center;
-      align-self: center;
-    }
-
-    /* The last print stands on its own, set in towards the right, before Contact. */
-    :global(.js) .coda {
-      display: flex;
-      justify-content: flex-end;
-      padding-right: 12vw;
-    }
-
-    :global(.js) .coda .gp {
-      width: clamp(14rem, 24vw, 26rem);
     }
 
     :global(.js) .gp-in {
@@ -1264,8 +1189,6 @@ const CROP: Record<string, string> = {
         --head: 11vw;
         /* The pictures: Medicine's prints, and Eigen's run club print (its lap round it) and workshop print. */
         --med-w: 72vw;
-        --med-l: 84vw;
-        --med-s: 60vw;
         --run-w: 70vw;
         --shot-w: 62vw;
         --inset: var(--side);
@@ -1434,18 +1357,28 @@ const CROP: Record<string, string> = {
       /* The lap runs round the print (its box is 124% as wide and 123% as tall); the print sits inside. */
       :global(.js) .shot[data-kind='run'] {
         position: relative;
-        overflow: hidden;
         width: calc(var(--run-w) * 1.24);
         padding: calc(var(--run-w) * 0.142) calc(var(--run-w) * 0.12);
       }
 
-      :global(.js) .shot[data-kind='dots'] {
-        width: 88vw;
+      /* Eigen's animations take the width: the face and the scan (with room for the phone under the foot), the treadmill. */
+      :global(.js) .shot[data-kind='face'],
+      :global(.js) .shot[data-kind='scan'],
+      :global(.js) .shot[data-kind='store'] {
+        width: auto;
         aspect-ratio: 1;
       }
 
-      :global(.js) .dots-shot {
-        display: block;
+      :global(.js) .shot[data-kind='scan'] {
+        aspect-ratio: 4 / 5;
+      }
+
+      :global(.js) .shot[data-kind='store'] {
+        aspect-ratio: 5 / 4;
+      }
+
+      :global(.js) .shot .host {
+        position: relative;
         width: 100%;
         height: 100%;
       }
@@ -1513,14 +1446,6 @@ const CROP: Record<string, string> = {
         margin-top: var(--s-12);
       }
 
-      :global(.js) .coda {
-        padding-right: 4vw;
-      }
-
-      :global(.js) .coda .gp {
-        width: 62vw;
-      }
-
       :global(.js) .contact-line {
         --big: 1.25;
         font-size: clamp(1.75rem, 7.6vw, 2.25rem);
@@ -1539,8 +1464,6 @@ const CROP: Record<string, string> = {
       :global(.js) .xp {
         --big: 1.45;
         --med-w: 28vw;
-        --med-l: 32vw;
-        --med-s: 23vw;
       }
     }
 

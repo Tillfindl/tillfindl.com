@@ -19,3 +19,5 @@ npm-debug.log*
 # Self-contained preview (tools/preview.mjs)
 preview/
 preview-*/
+public/eigen/*.npz
+public/eigen/*.npy

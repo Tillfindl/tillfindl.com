@@ -1,0 +1,11 @@
+// The parts of Eigen's particle engine the foot scan uses (ported from eigen-motion).
+export { ParticleEngine, MAX_LINES_PER_STATE, type EngineOptions, type EngineStats } from './ParticleEngine'
+export { Clock } from './clock'
+export * from './types'
+export { OrbView } from './states/orb/core'
+export { cloudFrame, normalizeCloud, type CloudFrame, type CloudState } from './states/pointCloud'
+export { FOOT_MOTION, footState, skeletonState } from './states/shapes'
+export { decodePointCloud, type PointCloud } from './pointcloud'
+export { voidState } from './states/compose'
+export { applySlots, cloudState } from './states/pointCloud'
+export { matchSlots } from './match'

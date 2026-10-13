@@ -48,11 +48,6 @@ export interface Photo {
    * would cut people off.
    */
   wide?: boolean;
-  /**
-   * How big the print is laid out, so the prints are not all the same: small, medium (the default)
-   * or large (in Personal a large print takes a whole row; a wide print is always large).
-   */
-  size?: 's' | 'm' | 'l';
 }
 
 /** One thing in the personal section: a short title, what Till loves about it, the proof, and its prints. */
@@ -91,54 +86,40 @@ const typed = <T>(value: T) => value;
 
 const photos = {
   medSchool: {
-    size: 'm',
     file: 'ucl-medical-school.jpg',
     alt: {
       en: 'Till in graduation gown at the entrance of the Royal Free and University College Medical School',
       de: 'Till im Talar vor dem Eingang der Royal Free and University College Medical School',
     },
   },
-  portico: { size: 'l', file: 'ucl-portico.jpg', alt: { en: 'Till in graduation gown in front of the UCL portico', de: 'Till im Talar vor dem Portikus des UCL' } },
+  portico: { file: 'ucl-portico.jpg', alt: { en: 'Till in graduation gown in front of the UCL portico', de: 'Till im Talar vor dem Portikus des UCL' } },
   theatre: {
-    size: 'm',
     file: 'theatre-kl.jpg',
     alt: { en: 'Till with the surgical team in an orthopaedic theatre in Kuala Lumpur', de: 'Till mit dem OP-Team in einem orthopädischen OP in Kuala Lumpur' },
   },
-  swim: { size: 'm', file: 'ironman-swim.jpg', alt: { en: 'Till leaving the water at Ironman Kalmar', de: 'Till beim Schwimmausstieg beim Ironman Kalmar' } },
-  hockey: { size: 'm', file: 'hockey-fisheye.jpg', alt: { en: 'Till in the UCL Yetis locker room before a game', de: 'Till in der Kabine der UCL Yetis vor einem Spiel' } },
-  run: { size: 'm', file: 'ironman-run.jpg', alt: { en: 'Till running, black and white', de: 'Till beim Laufen, schwarz-weiß' } },
-  skiCarve: { size: 'm', file: 'ski-carve.jpg', alt: { en: 'A skier in yellow carving a turn in fresh snow', de: 'Ein Skifahrer in Gelb zieht einen Carvingschwung im Neuschnee' } },
-  skiPodium: { size: 'm', file: 'ski-podium.jpg', alt: { en: 'Till on top of the podium at a ski race in falling snow', de: 'Till ganz oben am Podest eines Skirennens im Schneefall' } },
+  swim: { file: 'ironman-swim.jpg', alt: { en: 'Till leaving the water at Ironman Kalmar', de: 'Till beim Schwimmausstieg beim Ironman Kalmar' } },
+  hockey: { file: 'hockey-fisheye.jpg', alt: { en: 'Till in the UCL Yetis locker room before a game', de: 'Till in der Kabine der UCL Yetis vor einem Spiel' } },
+  skiCarve: { file: 'ski-carve.jpg', alt: { en: 'A skier in yellow carving a turn in fresh snow', de: 'Ein Skifahrer in Gelb zieht einen Carvingschwung im Neuschnee' } },
+  skiPodium: { file: 'ski-podium.jpg', alt: { en: 'Till on top of the podium at a ski race in falling snow', de: 'Till ganz oben am Podest eines Skirennens im Schneefall' } },
   transition: {
-    size: 'm',
     file: 'ironman-transition.jpg',
     alt: { en: 'Friends in the transition area before an Ironman, between rows of bikes in morning fog', de: 'Freunde in der Wechselzone vor einem Ironman, zwischen Reihen von Rädern im Morgennebel' },
   },
-  yetis: { size: 'l', file: 'yetis-team.jpg', alt: { en: 'The UCL Yetis ice hockey team on the ice, black and white', de: 'Das Eishockeyteam der UCL Yetis auf dem Eis, schwarz-weiß' }, wide: true },
-  runClub: { size: 'l', file: 'run-club.jpg', alt: { en: 'The Sunday run club getting ready outside a house in London', de: 'Der Sonntagslauf beim Aufwärmen vor einem Haus in London' } },
+  yetis: { file: 'yetis-team.jpg', alt: { en: 'The UCL Yetis ice hockey team on the ice, black and white', de: 'Das Eishockeyteam der UCL Yetis auf dem Eis, schwarz-weiß' }, wide: true },
+  runClub: { file: 'run-club.jpg', alt: { en: 'The Sunday run club getting ready outside a house in London', de: 'Der Sonntagslauf beim Aufwärmen vor einem Haus in London' } },
   workshop: {
-    size: 's',
     file: 'workshop.jpg',
     alt: { en: 'Someone in an “Overengineered? absolutely” T-shirt at a workshop bench', de: 'Jemand in einem T-Shirt mit „Overengineered? absolutely“ an einer Werkbank' },
   },
-  pondHockey: { size: 'l', file: 'pond-hockey.jpg', alt: { en: 'Ice hockey on a frozen lake', de: 'Eishockey auf einem zugefrorenen See' } },
-  skiDuo: { size: 'm', file: 'ski-duo.jpg', alt: { en: 'Two skiers in yellow jackets posing on a piste', de: 'Zwei Skifahrer in gelben Jacken posieren auf der Piste' } },
+  pondHockey: { file: 'pond-hockey.jpg', alt: { en: 'Ice hockey on a frozen lake', de: 'Eishockey auf einem zugefrorenen See' } },
   skiSelfie: {
-    size: 's',
     file: 'ski-summit-selfie.jpg',
     alt: { en: 'A ski selfie in a yellow jacket and mirrored goggles', de: 'Ein Ski-Selfie in gelber Jacke und verspiegelter Brille' },
   },
-  shoulders: {
-    file: 'summer-austria-shoulders.jpg',
-    alt: {
-      en: 'Till sitting on a friend’s shoulders, both in lederhosen, laughing',
-      de: 'Till sitzt lachend auf den Schultern eines Freundes, beide in Lederhosen',
-    },
-  },
-  lofotenAurora: { size: 'm', file: 'lofoten-aurora.jpg', alt: { en: 'Northern lights over a snowy peak in the Lofoten Islands', de: 'Nordlicht über einem verschneiten Gipfel auf den Lofoten' } },
-  hallstatt: { size: 'm', file: 'hallstatt.jpg', alt: { en: 'Hallstatt in falling snow, with boathouses on the lake', de: 'Hallstatt im Schneefall, mit Bootshäusern am See' } },
-  reindeer: { size: 'm', file: 'reindeer.jpg', alt: { en: 'A white reindeer in the snow', de: 'Ein weißes Rentier im Schnee' } },
-  dolomites: { size: 'm', file: 'dolomites.jpg', alt: { en: 'Till carrying a friend on his shoulders in a meadow in the Dolomites', de: 'Till trägt einen Freund auf den Schultern, auf einer Wiese in den Dolomiten' } },
+  lofotenAurora: { file: 'lofoten-aurora.jpg', alt: { en: 'Northern lights over a snowy peak in the Lofoten Islands', de: 'Nordlicht über einem verschneiten Gipfel auf den Lofoten' } },
+  hallstatt: { file: 'hallstatt.jpg', alt: { en: 'Hallstatt in falling snow, with boathouses on the lake', de: 'Hallstatt im Schneefall, mit Bootshäusern am See' } },
+  reindeer: { file: 'reindeer.jpg', alt: { en: 'A white reindeer in the snow', de: 'Ein weißes Rentier im Schnee' } },
+  dolomites: { file: 'dolomites.jpg', alt: { en: 'Till carrying a friend on his shoulders in a meadow in the Dolomites', de: 'Till trägt einen Freund auf den Schultern, auf einer Wiese in den Dolomiten' } },
 } satisfies Record<string, Photo>;
 
 export const page = {
@@ -239,11 +220,10 @@ export const page = {
         cue: 'pivot',
         t: { en: 'Then we ^pivoted^ / to running, / _and that became_ ^Eigen^.', de: 'Dann haben wir / auf Laufen / ~umgeschwenkt~, / _und daraus wurde_ ^Eigen^.' },
       },
+      { t: { en: 'From a 3D foot scan / and a short / running video,', de: 'Aus einem 3D-Fußscan / und einem kurzen / Laufvideo' } },
       {
-        t: {
-          en: 'From a 3D foot scan / and a short / running video, / it finds the shoes / that suit / how someone ~runs~.',
-          de: 'Aus einem 3D-Fußscan / und einem kurzen / Laufvideo / findet Eigen / die Schuhe, / die zum ~Laufstil~ passen.',
-        },
+        cue: 'store',
+        t: { en: 'it finds the shoes / that suit / how someone ~runs~.', de: 'findet Eigen / die Schuhe, / die zum ~Laufstil~ / passen.' },
       },
       {
         t: {
@@ -271,7 +251,7 @@ export const page = {
         en: `[Ironman Kalmar](${links.ironmanKalmar}) and Ironman Tallinn, and marathons including [Amsterdam](${links.amsterdamMarathon}).`,
         de: `[Ironman Kalmar](${links.ironmanKalmar}) und Ironman Tallinn, dazu Marathons, darunter [Amsterdam](${links.amsterdamMarathon}).`,
       },
-      prints: [photos.run, photos.swim, photos.transition],
+      prints: [photos.swim, photos.transition],
     },
     {
       title: { en: 'Ice hockey', de: 'Eishockey' },
@@ -289,7 +269,7 @@ export const page = {
         en: 'FIS races and Viennese youth champion; qualified ski instructor (LS2).',
         de: 'FIS-Rennen und Wiener Jugendmeister; ausgebildeter Skilehrer (LS2).',
       },
-      prints: [photos.skiCarve, photos.skiPodium, photos.skiDuo, photos.skiSelfie],
+      prints: [photos.skiCarve, photos.skiPodium, photos.skiSelfie],
     },
     {
       title: { en: 'Photography and film', de: 'Fotografie und Film' },
@@ -318,8 +298,6 @@ export const page = {
   } as Record<string, L>,
   /** The run club print and the workshop print in the Eigen scene. */
   eigenPrints: { run: photos.runClub, workshop: photos.workshop },
-  /** A last print on its own after Personal, before Contact. */
-  coda: photos.shoulders,
   /** The software windows' labels in the wards drawing. */
   windows: [
     { en: 'Imaging', de: 'Bildgebung' },

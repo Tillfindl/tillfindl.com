@@ -64,26 +64,26 @@ Till's choice, so never bring it back or keep anything in step with it.
 - Personal is a set of `items`: a short title, one sentence on what Till likes about it, the proof
   in smaller writing where there is some (leave it out rather than list things), and its prints.
   The items zigzag down the page, words on one side and prints on the other, alternating; never a
-  sideways row. The prints sit in an even grid of two with aligned rows (a wide print takes a
-  row), never staggered; the words and prints scroll together, nothing sticky and nothing lagging
-  (sticky words that rose and then travelled with the page felt wrong). After the last interest
-  one print stands on its own before Contact (`coda`). Which photos are used, where and at what
-  size is Till's pick; ask before adding or moving one. No photos of family. No
+  sideways row. Each topic reads as one block: its prints make complete, even rows with one gap
+  (rows of two, or one row of three when a topic has three square prints; a wide print takes a
+  row of its own), all one size, never staggered and never a lone print in a row (three stacked
+  under each other looked wrong). The words and prints scroll together, nothing sticky and nothing
+  lagging (sticky words that rose and then travelled with the page felt wrong). Which photos are
+  used and where is Till's pick; ask before adding or moving one. No photos of family. No
   "as a kid", no age-by-age storylines.
 - The look is white paper and ballpoint blue (`#2f3394`, Mynerve in capitals): all text is in the
   pen apart from "Till Findl" and the button, and illustrations are pen drawings
   (`WardsDrawing.astro`), never pop-ups or cards. Every photo is a realistic instant print at true
-  proportions that develops from dark film (the opening portrait with a lighter film look, `vivid`,
-  so it is not washed out): Polaroid 600 (88 × 107 mm frame, 79 mm square image),
+  proportions, shown developed (Till did not like them developing from dark film; the opening
+  portrait has a lighter film look, `vivid`, so it is not washed out): Polaroid 600 (88 × 107 mm frame, 79 mm square image),
   or a wide print (108 × 86 mm, 99 × 62 mm image) for group photos marked `wide`. Each print is its
-  own stacking context (`isolation: isolate`), so its film layers never show through a print laid
-  over it. Never rotate photos, no cursor effects, no buttons or scroll hint in the hero, and no
+  own stacking context (`isolation: isolate`), so its film layers never show through anything over
+  it. Prints never overlap each other. Never rotate photos, no cursor effects, no buttons or scroll hint in the hero, and no
   camera or other gadget in the opening. Captions name a place or race only when it is certain.
   Type is large and pictures generous, by Till's choice: on a desktop the phrases are about 3vw,
   the scene names (Medicine, Bounceback, Eigen, Personal, Contact) about 5.5vw with a pen line
-  under them, Personal's titles about 4vw. Prints are not all one size (`size` on a photo: s, m or
-  l): Medicine's three differ, and in Personal a large print takes a row (most of it, set to one
-  side) and a small one sits smaller in its place, so no topic looks like the next; words and pictures sit in from the edges (`--inset`,
+  under them, Personal's titles about 4vw. Medicine's prints are all one size; in Eigen the run
+  club print is large and the workshop print smaller (`--eigen-w`, `--eigen-s`). Words and pictures sit in from the edges (`--inset`,
   7vw), the phrase column about 43vw with the picture on the right, so nothing hugs the left edge.
   Keep designed lines short enough not to wrap on a desktop at any width (900 px up); re-split a
   line rather than shrink the type.
@@ -92,40 +92,39 @@ Till's choice, so never bring it back or keep anything in step with it.
   wheel on a desktop only, `pointer: fine`). Every scroll animation is `scrub: true`, with no lag,
   and words and pictures move together with the page; nothing lags its words. Everything appears
   while it comes in at the bottom of the screen, whole by the time it is 20% up: never something to
-  wait for. Words simply fade in (and on a desktop fade out near the top); Till tried text wiped in
-  from the side and did not like it. The scene names fade in and have their pen line drawn after.
-  Prints are uncovered from their outer side (Personal's from the bottom) while they develop, and
-  in Eigen one print is wiped away as the next is uncovered. A print is uncovered by its paper cover
-  sliding off (`.cover` in a `.covered` wrapper): only the cover's position changes, where a moving
-  clip over a photo repaints it every frame and made the phone stutter. Medicine pairs each phrase with its own print. On a desktop the
+  wait for. Keep it minimal: things only fade, rising a few pixels as they come in (`RISE`) and
+  fading out without moving. Nothing comes in or goes out to the left or right, nothing is wiped
+  or uncovered, and pen underlines and the scene names' lines are simply there (Till tried wipes,
+  sliding covers and prints developing from dark film, and dropped them all). On a desktop a
+  picture gives way to the next by fading out completely before the next fades in, never both at
+  once. Medicine pairs each phrase with its own print. On a desktop the
   wards, Bounceback and Eigen are a sticky picture with the phrases scrolling past in the normal
   flow; a
   picture changes only while its phrase is being read (`data-cue` and `cue()`, a phrase's top from
   78% to 40% of the screen), never as soon as the phrase appears. On a phone only the wards drawing
   stays (see below). Both are built from the same ordered steps (`wardsSteps()`, the Eigen cues), so
   the picture always matches its phrase. Sticky, never a pin. The opening is the loading animation,
-  on CSS alone so it starts before the script: the name rises in, the portrait is uncovered and
-  develops, and the note writes itself in, each letter fading over a long, overlapping time so a
+  on CSS alone so it starts before the script: the name rises in, the portrait fades in as it
+  settles, and the note writes itself in, each letter fading over a long, overlapping time so a
   soft edge runs through the words (no pen, no camera, no dots: Till wants it smooth). It never
-  holds: the first scroll clears it within a quarter screen (`OPENING_OUT`). Triggers are measured
+  holds: the first scroll fades it out within a quarter screen (`OPENING_OUT`). Triggers are measured
   again when the page's height really changes (`watchHeight()`), so a window resized after load
   never makes a picture change for the wrong phrase. Per-phrase `space` gives a pause
   (`more`) or keeps a phrase with the next (`less`). Nothing that moves or changes while scrolling
-  may use a live SVG filter, `mix-blend-mode` or an animated CSS `filter`: develop a print by
-  fading plain layers (`.chem`, `.cast`, with `will-change: opacity`). Canvas drawing happens only
-  when its picture changes. Photos are fetched and decoded in the background after the hero. No
+  may use a live SVG filter, `mix-blend-mode` or an animated CSS `filter`. Photos are fetched and decoded in the background after the hero. No
   element is driven by two scroll animations (use an inner wrapper, like `.phr-in` and `.phr-w`,
   `.run` and `.run-in`, and `.ph-o`), and when two close phrases change the same thing (the phone's
   screens), the later one
-  waits for the earlier to finish. Animate clip paths with explicit from and to values; don't
+  waits for the earlier to finish. Don't
   animate x or y on an element centred with the CSS `translate` property, or opacity on an element
   with a CSS animation. Letters.astro's and phrase.ts's spans are reached only through `:global`.
   Pen strokes that draw on use `pathLength="1"` and a gap longer than the stroke. Back to top
   swooshes with a blur (along the scroll on a desktop, a plain CSS blur on a phone).
 - On a phone the page is a zigzag going down, and nothing is cut off. Medicine and Eigen pair each
   cued phrase with its own picture just above it (`.shot`, chosen in `SHOTS`), alternately on the
-  left and the right: the run club print inside its lap, the workshop print, and a canvas for each
-  of the dots' two stages. The lap is a running-track loop drawn clear of the print on every side
+  left and the right: the run club print inside its lap, the workshop print; then Eigen's animations
+  across the width: the face with its mask, the foot scan (which starts as the face and streams
+  into the foot as its panel reaches the middle) and the treadmill. The lap is a running-track loop drawn clear of the print on every side
   (`TRACK`), never behind it. The wards and Bounceback are one drawing that animates as one, never a
   strip of repeated panels (Till found those popping up again and again): it scrolls in with its
   first phrase and stays near the top, and each phrase comes up with the finger and rests just
@@ -155,10 +154,26 @@ Till's choice, so never bring it back or keep anything in step with it.
   from the paper), check there is no text under 18 px, nothing past the screen edges and no
   designed line wrapping on a desktop, that every phone screen in the drawing shows and never two
   at once in one drawing, and that the photos are loaded before they scroll in on a throttled
-  connection. Check that every wiped line, name and print is whole by the time it is 20% up from
-  the bottom, scrolling down in small steps as a reader does (big jumps can catch a wipe mid-way).
+  connection. Check that every line, name and print is whole by the time it is 20% up from the
+  bottom, scrolling down in small steps as a reader does (big jumps can catch a fade mid-way), and
+  that the Eigen prints and animations never show at once. The test browser draws WebGL in
+  software, so Eigen's animations read slower there than on a real phone; compare against the
+  scene with them hidden, and keep the page's own script idle while they play.
   Time the opening from the self-contained preview too (about two seconds, playing once), and its
   frames at exact moments (pause the CSS animations and set their time) to see the writing flow.
+- Eigen ends in Eigen's own animations, ported from Till's `eigen-motion` repo into
+  `src/scripts/eigen/` (engine, line drawings, the scan's overlay, trimmed to what is used) and
+  drawn in pen on paper: dots blend normally and a dot's brightness becomes its ink (opacity), line
+  drawings blend with MIN ("darken") over opaque paper. `kit/dots.ts`: a real head scan in dots
+  (`public/eigen/face.bin`, stippled by its shading so it reads as a face, from
+  `tools/face-cloud.py`) with a modelled full-face CPAP mask (`cpap.bin`: cushion, clear shell,
+  frame, elbow, corrugated hose, headgear) that settles onto it; at the pivot the face streams into
+  the foot (the face's dots are slot-matched to the foot, so they travel a short way), and the
+  onboarding's foot scan plays on repeat (phone passing under, skeleton, length, width, arch).
+  `kit/lines.ts`: the onboarding's store, legs running on a treadmill with five shoes, on repeat.
+  They play on their own clock once their phrase comes up (`PLAY_AT`), not scrubbed; three.js and
+  the shapes load only when the scene is near (`EIGEN_AHEAD`), each pauses off screen and while
+  faded out, and with reduced motion none of it loads. Credit in `ACKNOWLEDGEMENTS.md`.
 - Comments explain intent and the non-obvious, in full sentences, British spelling. Don't narrate.
 - `README.md` stays current in the same commit as the change it describes.
 - `public/CNAME` must keep holding `tillfindl.com`, or the custom domain drops off on deploy.

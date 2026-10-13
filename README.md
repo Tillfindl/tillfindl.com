@@ -8,19 +8,22 @@ with everything written in ballpoint blue (Mynerve, in capitals) apart from the 
 button. Scrolling is the browser's own, so the page always moves exactly with the finger. The words
 are short handwritten phrases with big and small words (`content/phrase.ts`), set large, and each
 scene opens with its name written big. Everything appears as it comes in at the bottom of the
-screen (words fade in, prints are uncovered from their side as a paper cover slides off them, in
-different sizes), so it is whole by the time it is read. Medicine pairs each phrase with its own print. On a
+screen, fading in as it rises a few pixels (nothing slides in from the side), so it is whole by
+the time it is read. Medicine pairs each phrase with its own print. On a
 wide screen the other scenes keep a picture in place beside the phrases, changing as each phrase
 is read. On a phone the page is a zigzag going down, Eigen's cued phrases each with its own
 picture above it, alternately left and right; the wards drawing stays near the top instead, and
 its phrases come up one at a time to rest beneath it while it animates. Every photo is a
-realistic instant print (`components/Polaroid.astro`) that develops from dark film. The wards and
+realistic instant print (`components/Polaroid.astro`). The wards and
 Bounceback are a pen drawing (`components/WardsDrawing.astro`): a doctor swamped by software
 windows, a patient who walks off, and the phone the windows are swept into. Eigen has the run club
-print inside a running-track lap, then Max's workshop print in its place, and a dot morph on a
-canvas; Personal zigzags down the page, one interest at a time with its prints in an even grid,
-before Contact. The opening is the loading animation: the name, the portrait uncovered as it
-develops, and the note writing itself in. It plays on CSS alone, so it starts before the script
+print inside a running-track lap, then Max's workshop print in its place, then Eigen's own
+animations in pen (`scripts/eigen`, three.js, loaded only near the scene): a real head scan in
+dots with a full-face CPAP mask settling onto it, which streams into a foot at the pivot for
+Eigen's foot scan, on repeat, and the running store's treadmill with legs running on it.
+Personal zigzags down the page, one interest at a time with its prints in complete, even rows,
+before Contact. The opening is the loading animation: the name, the portrait fading in, and the
+note writing itself in. It plays on CSS alone, so it starts before the script
 arrives, and the first scroll clears it at once; after that GSAP
 ScrollTrigger ties everything to the scroll position, and on a desktop Lenis smooths the mouse wheel
 (it is never loaded on a touch screen). With reduced motion turned on, or without JavaScript, it
@@ -57,12 +60,16 @@ src/
   pages/404.astro       The not-found page
   components/           Experience (the scenes), Polaroid, WardsDrawing (the pen drawing),
                         Letters (text split into letters at build time)
-  scripts/              experience.ts (the motion), dots.ts (the dot morph)
+  scripts/              experience.ts (the motion); eigen/ (Eigen's face, scan and treadmill,
+                        ported from eigen-motion and drawn in pen)
   layouts/Base.astro    The HTML shell: <head>, language alternates, social card, JSON-LD
   styles/global.css     Design tokens (colour, type, spacing) and base styles
   assets/photos/        Photos; the build resizes them and strips their metadata
-public/                 Copied as-is: CNAME (the custom domain), favicon, robots.txt
+public/                 Copied as-is: CNAME (the custom domain), favicon, robots.txt, and eigen/
+                        (the face, mask and foot point clouds, EGPC .bin)
 tools/preview.mjs       Turns the build into one self-contained file for sharing drafts
+tools/face-cloud.py     Samples the head scan into face.bin and models the CPAP mask (cpap.bin)
+ACKNOWLEDGEMENTS.md     Credits for three.js, Thinking Orbs and the head scan
 astro.config.mjs        Site URL, languages, sitemap
 .github/workflows/      deploy.yml publishes main to GitHub Pages; check.yml checks pull requests
 ```
