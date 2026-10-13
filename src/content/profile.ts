@@ -48,6 +48,11 @@ export interface Photo {
    * would cut people off.
    */
   wide?: boolean;
+  /**
+   * How big the print is laid out, so the prints are not all the same: small, medium (the default)
+   * or large (in Personal a large print takes a whole row; a wide print is always large).
+   */
+  size?: 's' | 'm' | 'l';
 }
 
 /** One thing in the personal section: a short title, what Till loves about it, the proof, and its prints. */
@@ -86,52 +91,58 @@ const typed = <T>(value: T) => value;
 
 const photos = {
   medSchool: {
+    size: 's',
     file: 'ucl-medical-school.jpg',
     alt: {
       en: 'Till in graduation gown at the entrance of the Royal Free and University College Medical School',
       de: 'Till im Talar vor dem Eingang der Royal Free and University College Medical School',
     },
   },
-  portico: { file: 'ucl-portico.jpg', alt: { en: 'Till in graduation gown in front of the UCL portico', de: 'Till im Talar vor dem Portikus des UCL' } },
+  portico: { size: 'l', file: 'ucl-portico.jpg', alt: { en: 'Till in graduation gown in front of the UCL portico', de: 'Till im Talar vor dem Portikus des UCL' } },
   theatre: {
+    size: 'm',
     file: 'theatre-kl.jpg',
     alt: { en: 'Till with the surgical team in an orthopaedic theatre in Kuala Lumpur', de: 'Till mit dem OP-Team in einem orthopädischen OP in Kuala Lumpur' },
   },
-  swim: { file: 'ironman-swim.jpg', alt: { en: 'Till leaving the water at Ironman Kalmar', de: 'Till beim Schwimmausstieg beim Ironman Kalmar' } },
+  swim: { size: 's', file: 'ironman-swim.jpg', alt: { en: 'Till leaving the water at Ironman Kalmar', de: 'Till beim Schwimmausstieg beim Ironman Kalmar' } },
   ski: {
+    size: 'l',
     file: 'ski-gate.jpg',
     alt: { en: 'Till racing giant slalom, just past a gate', de: 'Till im Riesentorlauf, knapp hinter einem Tor' },
     position: '75% 50%',
   },
-  hockey: { file: 'hockey-fisheye.jpg', alt: { en: 'Till in the UCL Yetis locker room before a game', de: 'Till in der Kabine der UCL Yetis vor einem Spiel' } },
-  run: { file: 'ironman-run.jpg', alt: { en: 'Till running, black and white', de: 'Till beim Laufen, schwarz-weiß' } },
+  hockey: { size: 'm', file: 'hockey-fisheye.jpg', alt: { en: 'Till in the UCL Yetis locker room before a game', de: 'Till in der Kabine der UCL Yetis vor einem Spiel' } },
+  run: { size: 'm', file: 'ironman-run.jpg', alt: { en: 'Till running, black and white', de: 'Till beim Laufen, schwarz-weiß' } },
   summer: {
+    size: 'm',
     file: 'summer-austria.jpg',
     alt: { en: 'Till and a friend in lederhosen in the Austrian mountains', de: 'Till und ein Freund in Lederhosen in den österreichischen Bergen' },
   },
-  bike: { file: 'bike-sunset.jpg', alt: { en: 'A road bike on a lane in an Alpine valley at sunset', de: 'Ein Rennrad auf einem Weg in einem Alpental bei Sonnenuntergang' } },
-  skiPodium: { file: 'ski-podium.jpg', alt: { en: 'Till on top of the podium at a ski race in falling snow', de: 'Till ganz oben am Podest eines Skirennens im Schneefall' } },
-  skiCarve: { file: 'ski-carve.jpg', alt: { en: 'A skier in yellow carving a turn in fresh snow', de: 'Ein Skifahrer in Gelb zieht einen Carvingschwung im Neuschnee' } },
+  bike: { size: 's', file: 'bike-sunset.jpg', alt: { en: 'A road bike on a lane in an Alpine valley at sunset', de: 'Ein Rennrad auf einem Weg in einem Alpental bei Sonnenuntergang' } },
+  skiPodium: { size: 's', file: 'ski-podium.jpg', alt: { en: 'Till on top of the podium at a ski race in falling snow', de: 'Till ganz oben am Podest eines Skirennens im Schneefall' } },
+  skiCarve: { size: 'm', file: 'ski-carve.jpg', alt: { en: 'A skier in yellow carving a turn in fresh snow', de: 'Ein Skifahrer in Gelb zieht einen Carvingschwung im Neuschnee' } },
   transition: {
+    size: 'l',
     file: 'ironman-transition.jpg',
     alt: { en: 'Friends in the transition area before an Ironman, between rows of bikes in morning fog', de: 'Freunde in der Wechselzone vor einem Ironman, zwischen Reihen von Rädern im Morgennebel' },
   },
-  yetis: { file: 'yetis-team.jpg', alt: { en: 'The UCL Yetis ice hockey team on the ice, black and white', de: 'Das Eishockeyteam der UCL Yetis auf dem Eis, schwarz-weiß' }, wide: true },
+  yetis: { size: 'l', file: 'yetis-team.jpg', alt: { en: 'The UCL Yetis ice hockey team on the ice, black and white', de: 'Das Eishockeyteam der UCL Yetis auf dem Eis, schwarz-weiß' }, wide: true },
   runClub: { file: 'run-club.jpg', alt: { en: 'The Sunday run club getting ready outside a house in London', de: 'Der Sonntagslauf beim Aufwärmen vor einem Haus in London' } },
   workshop: {
     file: 'workshop.jpg',
     alt: { en: 'Someone in an “Overengineered? absolutely” T-shirt at a workshop bench', de: 'Jemand in einem T-Shirt mit „Overengineered? absolutely“ an einer Werkbank' },
   },
   lofotenCabins: {
+    size: 'm',
     file: 'lofoten-cabins.jpg',
     alt: { en: 'Red fishing cabins below a snowy peak in the Lofoten Islands', de: 'Rote Fischerhütten unter einem verschneiten Gipfel auf den Lofoten' },
   },
-  lofotenAurora: { file: 'lofoten-aurora.jpg', alt: { en: 'Northern lights over a snowy peak in the Lofoten Islands', de: 'Nordlicht über einem verschneiten Gipfel auf den Lofoten' } },
-  hallstatt: { file: 'hallstatt.jpg', alt: { en: 'Hallstatt in falling snow, with boathouses on the lake', de: 'Hallstatt im Schneefall, mit Bootshäusern am See' } },
-  defender: { file: 'defender-river.jpg', alt: { en: 'A white Defender crossing a river below green mountains', de: 'Ein weißer Defender durchquert einen Fluss vor grünen Bergen' } },
-  reindeer: { file: 'reindeer.jpg', alt: { en: 'A white reindeer in the snow', de: 'Ein weißes Rentier im Schnee' } },
-  dolomites: { file: 'dolomites.jpg', alt: { en: 'Till carrying a friend on his shoulders in a meadow in the Dolomites', de: 'Till trägt einen Freund auf den Schultern, auf einer Wiese in den Dolomiten' } },
-  nashville: { file: 'nashville.jpg', alt: { en: 'Till and a friend on Broadway in Nashville at night', de: 'Till und ein Freund nachts auf dem Broadway in Nashville' } },
+  lofotenAurora: { size: 'l', file: 'lofoten-aurora.jpg', alt: { en: 'Northern lights over a snowy peak in the Lofoten Islands', de: 'Nordlicht über einem verschneiten Gipfel auf den Lofoten' } },
+  hallstatt: { size: 's', file: 'hallstatt.jpg', alt: { en: 'Hallstatt in falling snow, with boathouses on the lake', de: 'Hallstatt im Schneefall, mit Bootshäusern am See' } },
+  defender: { size: 'm', file: 'defender-river.jpg', alt: { en: 'A white Defender crossing a river below green mountains', de: 'Ein weißer Defender durchquert einen Fluss vor grünen Bergen' } },
+  reindeer: { size: 's', file: 'reindeer.jpg', alt: { en: 'A white reindeer in the snow', de: 'Ein weißes Rentier im Schnee' } },
+  dolomites: { size: 'l', file: 'dolomites.jpg', alt: { en: 'Till carrying a friend on his shoulders in a meadow in the Dolomites', de: 'Till trägt einen Freund auf den Schultern, auf einer Wiese in den Dolomiten' } },
+  nashville: { size: 'm', file: 'nashville.jpg', alt: { en: 'Till and a friend on Broadway in Nashville at night', de: 'Till und ein Freund nachts auf dem Broadway in Nashville' } },
 } satisfies Record<string, Photo>;
 
 export const page = {

@@ -145,7 +145,7 @@ const CROP: Record<string, string> = {
           <div class="o-photo">
             <div class="o-print covered">
               <div class="print">
-                <Polaroid photo={page.portrait} lang={lang} position={CROP[page.portrait.file]} sizes="(min-width: 52rem) 24rem, 60vw" eager film="auto" />
+                <Polaroid photo={page.portrait} lang={lang} position={CROP[page.portrait.file]} sizes="(min-width: 52rem) 24rem, 60vw" eager film="auto" vivid />
               </div>
               <i class="cover" aria-hidden="true"></i>
             </div>
@@ -164,9 +164,9 @@ const CROP: Record<string, string> = {
           <h2 class="label phr"><span class="phr-in"><span class="h-name">{sections.medicine[lang]}<i class="h-line" aria-hidden="true"></i></span></span></h2>
           {
             script.medicine.map((p, i) => (
-              <div class:list={['pair', { flip: i % 2 === 1 }]}>
+              <div class:list={['pair', p.print?.size ?? 'm', { flip: i % 2 === 1 }]}>
                 <div class="phr">
-                  <p class="phr-in"><span class="phr-w"><Fragment set:html={phraseHtml(p.t[lang])} /><i class="cover" aria-hidden="true"></i></span></p>
+                  <p class="phr-in"><span class="phr-w" set:html={phraseHtml(p.t[lang])} /></p>
                 </div>
                 {p.print && (
                   <div class="pp">
@@ -210,7 +210,7 @@ const CROP: Record<string, string> = {
                 </h2>
               ) : (
                 <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]} data-space={p.space}>
-                  <p class="phr-in"><span class="phr-w"><Fragment set:html={phraseHtml(p.t[lang])} /><i class="cover" aria-hidden="true"></i></span></p>
+                  <p class="phr-in"><span class="phr-w" set:html={phraseHtml(p.t[lang])} /></p>
                 </div>
               ),
             )
@@ -288,7 +288,7 @@ const CROP: Record<string, string> = {
                   </div>
                 )}
                 <div class="phr" data-cue={p.cue} data-at={PLACES[i % PLACES.length]} data-space={p.space}>
-                  <p class="phr-in"><span class="phr-w"><Fragment set:html={phraseHtml(p.t[lang])} /><i class="cover" aria-hidden="true"></i></span></p>
+                  <p class="phr-in"><span class="phr-w" set:html={phraseHtml(p.t[lang])} /></p>
                 </div>
               </>
             ))
@@ -314,14 +314,14 @@ const CROP: Record<string, string> = {
               </div>
               <div class="t-prints">
                 {it.prints.map((p) => (
-                  <div class:list={['gp', { wide: p.wide }]}>
+                  <div class:list={['gp', p.wide ? 'l' : (p.size ?? 'm'), { wide: p.wide }]}>
                     <div class="gp-in covered">
                       <Polaroid
                         photo={p}
                         lang={lang}
                         caption={caption(p)}
                         position={CROP[p.file]}
-                        sizes={p.wide ? '(min-width: 52rem) 51vw, 90vw' : '(min-width: 52rem) 25vw, 44vw'}
+                        sizes={p.wide ? '(min-width: 52rem) 51vw, 90vw' : p.size === 'l' ? '(min-width: 52rem) 40vw, 70vw' : '(min-width: 52rem) 25vw, 44vw'}
                         film="latent"
                       />
                       <i class="cover" aria-hidden="true"></i>
@@ -621,6 +621,8 @@ const CROP: Record<string, string> = {
       --head: clamp(2.6rem, 5.5vw, 6.5rem);
       /* Medicine: a print's width, the space above the first pair, and between pairs. */
       --med-w: clamp(16rem, 32vw, 36rem);
+      --med-l: clamp(18rem, 37vw, 42rem);
+      --med-s: clamp(14rem, 25vw, 28rem);
       --pairs-top: 6svh;
       --pair-gap: 14svh;
       /* Eigen: the run club and workshop prints' width, never taller than the screen allows. */
@@ -759,11 +761,6 @@ const CROP: Record<string, string> = {
 
     :global(.js) .phr-w {
       display: block;
-    }
-
-    /* On a desktop a phrase is wiped in line by line instead (on a phone, by its cover). */
-    :global(.js) .phr-w > .cover {
-      display: none;
     }
 
     /*
@@ -967,6 +964,15 @@ const CROP: Record<string, string> = {
       grid-template-columns: var(--med-w) minmax(0, 1fr);
     }
 
+    /* Medicine's prints are not all one size: a large one, a small one, a medium one. */
+    :global(.js) .pair.l {
+      --med-w: var(--med-l);
+    }
+
+    :global(.js) .pair.s {
+      --med-w: var(--med-s);
+    }
+
     :global(.js) .pair.flip .pp {
       order: -1;
     }
@@ -1116,8 +1122,26 @@ const CROP: Record<string, string> = {
       margin: 0;
     }
 
-    :global(.js) .gp.wide {
+    /*
+     * The prints are not all one size: a large print takes a whole row (a portrait one most of it,
+     * set to one side), a small one sits smaller in the middle of its place.
+     */
+    :global(.js) .gp.l {
       grid-column: 1 / -1;
+    }
+
+    :global(.js) .gp.l:not(.wide) {
+      width: 62%;
+    }
+
+    :global(.js) .topic.flip .gp.l:not(.wide) {
+      justify-self: end;
+    }
+
+    :global(.js) .gp.s {
+      width: 70%;
+      justify-self: center;
+      align-self: center;
     }
 
     :global(.js) .gp-in {
@@ -1216,7 +1240,9 @@ const CROP: Record<string, string> = {
         /* The scene names: as large as "Bounceback" allows across the screen. */
         --head: 11vw;
         /* The pictures: Medicine's prints, and Eigen's run club print (its lap round it) and workshop print. */
-        --med-w: 74vw;
+        --med-w: 72vw;
+        --med-l: 84vw;
+        --med-s: 60vw;
         --run-w: 66vw;
         --shot-w: 84vw;
         --inset: var(--side);
@@ -1348,20 +1374,6 @@ const CROP: Record<string, string> = {
 
       :global(.js) .phr-in {
         text-wrap: balance;
-      }
-
-      /* A phrase is uncovered by its cover sliding away, with room round it for big letters and underlines. */
-      :global(.js) .phr-w {
-        position: relative;
-        overflow: hidden;
-        margin: -0.2em -0.3em -0.35em;
-        padding: 0.2em 0.3em 0.35em;
-      }
-
-      /* Words are cheap to repaint, so their covers get no layer of their own (fewer layers to compose). */
-      :global(.js) .phr-w > .cover {
-        display: block;
-        will-change: auto;
       }
 
       :global(.js) .phr[data-at='i'] {
@@ -1496,6 +1508,8 @@ const CROP: Record<string, string> = {
       :global(.js) .xp {
         --big: 1.45;
         --med-w: 28vw;
+        --med-l: 32vw;
+        --med-s: 23vw;
       }
     }
 

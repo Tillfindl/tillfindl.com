@@ -6,10 +6,9 @@
  * listens to touches. Lenis only smooths a mouse wheel's steps on a desktop.
  *
  * Every animation is tied straight to the scroll position (scrub: true), with no lag. The words and
- * pictures are in the normal page flow and move with the page, together. They are uncovered by
- * wipes as they come in at the bottom of the screen (words from the left, prints from their side,
- * the scene names across their width), so everything is whole by the time it is read and nothing
- * is waited for. In Medicine each phrase has its own print beside it. On a desktop the wards,
+ * pictures are in the normal page flow and move with the page, together. As they come in at the
+ * bottom of the screen the words fade in and the prints are uncovered from their side, so
+ * everything is whole by the time it is read and nothing is waited for. In Medicine each phrase has its own print beside it. On a desktop the wards,
  * Bounceback and Eigen are a sticky picture that changes only while one of its phrases passes it (a
  * "cue"). On a phone the wards drawing stays too, near the top, and each phrase comes up to rest
  * just under it, fading as the next arrives, while Eigen's cued phrases each have their own panel
@@ -39,9 +38,9 @@ const OPENING_OUT = 0.25;
 
 type Range = [string, string];
 /**
- * Where words are wiped in, where a phrase is wiped out again (on a desktop, near the top) and where
- * its pen underlines are drawn, as ScrollTrigger [start, end] pairs. Everything is uncovered while
- * it comes in at the bottom of the screen, so it is whole by the time it is read; nothing is waited
+ * Where words fade in, where a phrase fades out again (on a desktop, near the top) and where its
+ * pen underlines are drawn, as ScrollTrigger [start, end] pairs. Everything appears while it comes
+ * in at the bottom of the screen, so it is whole by the time it is read; nothing is waited
  * for. On a desktop, also the stretch over which a phrase sets its picture moving, while it is read.
  */
 const ZONES: { desktop: { in: Range; out: Range; line: Range; cue: Range }; mobile: { in: Range; line: Range } } = {
@@ -52,10 +51,10 @@ const ZONES: { desktop: { in: Range; out: Range; line: Range; cue: Range }; mobi
 const PRINT_ZONE: Range = ['top 100%', 'top 60%'];
 /**
  * The room a wipe's clip leaves round what it uncovers (top, right, bottom, left, in % of the
- * element's box), so the parts that poke out of it are never cut: big letters and underlines, a
- * print's shadow, the lap round the run club print.
+ * element's box), so the parts that poke out of it are never cut: a print's shadow, the lap round
+ * the run club print.
  */
-const PAD = { text: [12, 6, 26, 6], print: [12, 16, 28, 16], lap: [16, 18, 28, 18] } satisfies Record<string, Pad>;
+const PAD = { print: [12, 16, 28, 16], lap: [16, 18, 28, 18] } satisfies Record<string, Pad>;
 /**
  * On a phone, the stretch over which an Eigen panel plays its step: from when it is half on screen
  * until its middle reaches the middle of the screen, so it has finished by the time its phrase is read.
@@ -392,6 +391,11 @@ function uncover(tl: gsap.core.Timeline, wrap: Element, from: Side, at: number, 
   tl.fromTo($('.cover', wrap), { x: 0, y: 0, xPercent: 0, yPercent: 0 }, { ...away, duration: dur, ease: 'power2.out' }, at);
 }
 
+/** Fades `el` in or out over a whole timeline. */
+function fade(tl: gsap.core.Timeline, el: Element, way: 'in' | 'out') {
+  tl.fromTo(el, { opacity: way === 'in' ? 0 : 1 }, { opacity: way === 'in' ? 1 : 0, duration: 1, immediateRender: way === 'in' });
+}
+
 /** A timeline scrubbed while `trigger` moves through `range`. */
 const scrubbed = (trigger: Element, [start, end]: Range) =>
   gsap.timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger, start, end, scrub: true } });
@@ -418,23 +422,17 @@ function chrome() {
 }
 
 /**
- * Every phrase is wiped in from the left as it comes in at the bottom of the screen: on a desktop
- * line by line, each as its line arrives, and on a phone as one block, by sliding its paper cover
- * away (cheaper on a phone than a moving clip). Its pen underlines are drawn just after. On a
- * desktop it is wiped out again towards the right as it leaves at the top. The wipes in and out
- * drive different elements (the lines, the phrase's body), so no element is driven by two scroll
+ * Every phrase fades in as it comes up from the bottom of the screen, whole by the time it is read,
+ * and on a desktop fades out again near the top. Its pen underlines are drawn just after. The fades
+ * in and out drive different elements (the phrase, its body), so no element is driven by two scroll
  * animations; the resting phrases on a phone fade on their own inner part.
  */
 function phrases(desktop: boolean) {
   for (const phrase of $$('.script .phr, .pairs .phr')) {
     const body = phrase.querySelector('.phr-w');
     if (!body) continue;
-    if (desktop) {
-      for (const ln of $$('.ln', body)) wipeIn(scrubbed(ln, zone.in), ln, 'left', PAD.text, 0, 1);
-      wipeOut(scrubbed(phrase, ZONES.desktop.out), body, 'right', PAD.text, 0, 1);
-    } else {
-      uncover(scrubbed(phrase, zone.in), body, 'left', 0, 1);
-    }
+    fade(scrubbed(phrase, zone.in), phrase, 'in');
+    if (desktop) fade(scrubbed(phrase, ZONES.desktop.out), body, 'out');
     const lines = $$('.u-line', phrase);
     if (!lines.length) continue;
     const tl = scrubbed(phrase, zone.line);
@@ -444,13 +442,13 @@ function phrases(desktop: boolean) {
 }
 
 /**
- * Each scene's name is wiped in across its width as it comes in, and its pen line drawn under it
- * just after. The trigger is the heading, never its inner part, which rests (is sticky) on a phone.
+ * Each scene's name fades in as it comes in, and its pen line is drawn under it just after. The
+ * trigger is the heading, never its inner part, which rests (is sticky) on a phone.
  */
 function headings() {
   for (const name of $$('.h-name')) {
     const tl = scrubbed(name.closest('h2') ?? name, zone.in);
-    wipeIn(tl, name, 'left', PAD.text, 0, 0.7);
+    tl.fromTo(name, { opacity: 0 }, { opacity: 1, duration: 0.7 }, 0);
     tl.fromTo($('.h-line', name), { clipPath: 'inset(-50% 100% -50% 0%)' }, { clipPath: 'inset(-50% 0% -50% 0%)', duration: 0.5 }, 0.5);
   }
 }
@@ -764,14 +762,14 @@ function eigen(desktop: boolean) {
 
 /**
  * 6. Personal: one interest after another, zigzagging down the page. Its title, its line and its
- * proof are wiped in as they come in, and each print is uncovered from the bottom and develops as it
+ * proof fade in as they come in, and each print is uncovered from the bottom and develops as it
  * comes up the screen. The words and the prints move together with the page: nothing is sticky and
  * nothing lags.
  */
 function personal() {
   const scene = $('.personal');
   for (const el of $$('.p-intro .lead, .t-text h3, .t-text .love, .t-text .detail', scene)) {
-    wipeIn(scrubbed(el, zone.in), el, 'left', PAD.text, 0, 1);
+    fade(scrubbed(el, zone.in), el, 'in');
   }
   for (const gp of $$('.gp', scene)) {
     const pola = $('.pola', gp);

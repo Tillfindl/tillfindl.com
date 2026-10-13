@@ -71,30 +71,31 @@ Till's choice, so never bring it back or keep anything in step with it.
 - The look is white paper and ballpoint blue (`#2f3394`, Mynerve in capitals): all text is in the
   pen apart from "Till Findl" and the button, and illustrations are pen drawings
   (`WardsDrawing.astro`), never pop-ups or cards. Every photo is a realistic instant print at true
-  proportions that develops from dark film: Polaroid 600 (88 × 107 mm frame, 79 mm square image),
+  proportions that develops from dark film (the opening portrait with a lighter film look, `vivid`,
+  so it is not washed out): Polaroid 600 (88 × 107 mm frame, 79 mm square image),
   or a wide print (108 × 86 mm, 99 × 62 mm image) for group photos marked `wide`. Each print is its
   own stacking context (`isolation: isolate`), so its film layers never show through a print laid
   over it. Never rotate photos, no cursor effects, no buttons or scroll hint in the hero, and no
   camera or other gadget in the opening. Captions name a place or race only when it is certain.
   Type is large and pictures generous, by Till's choice: on a desktop the phrases are about 3vw,
   the scene names (Medicine, Bounceback, Eigen, Personal, Contact) about 5.5vw with a pen line
-  under them, Personal's titles about 4vw; words and pictures sit in from the edges (`--inset`,
+  under them, Personal's titles about 4vw. Prints are not all one size (`size` on a photo: s, m or
+  l): Medicine's three differ, and in Personal a large print takes a row (most of it, set to one
+  side) and a small one sits smaller in its place, so no topic looks like the next; words and pictures sit in from the edges (`--inset`,
   7vw), the phrase column about 43vw with the picture on the right, so nothing hugs the left edge.
   Keep designed lines short enough not to wrap on a desktop at any width (900 px up); re-split a
   line rather than shrink the type.
 - Motion: it has to feel smooth on a phone first. Scrolling is the browser's own and is never taken
   over: no automatic moves, no snapping, no touch listeners that are not passive (Lenis smooths the
   wheel on a desktop only, `pointer: fine`). Every scroll animation is `scrub: true`, with no lag,
-  and words and pictures move together with the page; nothing lags its words. The motion is wipes
-  and reveals, varied but one family, and everything is uncovered while it comes in at the bottom
-  of the screen, whole by the time it is 20% up: never something to wait for. Lines are wiped in
-  from the left (on a desktop line by line, and wiped out to the right again near the top), the
-  scene names across their width with their pen line drawn after, prints uncovered from their
-  outer side (Personal's from the bottom) while they develop, and in Eigen one print is wiped away
-  as the next is uncovered. A print is uncovered by its paper cover sliding off (`.cover` in a
-  `.covered` wrapper, and the phone's phrases the same way): only the cover's position changes,
-  where a moving clip over a photo repaints it every frame and made the phone stutter; clip paths
-  are for words and small things. Medicine pairs each phrase with its own print. On a desktop the
+  and words and pictures move together with the page; nothing lags its words. Everything appears
+  while it comes in at the bottom of the screen, whole by the time it is 20% up: never something to
+  wait for. Words simply fade in (and on a desktop fade out near the top); Till tried text wiped in
+  from the side and did not like it. The scene names fade in and have their pen line drawn after.
+  Prints are uncovered from their outer side (Personal's from the bottom) while they develop, and
+  in Eigen one print is wiped away as the next is uncovered. A print is uncovered by its paper cover
+  sliding off (`.cover` in a `.covered` wrapper): only the cover's position changes, where a moving
+  clip over a photo repaints it every frame and made the phone stutter. Medicine pairs each phrase with its own print. On a desktop the
   wards, Bounceback and Eigen are a sticky picture with the phrases scrolling past in the normal
   flow; a
   picture changes only while its phrase is being read (`data-cue` and `cue()`, a phrase's top from

@@ -7,9 +7,9 @@ One page in English (`/`) and German (`/de/`), told as scenes you scroll through
 with everything written in ballpoint blue (Mynerve, in capitals) apart from the name and the one
 button. Scrolling is the browser's own, so the page always moves exactly with the finger. The words
 are short handwritten phrases with big and small words (`content/phrase.ts`), set large, and each
-scene opens with its name written big. Everything is uncovered by wipes as it comes in at the
-bottom of the screen (words from the left, prints from their side as a paper cover slides off
-them), so it is whole by the time it is read. Medicine pairs each phrase with its own print. On a
+scene opens with its name written big. Everything appears as it comes in at the bottom of the
+screen (words fade in, prints are uncovered from their side as a paper cover slides off them, in
+different sizes), so it is whole by the time it is read. Medicine pairs each phrase with its own print. On a
 wide screen the other scenes keep a picture in place beside the phrases, changing as each phrase
 is read. On a phone the page is a zigzag going down, Eigen's cued phrases each with its own
 picture above it, alternately left and right; the wards drawing stays near the top instead, and

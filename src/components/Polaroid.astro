@@ -28,12 +28,14 @@ interface Props {
   sizes: string;
   eager?: boolean;
   film?: 'developed' | 'latent' | 'auto';
+  /** A lighter film look: fuller colour and less of the warm cast (the portrait at the start). */
+  vivid?: boolean;
 }
 
-const { photo: p, lang, caption, position = p.position ?? '50% 50%', sizes, eager = false, film = 'developed' } = Astro.props;
+const { photo: p, lang, caption, position = p.position ?? '50% 50%', sizes, eager = false, film = 'developed', vivid = false } = Astro.props;
 ---
 
-<figure class:list={['pola', film, { wide: p.wide }]}>
+<figure class:list={['pola', film, { wide: p.wide, vivid }]}>
   <div class="film">
     <Image
       src={photo(p.file)}
@@ -122,6 +124,10 @@ const { photo: p, lang, caption, position = p.position ?? '50% 50%', sizes, eage
     /* Instant film never goes fully black, and its colours are soft and a little warm. */
     filter: contrast(0.92) brightness(1.05) saturate(0.82) sepia(0.12);
     pointer-events: none;
+  }
+
+  .vivid .film :global(img) {
+    filter: contrast(0.98) brightness(1.03) saturate(1.12) sepia(0.03);
   }
 
   .film i {
